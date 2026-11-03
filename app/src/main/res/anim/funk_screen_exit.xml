@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mumla Funk motion: the previous screen just fades, quickly. -->
+<alpha xmlns:android="http://schemas.android.com/apk/res/android"
+    android:duration="@integer/funk_motion_exit"
+    android:fromAlpha="1"
+    android:interpolator="@interpolator/funk_accelerate"
+    android:toAlpha="0" />

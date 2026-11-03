@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Drawer row: a pill inset from the edges. Filled for the open screen (activated), a ripple
+     when pressed. -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="@color/ui_ripple">
+    <item
+        android:id="@android:id/mask"
+        android:bottom="2dp"
+        android:left="12dp"
+        android:right="12dp"
+        android:top="2dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#FFFFFFFF" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+    <item
+        android:bottom="2dp"
+        android:left="12dp"
+        android:right="12dp"
+        android:top="2dp">
+        <selector android:enterFadeDuration="@integer/funk_motion_press" android:exitFadeDuration="@integer/funk_motion_press">
+            <item android:state_activated="true">
+                <shape android:shape="rectangle">
+                    <solid android:color="?attr/colorSecondaryContainer" />
+                    <corners android:radius="24dp" />
+                </shape>
+            </item>
+            <item android:drawable="@android:color/transparent" />
+        </selector>
+    </item>
+</ripple>

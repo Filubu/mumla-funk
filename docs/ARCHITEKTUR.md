@@ -39,7 +39,8 @@ flowchart LR
 | `funk/FunkState.java` | Unveränderlicher Schnappschuss: Verbindung, Server, eigener Kanal, alle Teilnehmer, wer spricht, ob man stumm ist. Statischer „aktueller Zustand“ plus Listener. Merkt sich, wer zuletzt gesprochen hat. |
 | `funk/PttActivity.java` | Funk-Fenster: Teilnehmerliste, großer Sprechknopf für einen Server, Verbindungsaufbau, Fehleranzeige, Leiser-Taste als Sprechtaste. |
 | `funk/FunkMemberList.java`, `res/layout/funk_member_row.xml` | Teilnehmerzeilen für das Display und die Liste im Funk-Fenster (beide dunkel), Zeilen werden wiederverwendet. |
-| `funk/PttButtonView.java` | Der runde Knopf als eigene View: Zustände OFFLINE, CONNECTING, READY, TALKING, MUTED; Puls-Animation, Haptik, Touch-Logik (halten oder tippen). |
+| `funk/PttButtonView.java` | Der runde Knopf als eigene View: Zustände OFFLINE, CONNECTING, READY, TALKING, MUTED; Federn beim Drücken, Überblenden zwischen den Zuständen, Puls beim Senden, Haptik, Touch-Logik (halten oder tippen). |
+| `funk/FunkMotion.java` | Kurven, Dauern und das Überblenden von Texten für alle Animationen, siehe [Design](#design). |
 | `funk/FunkFragment.java`, `res/layout/fragment_funk.xml`, `funk_display.xml`, `funk_controls.xml`, `layout-land/` | Funk-Bildschirm in der App, solange man mit einem Funk-Server verbunden ist, siehe [Funk-Bildschirm](#funk-bildschirm-funkfragment). |
 | `funk/FunkPrefs.java` | Einstellungen der Funk-Funktionen: Funk-Server ja/nein je Server, zuletzt genutzter Server, Server je Widget, Leiser-Taste im Fenster. |
 | `funk/BatteryOptimization.java` | Status der Akku-Ausnahme und Link in die Systemliste (ohne eigene Berechtigung). |
@@ -49,6 +50,7 @@ flowchart LR
 | `funk/widget/FunkWidgetConfigActivity.java` | Serverauswahl beim Platzieren eines Widgets (auch nachträglich über „Widget anpassen“). |
 | `preference/FunkSettingsFragment.java`, `res/xml/settings_funk.xml` | Einstellungen › Funk: Ein/Aus-Taste, Leiser-Taste im Fenster, Energiesparen, Akku-Ausnahme. |
 | `res/values*/strings_funk.xml`, `colors_funk.xml` | Texte (Englisch, Deutsch) und Farben der Funk-Oberfläche. |
+| `res/values/styles_ui.xml`, `res/values(-night)/colors.xml`, `integers_motion.xml`, `res/interpolator/`, `res/animator/` | Das Design der ganzen App: Farben, Ecken, Schrift, Knöpfe, Karten, Bewegung, siehe [Design](#design). |
 
 Geänderte Mumla-Dateien:
 
@@ -56,13 +58,14 @@ Geänderte Mumla-Dateien:
 |---|---|
 | `service/MumlaService.java` | Veröffentlicht `FunkState` und aktualisiert die Widgets bei Ereignissen. Der TALK-Broadcast ist entfernt (siehe [Sicherheit](#sicherheit)). |
 | `app/MumlaActivity.java` | Serverliste als Start. Nach dem Verbinden Funk-Bildschirm oder Kanalliste, je nach Server. Merkt sich den zuletzt genutzten Server. Nimmt `EXTRA_CONNECT_SERVER_ID` aus dem Funk-Fenster an. Erzeugt beim ersten Start still ein Zertifikat. |
-| `app/DrawerAdapter.java` | Menüeintrag „Funk“ unter dem verbundenen Server, „Meine Server“. |
+| `app/DrawerAdapter.java` | Menüeintrag „Funk“ unter dem verbundenen Server, „Meine Server“. Symbole und Texte in den Farben des Designs. |
 | `servers/ServerEditFragment.java`, `res/layout/dialog_server_edit.xml` | Formular mit Beispielen, Hinweisen, Prüfung der Felder und dem Schalter „Funk-Server“. |
 | `servers/FavouriteServerListFragment.java`, `res/layout/fragment_server_list.xml` | Willkommen-Seite ohne Server, Hinweis und Knopf „Server hinzufügen“, Funk-Kennzeichen je Server. |
-| `res/values*/themes.xml`, `colors.xml` | Kontraste im dunklen Design (siehe [Farben](#farben-und-kontrast)). |
+| `res/values*/themes.xml`, `colors.xml` und die Layouts von Drawer, Serverliste, Kanälen, Chat, Zugriffstoken, Server-Info und Overlay | Neues Design nach dem Funk-Bildschirm, Anordnung unverändert (siehe [Design](#design)). |
 | `Settings.java`, `res/xml/settings_audio.xml` | Push-to-Talk als Standard. |
 | `preference/MumlaPreferenceFragment.java` | Interne Einstellungs-Links fest an das eigene Paket gebunden (siehe [Eigene App-ID](#eigene-app-id)). |
-| `channel/ChannelFragment.java`, `service/MumlaHotCorner.java`, `service/MumlaOverlay.java` | Senden endet auch bei abgebrochener Berührung (`ACTION_CANCEL`). |
+| `channel/ChannelFragment.java`, `service/MumlaHotCorner.java`, `service/MumlaOverlay.java` | Senden endet auch bei abgebrochener Berührung (`ACTION_CANCEL`). Kanal-Tabs in den Farben des Designs. |
+| `channel/ChannelListFragment.java`, `res/menu/` | Symbole der App-Leiste in der Textfarbe (die App-Leiste ist im hellen Design hell). |
 | `AndroidManifest.xml` | Funk-Fenster, Widgets und Widget-Einrichtung. Dienst und interne Activities nicht exportiert. |
 
 ## Zustand: FunkState
@@ -310,20 +313,101 @@ Damit Mumla Funk neben Mumla installierbar ist:
 - Die Zertifikat-Activities sind nicht exportiert. Die Einstellungen öffnen sie mit dem eigenen
   Paket, siehe [Eigene App-ID](#eigene-app-id).
 
-## Farben und Kontrast
+## Design
 
-Material 3 nutzt `colorPrimary` für Text-Knöpfe, Schalter, Überschriften und gefüllte Knöpfe,
-aber über `colorPrimaryDark` auch für Drawer, Statusleiste (DrawerLayout) und App-Leiste. Im
-dunklen Design war `colorPrimary` ein fast schwarzes Blau (`#001b2b`), alles damit Gezeichnete
-war auf dem dunklen Hintergrund kaum zu sehen (etwa 1,1:1). Seit 1.0.5:
+Die ganze App folgt dem Funk-Bildschirm: dieselben Farben, Ecken, Knöpfe und Schrift
+überall. Die Anordnung der Bildschirme ist dieselbe wie vorher, geändert hat sich nur
+das Aussehen. Leitlinien: ruhig und flach, Farbe nur für Bedienbares und Zustände, Bewegung
+nur, wenn sie eine Änderung erklärt.
 
-- `colorPrimaryDark` ist die App-Leisten-Farbe (hell `#3949ab`, dunkel `#001b2b`). Sie färbt
-  App-Leiste, Statusleiste, Drawer, Kopf des Drawers, Kanal-Tabs und den PTT-Balken von Mumla.
-- `colorPrimary` ist im dunklen Design ein helles Indigo (`#b9c3ff`, 10,9:1), dazu passende
-  Container-Farben statt der lila Material-Standardwerte.
-- Grüner Text („Max spricht“) und das grüne Status-Symbol nutzen `funk_live_text`:
-  `#2E7D32` auf hellem Grund (4,8:1), `#66BB6A` im dunklen Design.
-- Deaktivierte Einträge im Drawer haben 55 % statt 33 % Deckkraft.
+### Farben
+
+Ein Satz Farbrollen in `res/values/colors.xml` (hell) und `res/values-night/colors.xml`
+(dunkel) unter denselben Namen (`ui_*`). `themes.xml` definiert das Theme deshalb nur einmal.
+
+- **Neutral**: kühles Graphit aus dem Display und dem Funk-Fenster (`funk_surface #16181D`,
+  `funk_surface_raised #23262D`). Hell ist der Hintergrund `#F8F9FB`, Flächen werden in
+  Stufen dunkler (`colorSurfaceContainer…`). Dunkel ist der Hintergrund `#111317`, Flächen
+  werden heller. Die lila Material-Standardtöne sind überall ersetzt.
+- **Akzent**: ein Indigo, die Farbe des App-Icons. `#3949AB` für gefüllte Knöpfe, den
+  PTT-Balken und „Server hinzufügen“, in beiden Designs mit weißer Schrift (7,4:1).
+  Text-Knöpfe, Schalter und Links nutzen hell `#3949AB`, dunkel `#9FA8DA` (wie im
+  Funk-Fenster).
+- **Zustände** aus `colors_funk.xml`: Rot (`funk_talk`) für Senden, Grün (`funk_live`) für
+  verbunden und „spricht“, Gelb (`funk_warn`) für Warnungen. Auch Mumlas Sprech-Symbole in
+  der Kanalliste nutzen diese Farben.
+- **Kontrast**: Sekundärer Text hat mindestens 5,2:1 (hell `#5C616C`, dunkel `#9AA0AC`),
+  Rahmen von Feldern und Knöpfen mindestens 3:1.
+- **App-Leiste und Statusleiste** haben die Hintergrundfarbe, ohne Schatten. Ab API 23 mit
+  dunklen Symbolen im hellen Design (`values-v23`), ab API 27 auch die Navigationsleiste
+  (`values-v27`). Darunter bleibt die Statusleiste dunkel, weil ihre Symbole dort immer weiß
+  sind.
+
+### Formen
+
+| Ecke | Wo |
+|---|---|
+| 32 dp | Gehäuse des Funk-Bildschirms, Funk-Fenster, Widget-Einrichtung, Dialoge |
+| 24 dp | Display, Karten der Serverliste, Widgets, Rand des Drawers |
+| 16 dp | Listen im Display und im Funk-Fenster, Chat-Nachrichten, Overlay |
+| 12 dp | Eingabefelder, Menüs, Snackbars |
+| Pille | Alle Knöpfe, PTT-Balken, Kennzeichen „Funk“, Auswahl im Drawer, Chat-Eingabe |
+
+Die Theme-Attribute `shapeAppearanceCorner…` setzen diese Werte für alle Material-Komponenten.
+Karten sind gefüllt und flach (`Widget.Funk.Card`), Trennung entsteht über Flächenstufen, nicht
+über Schatten.
+
+### Schrift
+
+Roboto wie im System. Titel in Medium: App-Leiste 20 sp, Namen in Listen 17 sp wie der
+Servername im Display. Details 13 sp in der gedämpften Farbe. Abschnittstitel (Drawer,
+Einstellungen, Server-Info) sehen aus wie „ONLINE · 4“ im Display: 12 sp, Großbuchstaben,
+gesperrt, gedämpft (`TextAppearance.Funk.Label`).
+
+### Komponenten
+
+Alle in `res/values/styles_ui.xml`, im Theme als Standard gesetzt:
+
+- **Knöpfe** (`Widget.Funk.Button…`): gefüllt, tonal, umrandet, Text. Gefüllte Knöpfe immer
+  im Indigo mit weißer Schrift.
+- **PTT-Balken** in Mumlas Kanalansicht (`Widget.Funk.PttBar`): Indigo, rot beim Senden, wie
+  die große Sprechtaste. Die Pille ist eingerückt gezeichnet (`android:inset…`), die
+  Touch-Fläche ist weiter der ganze Balken, die Höhe kommt wie bisher aus den Einstellungen.
+- **Drawer**: helle Fläche mit runder Außenkante (`bg_drawer`, gespiegelt in
+  `drawable-ldrtl`), der geöffnete Bildschirm als Pille hervorgehoben (`MumlaActivity`
+  markiert ihn auch, wenn die App selbst wechselt).
+- **Dialoge**: weiß im hellen, `#23262D` im dunklen Design, Titel 20 sp Medium.
+- **Einstellungen**: Abschnittstitel als Label, Schalter wie im Server-Formular
+  (`preference_widget_funk_switch`).
+- **Chat und Zugriffstoken**: Nachrichten als flache Blasen, Eingabe als runde Fläche ohne
+  Unterstrich (`bg_funk_input`), Senden in Indigo.
+- **Overlay** über anderen Apps: dunkle Karte wie das Funk-Fenster.
+
+### Bewegung
+
+Wenige, kurze Animationen mit denselben Kurven (`FunkMotion`, `res/interpolator/`):
+
+- **Bildschirmwechsel**: Der neue Bildschirm blendet ein und rückt ein paar dp nach oben
+  (300 ms), der alte blendet nur aus (150 ms).
+- **Drücken**: Knöpfe werden beim Drücken minimal kleiner und federn beim Loslassen zurück
+  (`animator/funk_press`), Karten der Serverliste ebenso, nur schwächer.
+- **Sprechtaste**: gibt unter dem Finger nach und federt zurück, Farbe und Symbol blenden
+  zwischen den Zuständen über (220 ms), beim Senden laufen zwei weiche Ringe nach außen.
+- **Display**: Ändert sich die große Zeile („Kanal frei“ → „Max spricht“), blendet der neue
+  Text ein. Gleicher Text wird nicht neu animiert, auch wenn der Zustand mehrmals pro Sekunde
+  kommt.
+- **Funk-Fenster**: Die Karte steigt von unten auf und setzt sich, beim Schließen sinkt sie
+  kurz ab.
+
+Alle Animationen folgen der Animationsgeschwindigkeit des Systems. Sind Animationen
+ausgeschaltet (Entwickleroptionen, Bedienungshilfen), laufen keine Schleifen: Statt der
+Ringe zeigt die Sprechtaste beim Senden einen stehenden Ring, statt des kreisenden Bogens
+einen stehenden.
+
+### Vorschaubilder
+
+Die Bilder in `docs/images/` sind mit Paparazzi gerenderte Layouts mit Beispieldaten, nicht
+Teil des Builds.
 
 ## Ideen und offene Punkte
 

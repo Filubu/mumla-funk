@@ -42,15 +42,18 @@
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
                 android:text="@string/app_name"
-                android:textColor="#777"
+                android:textColor="@color/funk_on_surface_muted"
+                android:textSize="12sp"
+                android:letterSpacing="0.08"
+                android:fontFamily="sans-serif-medium"
                 android:textAllCaps="true"
                 android:gravity="left|center_vertical"
-                android:layout_marginLeft="16dp"/>
+                android:layout_marginStart="16dp"/>
 
             <View
                 android:layout_width="1dp"
                 android:layout_height="fill_parent"
-                android:background="#DDD"/>
+                android:background="@color/funk_divider"/>
 
             <ImageView
                 android:id="@+id/overlay_talk"
@@ -58,29 +61,29 @@
                 android:layout_height="40dp"
                 android:padding="11dp"
                 android:scaleType="fitCenter"
-                app:srcCompat="@drawable/ic_action_microphone_dark"
-                android:background="?attr/selectableItemBackground"/>
+                android:src="@drawable/funk_overlay_mic"
+                android:background="@drawable/funk_ripple_on_dark"/>
 
             <View
                 android:layout_width="1dp"
                 android:layout_height="fill_parent"
-                android:background="#DDD"/>
+                android:background="@color/funk_divider"/>
 
             <ImageView
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:padding="11dp"
                 android:id="@+id/overlay_close"
-                app:srcCompat="@drawable/ic_action_delete_light"
+                android:src="@drawable/funk_overlay_close"
                 android:scaleType="fitCenter"
-                android:background="?attr/selectableItemBackground"/>
+                android:background="@drawable/funk_ripple_on_dark"/>
 
         </LinearLayout>
 
         <View
             android:layout_width="fill_parent"
             android:layout_height="1dp"
-            android:background="#DDD"/>
+            android:background="@color/funk_divider"/>
 
         <ListView
             android:layout_width="fill_parent"
@@ -95,7 +98,7 @@
         <View
             android:layout_width="fill_parent"
             android:layout_height="1dp"
-            android:background="#DDD"/>
+            android:background="@color/funk_divider"/>
 
     </LinearLayout>
 
@@ -105,6 +108,6 @@
         android:layout_height="32dp"
         android:padding="8dp"
         android:layout_gravity="right|bottom"
-        app:srcCompat="@drawable/ic_action_drag_handle"
-        android:background="?attr/selectableItemBackground"/>
+        android:src="@drawable/funk_overlay_drag"
+        android:background="@drawable/funk_ripple_on_dark"/>
 </FrameLayout>

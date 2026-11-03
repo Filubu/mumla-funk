@@ -19,5 +19,5 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:mumla="http://schemas.android.com/apk/res-auto">
     <!-- Mumla Funk: "add server" is the floating button on the list (and on the welcome screen). -->
-    <item android:id="@+id/menu_quick_connect" android:title="@string/quickConnect" android:icon="@drawable/ic_action_quick_connect" mumla:showAsAction="ifRoom" android:orderInCategory="1" />
+    <item android:id="@+id/menu_quick_connect" android:title="@string/quickConnect" mumla:iconTint="?attr/colorOnSurface" android:icon="@drawable/ic_action_quick_connect" mumla:showAsAction="ifRoom" android:orderInCategory="1" />
 </menu>

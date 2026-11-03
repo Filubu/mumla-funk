@@ -29,9 +29,9 @@
         android:gravity="center"
         android:columnWidth="320dp"
         android:numColumns="auto_fit"
-        android:verticalSpacing="10dp"
-        android:horizontalSpacing="10dp"
-        android:padding="10dp"
+        android:verticalSpacing="12dp"
+        android:horizontalSpacing="12dp"
+        android:padding="12dp"
         android:stretchMode="columnWidth"
         android:clipToPadding="false"
         android:fastScrollEnabled="true"
@@ -43,5 +43,6 @@
         android:layout_height="50dp"
         android:layout_centerInParent="true"
         android:indeterminate="true"
+        android:indeterminateTint="?attr/colorPrimary"
         android:visibility="gone"/>
 </RelativeLayout>

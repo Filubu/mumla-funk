@@ -17,20 +17,22 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
+<!-- Mumla Funk: section label in the drawer, styled like "ONLINE · 4" in the Funk display. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:textColor="?android:textColorSecondaryInverse"
-            android:text="@string/app_name"
-            android:id="@+id/drawer_header_title"
-            android:padding="8dp"
-            android:textAllCaps="true"
-            android:textStyle="bold"
-            android:textSize="12sp"
-            android:layout_gravity="left|center_vertical"/>
+        android:id="@+id/drawer_header_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:paddingStart="24dp"
+        android:paddingTop="18dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="6dp"
+        android:singleLine="true"
+        android:text="@string/app_name"
+        android:textAppearance="@style/TextAppearance.Funk.Label" />
 </LinearLayout>

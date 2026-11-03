@@ -26,7 +26,7 @@
             android:layout_height="28dp"
             android:importantForAccessibility="no"
             android:src="@drawable/ic_funk_tower"
-            app:tint="@color/funk_accent" />
+            app:tint="@color/funk_accent_light" />
 
         <TextView
             android:id="@+id/config_title"
@@ -69,14 +69,14 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/config_open_app"
-                style="@style/Widget.Material3.Button.TextButton"
+                style="@style/Widget.Funk.Button.Text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/funk_add_server" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/config_cancel"
-                style="@style/Widget.Material3.Button.TextButton"
+                style="@style/Widget.Funk.Button.Text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@android:string/cancel" />

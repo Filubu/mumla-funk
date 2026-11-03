@@ -27,6 +27,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.CursorWrapper;
+import android.content.res.TypedArray;
 import android.graphics.PorterDuff;
 import android.media.AudioManager;
 import android.os.Build;
@@ -242,15 +243,18 @@ public class ChannelListFragment extends HumlaServiceFragment implements OnChann
         if(getService() != null && getService().isConnected()) {
             IHumlaSession session = getService().HumlaSession();
 
-            // Color the action bar icons to the primary text color of the theme, TODO move this elsewhere
-            int foregroundColor = getActivity().getTheme().obtainStyledAttributes(new int[]{android.R.attr.textColorPrimaryInverse}).getColor(0, -1);
+            // Mumla Funk: the app bar is light in the light theme, tint the icons with its text color.
+            TypedArray colors = getActivity().getTheme().obtainStyledAttributes(
+                    new int[]{com.google.android.material.R.attr.colorOnSurface});
+            int foregroundColor = colors.getColor(0, -1);
+            colors.recycle();
 
             IUser self = session.getSessionUser();
             if (self != null) {
                 muteItem.setIcon(self.isSelfMuted() ? R.drawable.ic_action_microphone_muted : R.drawable.ic_action_microphone);
                 deafenItem.setIcon(self.isSelfDeafened() ? R.drawable.ic_action_audio_muted : R.drawable.ic_action_audio);
-                muteItem.getIcon().mutate().setColorFilter(foregroundColor, PorterDuff.Mode.MULTIPLY);
-                deafenItem.getIcon().mutate().setColorFilter(foregroundColor, PorterDuff.Mode.MULTIPLY);
+                muteItem.getIcon().mutate().setColorFilter(foregroundColor, PorterDuff.Mode.SRC_IN);
+                deafenItem.getIcon().mutate().setColorFilter(foregroundColor, PorterDuff.Mode.SRC_IN);
             }
 
             MenuItem bluetoothItem = menu.findItem(R.id.menu_bluetooth);

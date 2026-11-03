@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mumla Funk design system: shapes, text styles and component styles shared by the whole
+     app (Theme.Mumla) and the Funk popup (Theme.Mumla.FunkPopup). Colors are in
+     values(-night)/colors.xml and colors_funk.xml. -->
+<resources>
+
+    <!-- ============================================================ Shapes
+         The corner scale of the Funk screen: 32 dp for the body, popup and dialogs, 24 dp for
+         the display, cards and widgets, 16 dp for lists inside them, 12 dp for fields, menus
+         and small rows, pill for buttons and badges. -->
+    <style name="ShapeAppearance.Funk.Corner.Small" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
+
+    <style name="ShapeAppearance.Funk.Corner.Medium" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+
+    <style name="ShapeAppearance.Funk.Corner.Large" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">24dp</item>
+    </style>
+
+    <style name="ShapeAppearance.Funk.Corner.ExtraLarge" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">32dp</item>
+    </style>
+
+    <style name="ShapeAppearance.Funk.Pill" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <!-- ============================================================ Text -->
+    <style name="TextAppearance.Funk.Headline" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="TextAppearance.Funk.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textSize">20sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- Names in lists and cards (server name, display title): 17 sp medium. -->
+    <style name="TextAppearance.Funk.ItemTitle" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textSize">17sp</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- Details under a title: 13 sp, muted. -->
+    <style name="TextAppearance.Funk.Detail" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <!-- Section labels, like "ONLINE · 4" in the Funk display: small caps, spaced, muted. -->
+    <style name="TextAppearance.Funk.Label" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textSize">12sp</item>
+        <item name="android:letterSpacing">0.08</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="textAllCaps">true</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="TextAppearance.Funk.DialogTitle" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textSize">20sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- ============================================================ App bar
+         Flat, in the background color, no shadow: the content carries the color. -->
+    <style name="Widget.Funk.AppBarLayout" parent="Widget.Material3.AppBarLayout">
+        <item name="android:background">?attr/colorSurface</item>
+        <item name="liftOnScroll">false</item>
+        <item name="android:stateListAnimator">@null</item>
+    </style>
+
+    <style name="Widget.Funk.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="titleTextAppearance">@style/TextAppearance.Funk.TitleLarge</item>
+        <item name="titleTextColor">?attr/colorOnSurface</item>
+    </style>
+
+    <!-- ============================================================ Buttons
+         Pills, as in the Funk screen. Filled buttons are always the brand indigo with white
+         text, the same in light and dark. All of them shrink a little while pressed. -->
+    <style name="Widget.Funk.Button" parent="Widget.Material3.Button">
+        <item name="backgroundTint">@color/funk_button_fill</item>
+        <item name="android:textColor">@color/funk_button_on_fill</item>
+        <item name="iconTint">@color/funk_button_on_fill</item>
+        <item name="android:stateListAnimator">@animator/funk_press</item>
+    </style>
+
+    <style name="Widget.Funk.Button.Icon" parent="Widget.Material3.Button.Icon">
+        <item name="backgroundTint">@color/funk_button_fill</item>
+        <item name="android:textColor">@color/funk_button_on_fill</item>
+        <item name="iconTint">@color/funk_button_on_fill</item>
+        <item name="android:stateListAnimator">@animator/funk_press</item>
+    </style>
+
+    <style name="Widget.Funk.Button.Tonal" parent="Widget.Material3.Button.TonalButton">
+        <item name="android:stateListAnimator">@animator/funk_press</item>
+    </style>
+
+    <style name="Widget.Funk.Button.Tonal.Icon" parent="Widget.Material3.Button.TonalButton.Icon">
+        <item name="android:stateListAnimator">@animator/funk_press</item>
+    </style>
+
+    <style name="Widget.Funk.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:stateListAnimator">@animator/funk_press</item>
+    </style>
+
+    <style name="Widget.Funk.Button.Outlined.Icon" parent="Widget.Material3.Button.OutlinedButton.Icon">
+        <item name="android:stateListAnimator">@animator/funk_press</item>
+    </style>
+
+    <style name="Widget.Funk.Button.Text" parent="Widget.Material3.Button.TextButton">
+        <item name="android:stateListAnimator">@animator/funk_press</item>
+    </style>
+
+    <!-- Mumla's push-to-talk bar (channel screen): the colors of the Funk talk button, indigo
+         when ready and red while transmitting. The pill is inset, the touch area stays the
+         whole bar. No press scale: the bar is held, the color says what is happening. -->
+    <style name="Widget.Funk.PttBar" parent="Widget.Material3.Button">
+        <item name="backgroundTint">@color/funk_ptt_bar</item>
+        <item name="android:textColor">@color/ui_on_accent_fill</item>
+        <item name="rippleColor">#26FFFFFF</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:letterSpacing">0.01</item>
+        <item name="android:insetLeft">12dp</item>
+        <item name="android:insetRight">12dp</item>
+        <item name="android:insetTop">4dp</item>
+        <item name="android:insetBottom">8dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:stateListAnimator">@null</item>
+    </style>
+
+    <!-- "Add server": a pill in the brand indigo, low and calm. -->
+    <style name="Widget.Funk.ExtendedFab" parent="Widget.Material3.ExtendedFloatingActionButton.Icon.Primary">
+        <item name="backgroundTint">@color/ui_accent_fill</item>
+        <item name="android:textColor">@color/ui_on_accent_fill</item>
+        <item name="iconTint">@color/ui_on_accent_fill</item>
+        <item name="rippleColor">#33FFFFFF</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.Funk.Pill</item>
+        <item name="elevation">3dp</item>
+        <item name="hoveredFocusedTranslationZ">1dp</item>
+        <item name="pressedTranslationZ">1dp</item>
+    </style>
+
+    <!-- ============================================================ Cards
+         Filled, flat, 24 dp corners like the Funk display. -->
+    <style name="Widget.Funk.Card" parent="Widget.Material3.CardView.Filled">
+        <item name="cardBackgroundColor">?attr/colorSurfaceContainer</item>
+        <item name="cardCornerRadius">24dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="rippleColor">@color/ui_ripple</item>
+    </style>
+
+    <!-- ============================================================ Inputs -->
+    <style name="Widget.Funk.Switch" parent="Widget.Material3.CompoundButton.MaterialSwitch" />
+
+    <!-- ============================================================ Dialogs -->
+    <style name="ThemeOverlay.Funk.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="alertDialogStyle">@style/MaterialAlertDialog.Funk</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/MaterialAlertDialog.Funk.Title.Text</item>
+        <item name="materialButtonStyle">@style/Widget.Funk.Button</item>
+    </style>
+
+    <style name="MaterialAlertDialog.Funk" parent="MaterialAlertDialog.Material3">
+        <item name="backgroundTint">@color/ui_dialog</item>
+    </style>
+
+    <style name="MaterialAlertDialog.Funk.Title.Text" parent="MaterialAlertDialog.Material3.Title.Text">
+        <item name="android:textAppearance">@style/TextAppearance.Funk.DialogTitle</item>
+    </style>
+
+    <!-- ============================================================ Settings
+         Category titles are section labels, switches are the Material switch of the
+         server form. -->
+    <style name="PreferenceThemeOverlay.Funk" parent="PreferenceThemeOverlay">
+        <item name="preferenceCategoryTitleTextAppearance">@style/TextAppearance.Funk.Label</item>
+        <item name="preferenceCategoryTitleTextColor">?attr/colorOnSurfaceVariant</item>
+        <item name="switchPreferenceCompatStyle">@style/Preference.SwitchPreferenceCompat.Funk</item>
+    </style>
+
+    <style name="Preference.SwitchPreferenceCompat.Funk" parent="Preference.SwitchPreferenceCompat.Material">
+        <item name="widgetLayout">@layout/preference_widget_funk_switch</item>
+    </style>
+</resources>

@@ -60,6 +60,10 @@ behält das komplette Mumla und setzt eine Funk-Bedienung obendrauf.
   darf schlafen. Siehe [Energiesparen](#energiesparen).
 - **Alles aus Mumla bleibt**: Kanäle, Chat, Zertifikate, Zugriffstoken, Tor, Overlay und alle
   Einstellungen sind über das Menü erreichbar.
+- **Ein Design für die ganze App**: Serverliste, Menü, Kanäle, Chat und Einstellungen sehen aus
+  wie der Funk-Bildschirm: ruhige Graphit-Töne, ein Indigo für alles Bedienbare, runde Ecken,
+  Knöpfe als Pillen und wenige, kurze Animationen. Hell und dunkel. Siehe
+  [Design](docs/ARCHITEKTUR.md#design).
 
 ## Unterschiede zu Mumla
 
@@ -68,6 +72,7 @@ behält das komplette Mumla und setzt eine Funk-Bedienung obendrauf.
 | App | `se.lublin.mumla` | `de.filubu.funk`, parallel zu Mumla installierbar |
 | Standard-Eingabe | Sprachaktivierung | Push-to-Talk |
 | Startbildschirm | Serverliste | Serverliste mit Einstiegshilfe, nach dem Verbinden je nach Server Funk-Bildschirm oder Kanalliste |
+| Aussehen | Material 3 mit farbiger App-Leiste | eigenes Design nach dem Funk-Bildschirm, gleiche Anordnung |
 | Hardware-Tasten | nur bei geöffneter App | Ein/Aus-Taste (Assistent), Leiser-Taste im Funk-Fenster |
 | Widgets | keine | klein und groß |
 | Leerlauf | Handy dauerhaft wach, Mikrofon offen, Ping alle 5 s | Mikrofon aus, Ruhe-Ping alle 2 min, Handy darf schlafen |
@@ -264,8 +269,11 @@ Durchgang auf einem echten Gerät:
 - **Funk-Schalter**: ein Funk-Server öffnet nach dem Verbinden den Funk-Bildschirm, ein Server
   mit ausgeschaltetem Schalter und ein öffentlicher Server die Kanalliste. Umschalten im
   Bearbeiten-Dialog, während man verbunden ist, wechselt die Ansicht sofort.
-- **Dunkles Design**: Texte, Schalter und Knöpfe in Funk-Bildschirm, Serverliste und
-  Einstellungen gut lesbar.
+- **Helles und dunkles Design**: Texte, Schalter, Knöpfe und die Symbole der App-Leiste in
+  Funk-Bildschirm, Serverliste, Menü, Kanälen, Chat und Einstellungen gut lesbar; Statusleiste
+  mit passenden Symbolen.
+- **Bewegung**: Bildschirmwechsel, Drücken und Loslassen der Sprechtaste, „Kanal frei“ →
+  „Max spricht“. Mit ausgeschalteten Animationen (Entwickleroptionen) darf nichts mehr laufen.
 - **Widgets**:
   - einrichten,
   - Verbindungsaufbau aus dem Widget,

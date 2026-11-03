@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Icon of the floating user list, tinted for the dark card. The overlay is inflated without
+     AppCompat, so the tint lives in the drawable. -->
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:src="@drawable/ic_action_delete_light"
+    android:tint="@color/funk_on_surface_muted" />

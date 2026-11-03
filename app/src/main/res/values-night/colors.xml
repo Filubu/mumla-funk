@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mumla Funk design tokens, dark theme: the graphite of the Funk display and popup
+     (funk_surface #16181D, funk_surface_raised #23262D). Same names as values/colors.xml. -->
+<resources>
+    <color name="ui_surface">#111317</color>
+    <color name="ui_surface_lowest">#0C0D10</color>
+    <color name="ui_surface_low">#16181D</color>
+    <color name="ui_surface_container">#1B1D22</color>
+    <color name="ui_surface_high">#23262D</color>
+    <color name="ui_surface_highest">#2A2D35</color>
+    <color name="ui_on_surface">#F2F3F5</color>
+    <!-- 5.8:1 on ui_surface_high. -->
+    <color name="ui_on_surface_muted">#9AA0AC</color>
+    <color name="ui_outline">#6E7480</color>
+    <color name="ui_hairline">#2C2F37</color>
+
+    <!-- Light indigo for text buttons, switches and links on dark (as in the Funk popup). -->
+    <color name="ui_primary">#9FA8DA</color>
+    <color name="ui_on_primary">#1A237E</color>
+    <color name="ui_primary_container">#303C8C</color>
+    <color name="ui_on_primary_container">#DFE2F6</color>
+    <color name="ui_secondary">#BEC3DA</color>
+    <color name="ui_on_secondary">#282C3D</color>
+    <color name="ui_secondary_container">#31353F</color>
+    <color name="ui_on_secondary_container">#F2F3F5</color>
+
+    <color name="ui_accent_fill">#3949AB</color>
+    <color name="ui_on_accent_fill">#FFFFFF</color>
+
+    <color name="ui_inverse_surface">#E7E9ED</color>
+    <color name="ui_inverse_on_surface">#16181D</color>
+    <color name="ui_inverse_primary">#3949AB</color>
+
+    <color name="ui_error">#EF5350</color>
+    <color name="ui_on_error">#3B0909</color>
+    <color name="ui_error_container">#5C1B1B</color>
+    <color name="ui_on_error_container">#FFDAD6</color>
+
+    <color name="ui_dialog">#23262D</color>
+    <color name="ui_status_bar">#111317</color>
+
+    <color name="ui_ripple">#24FFFFFF</color>
+</resources>

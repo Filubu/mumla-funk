@@ -18,6 +18,7 @@
 package se.lublin.mumla.app;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.PorterDuff;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -94,11 +95,22 @@ public class DrawerAdapter extends ArrayAdapter<DrawerAdapter.DrawerRow> {
         }
     }
 
+    /** Mumla Funk: rows that need a connection, while not connected. */
+    private static final float DISABLED_ALPHA = 0.45f;
+
     private DrawerDataProvider mProvider;
+    private final int mTextColor;
+    private final int mIconColor;
 
     public DrawerAdapter(Context context, DrawerDataProvider provider) {
         super(context, 0);
         mProvider = provider;
+        TypedArray a = context.obtainStyledAttributes(new int[]{
+                com.google.android.material.R.attr.colorOnSurface,
+                com.google.android.material.R.attr.colorOnSurfaceVariant});
+        mTextColor = a.getColor(0, 0xFF000000);
+        mIconColor = a.getColor(1, 0xFF000000);
+        a.recycle();
         add(new DrawerAdapter.DrawerHeader(HEADER_CONNECTED_SERVER, context.getString(R.string.drawer_not_connected)));
         add(new DrawerAdapter.DrawerItem(ITEM_FUNK, context.getString(R.string.drawer_funk), R.drawable.ic_funk_walkie));
         add(new DrawerAdapter.DrawerItem(ITEM_SERVER, context.getString(R.string.drawer_server), R.drawable.ic_action_channels));
@@ -148,14 +160,13 @@ public class DrawerAdapter extends ArrayAdapter<DrawerAdapter.DrawerRow> {
             title.setText(item.title);
             icon.setImageResource(item.icon);
 
+            // Mumla Funk: text in the surface text color, icons muted (the icons are white PNGs,
+            // so they are tinted, not multiplied). Rows that need a connection are dimmed.
             boolean enabled = isEnabled(position);
-
-            // Set text and icon color+alpha based on enabled/disabled state
-            int textColor = title.getCurrentTextColor();
-            textColor &= 0x00FFFFFF; // Clear alpha bits
-            textColor |= enabled ? 0xFF000000 : 0x8C000000; // Mumla Funk: was 0x55, hard to read // Set alpha bits depending on whether the state is enabled or disabled
-            title.setTextColor(textColor);
-            icon.setColorFilter(textColor, PorterDuff.Mode.MULTIPLY);
+            title.setTextColor(mTextColor);
+            icon.setColorFilter(mIconColor, PorterDuff.Mode.SRC_IN);
+            title.setAlpha(enabled ? 1f : DISABLED_ALPHA);
+            icon.setAlpha(enabled ? 1f : DISABLED_ALPHA);
 
         }
 

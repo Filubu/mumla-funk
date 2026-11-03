@@ -35,7 +35,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -230,12 +229,18 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
 
         handleIntent(getIntent());
 
-        if (savedInstanceState == null) {
+        if (savedInstanceState == null && FunkMotion.enabled()) {
+            // The card rises from below and settles, the background dims at the same time.
+            float density = getResources().getDisplayMetrics().density;
             mRoot.setAlpha(0f);
-            mRoot.animate().alpha(1f).setDuration(160).start();
-            mCard.setTranslationY(48 * getResources().getDisplayMetrics().density);
-            mCard.animate().translationY(0f).setDuration(240)
-                    .setInterpolator(new DecelerateInterpolator(2f)).start();
+            mRoot.animate().alpha(1f).setDuration(FunkMotion.ENTER_MS / 2 + 60)
+                    .setInterpolator(FunkMotion.STANDARD).start();
+            mCard.setTranslationY(40 * density);
+            mCard.setScaleX(0.97f);
+            mCard.setScaleY(0.97f);
+            mCard.animate().translationY(0f).scaleX(1f).scaleY(1f)
+                    .setDuration(FunkMotion.ENTER_MS + 80)
+                    .setInterpolator(FunkMotion.DECELERATE).start();
         }
     }
 
@@ -361,9 +366,11 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
             scheduleIdleClose(); // never auto-close while transmitting
             return;
         }
-        mCard.animate().translationY(48 * getResources().getDisplayMetrics().density)
-                .setDuration(160).start();
-        mRoot.animate().alpha(0f).setDuration(160).withEndAction(() -> {
+        mCard.animate().translationY(32 * getResources().getDisplayMetrics().density)
+                .scaleX(0.98f).scaleY(0.98f)
+                .setDuration(FunkMotion.EXIT_MS + 30).setInterpolator(FunkMotion.ACCELERATE).start();
+        mRoot.animate().alpha(0f).setDuration(FunkMotion.EXIT_MS + 30)
+                .setInterpolator(FunkMotion.ACCELERATE).withEndAction(() -> {
             finish();
             overridePendingTransition(0, 0);
         }).start();
@@ -471,9 +478,8 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
 
         renderUsers(connected ? state.members : null);
         mButton.setMode(mode);
-        mLabel.setText(label);
-        mHint.setText(hint != null ? hint : "");
-        mHint.setTextColor(hintColor);
+        FunkMotion.swapText(mLabel, label);
+        FunkMotion.swapText(mHint, hint != null ? hint : "", hintColor);
         if (action != null) {
             mAction.setText(action);
             mAction.setVisibility(View.VISIBLE);

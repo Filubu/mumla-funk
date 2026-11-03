@@ -17,6 +17,7 @@
 
 package se.lublin.mumla.funk;
 
+import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -31,6 +32,7 @@ import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
+import android.view.animation.OvershootInterpolator;
 
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -40,6 +42,11 @@ import se.lublin.mumla.R;
 
 /**
  * The big round walkie-talkie button. Hold to talk when ready; tap otherwise (e.g. to connect).
+ *
+ * <p>Motion (see {@link FunkMotion}): the button gives way under the finger and springs back
+ * when let go, colors and icon cross-fade between states, two soft rings spread out while
+ * transmitting and an arc circles while connecting. With animations turned off the rings and
+ * the arc are drawn still.
  */
 public class PttButtonView extends View {
 
@@ -56,15 +63,25 @@ public class PttButtonView extends View {
         void onPttTap(Mode mode);
     }
 
+    private static final float PRESSED_SCALE = 0.94f;
+    private static final long PULSE_MS = 1600;
+    private static final long SPIN_MS = 1100;
+
     private final Paint mFillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint mRimPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint mPulsePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint mArcPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF mArcRect = new RectF();
+    private final ArgbEvaluator mArgb = new ArgbEvaluator();
     private final float mDp;
 
     private Mode mMode = Mode.OFFLINE;
     private Drawable mIcon;
+    private int mIconRes;
+    /** The previous icon while it fades out, null otherwise. */
+    @Nullable
+    private Drawable mOldIcon;
+    private float mIconFade = 1f;
     private Listener mListener;
     private boolean mHolding;
     private float mPressScale = 1f;
@@ -73,7 +90,18 @@ public class PttButtonView extends View {
     private ValueAnimator mPulseAnimator;
     private ValueAnimator mSpinAnimator;
     private ValueAnimator mScaleAnimator;
-    private int mGradientFor = -1;
+    private ValueAnimator mChangeAnimator;
+
+    /** Gradient colors drawn now, and the ones a state change fades from and to. */
+    private int mTop;
+    private int mBottom;
+    private int mFromTop;
+    private int mFromBottom;
+    private int mToTop;
+    private int mToBottom;
+    private int mShaderTop;
+    private int mShaderBottom;
+    private float mShaderRadius = -1f;
 
     public PttButtonView(Context context) {
         this(context, null);
@@ -81,12 +109,13 @@ public class PttButtonView extends View {
 
     public PttButtonView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        mDp = getResources().getDisplayMetrics().density;
+        mDp = context.getResources().getDisplayMetrics().density;
         mRimPaint.setStyle(Paint.Style.STROKE);
         mRimPaint.setStrokeWidth(1.5f * mDp);
         mRimPaint.setColor(0x26FFFFFF);
         mPulsePaint.setStyle(Paint.Style.STROKE);
-        mPulsePaint.setStrokeWidth(3f * mDp);
+        mPulsePaint.setStrokeWidth(2.5f * mDp);
+        mPulsePaint.setColor(ContextCompat.getColor(context, R.color.funk_talk));
         mArcPaint.setStyle(Paint.Style.STROKE);
         mArcPaint.setStrokeWidth(4f * mDp);
         mArcPaint.setStrokeCap(Paint.Cap.ROUND);
@@ -95,7 +124,7 @@ public class PttButtonView extends View {
         setFocusable(true);
         setHapticFeedbackEnabled(true);
         setContentDescription(context.getString(R.string.funk_ptt_button_desc));
-        applyMode();
+        applyMode(false);
     }
 
     public void setListener(@Nullable Listener listener) {
@@ -119,7 +148,7 @@ public class PttButtonView extends View {
                 mListener.onPttUp();
             }
         }
-        applyMode();
+        applyMode(true);
     }
 
     /** Called by the owner when transmission was started by a hardware key. */
@@ -131,7 +160,7 @@ public class PttButtonView extends View {
         performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
     }
 
-    private void applyMode() {
+    private void applyMode(boolean animate) {
         int iconRes;
         switch (mMode) {
             case CONNECTING:
@@ -153,9 +182,50 @@ public class PttButtonView extends View {
             icon = DrawableCompat.wrap(icon.mutate());
             DrawableCompat.setTint(icon, 0xFFFFFFFF);
         }
-        mIcon = icon;
-        mGradientFor = -1;
+        int[] colors = colorsFor(mMode);
+        boolean sameIcon = mIcon != null && iconRes == mIconRes;
+        mIconRes = iconRes;
 
+        if (mChangeAnimator != null) {
+            mChangeAnimator.cancel();
+        }
+        if (animate && FunkMotion.enabled() && isLaidOut()) {
+            mFromTop = mTop;
+            mFromBottom = mBottom;
+            mToTop = colors[0];
+            mToBottom = colors[1];
+            mOldIcon = sameIcon ? null : mIcon;
+            mIcon = sameIcon ? mIcon : icon;
+            mIconFade = sameIcon ? 1f : 0f;
+            mChangeAnimator = ValueAnimator.ofFloat(0f, 1f);
+            mChangeAnimator.setDuration(FunkMotion.CHANGE_MS);
+            mChangeAnimator.setInterpolator(FunkMotion.STANDARD);
+            mChangeAnimator.addUpdateListener(a -> {
+                float f = (float) a.getAnimatedValue();
+                mTop = (int) mArgb.evaluate(f, mFromTop, mToTop);
+                mBottom = (int) mArgb.evaluate(f, mFromBottom, mToBottom);
+                if (mOldIcon != null) {
+                    mIconFade = f;
+                }
+                if (f >= 1f) {
+                    mOldIcon = null;
+                }
+                invalidate();
+            });
+            mChangeAnimator.start();
+        } else {
+            mTop = mToTop = colors[0];
+            mBottom = mToBottom = colors[1];
+            mIcon = icon;
+            mOldIcon = null;
+            mIconFade = 1f;
+        }
+        updateLoops();
+        invalidate();
+    }
+
+    /** Starts or stops the looping animations for the current mode. */
+    private void updateLoops() {
         if (mMode == Mode.TALKING) {
             startPulse();
         } else {
@@ -166,7 +236,6 @@ public class PttButtonView extends View {
         } else {
             stopSpin();
         }
-        invalidate();
     }
 
     private int[] colorsFor(Mode mode) {
@@ -195,21 +264,28 @@ public class PttButtonView extends View {
         float radius = baseRadius * mPressScale;
 
         if (mMode == Mode.TALKING) {
-            int talk = ContextCompat.getColor(getContext(), R.color.funk_talk);
-            for (int i = 0; i < 2; i++) {
-                float p = (mPulse + i * 0.5f) % 1f;
-                mPulsePaint.setColor(talk);
-                mPulsePaint.setAlpha((int) (150 * (1f - p)));
-                canvas.drawCircle(cx, cy, radius + (maxRadius - baseRadius) * p, mPulsePaint);
+            if (mPulseAnimator != null) {
+                // Two rings, half a period apart, spreading out and fading.
+                for (int i = 0; i < 2; i++) {
+                    float p = (mPulse + i * 0.5f) % 1f;
+                    float spread = 1f - (1f - p) * (1f - p);
+                    float fade = 1f - p;
+                    mPulsePaint.setAlpha((int) (140 * fade * fade));
+                    canvas.drawCircle(cx, cy, radius + (maxRadius - baseRadius) * spread, mPulsePaint);
+                }
+            } else {
+                // Animations off: one still ring says "transmitting".
+                mPulsePaint.setAlpha(110);
+                canvas.drawCircle(cx, cy, radius + (maxRadius - baseRadius) * 0.45f, mPulsePaint);
             }
         }
 
-        int key = (int) radius * 10 + mMode.ordinal();
-        if (key != mGradientFor) {
-            int[] colors = colorsFor(mMode);
+        if (radius != mShaderRadius || mTop != mShaderTop || mBottom != mShaderBottom) {
             mFillPaint.setShader(new LinearGradient(cx, cy - radius, cx, cy + radius,
-                    colors[0], colors[1], Shader.TileMode.CLAMP));
-            mGradientFor = key;
+                    mTop, mBottom, Shader.TileMode.CLAMP));
+            mShaderRadius = radius;
+            mShaderTop = mTop;
+            mShaderBottom = mBottom;
         }
         canvas.drawCircle(cx, cy, radius, mFillPaint);
         canvas.drawCircle(cx, cy, radius - mRimPaint.getStrokeWidth() / 2f, mRimPaint);
@@ -217,15 +293,24 @@ public class PttButtonView extends View {
         if (mMode == Mode.CONNECTING) {
             float r = baseRadius + 8f * mDp;
             mArcRect.set(cx - r, cy - r, cx + r, cy + r);
-            canvas.drawArc(mArcRect, mSpin * 360f, 100f, false, mArcPaint);
+            canvas.drawArc(mArcRect, mSpin * 360f - 90f, 100f, false, mArcPaint);
         }
 
-        if (mIcon != null) {
-            int half = (int) (radius * 0.42f);
-            mIcon.setBounds((int) cx - half, (int) cy - half, (int) cx + half, (int) cy + half);
-            mIcon.setAlpha(mMode == Mode.OFFLINE || mMode == Mode.MUTED ? 200 : 255);
-            mIcon.draw(canvas);
+        int baseAlpha = mMode == Mode.OFFLINE || mMode == Mode.MUTED ? 200 : 255;
+        if (mOldIcon != null) {
+            drawIcon(canvas, mOldIcon, cx, cy, radius, 1f - mIconFade, 1f - 0.08f * mIconFade, baseAlpha);
         }
+        if (mIcon != null) {
+            drawIcon(canvas, mIcon, cx, cy, radius, mIconFade, 0.92f + 0.08f * mIconFade, baseAlpha);
+        }
+    }
+
+    private static void drawIcon(Canvas canvas, Drawable icon, float cx, float cy, float radius,
+                                 float alpha, float scale, int baseAlpha) {
+        int half = (int) (radius * 0.42f * scale);
+        icon.setBounds((int) cx - half, (int) cy - half, (int) cx + half, (int) cy + half);
+        icon.setAlpha((int) (baseAlpha * alpha));
+        icon.draw(canvas);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -293,12 +378,19 @@ public class PttButtonView extends View {
         return mHolding;
     }
 
+    /** Gives way quickly under the finger, springs back gently when let go. */
     private void animatePress(boolean pressed) {
         if (mScaleAnimator != null) {
             mScaleAnimator.cancel();
         }
-        mScaleAnimator = ValueAnimator.ofFloat(mPressScale, pressed ? 0.95f : 1f);
-        mScaleAnimator.setDuration(pressed ? 90 : 160);
+        mScaleAnimator = ValueAnimator.ofFloat(mPressScale, pressed ? PRESSED_SCALE : 1f);
+        if (pressed) {
+            mScaleAnimator.setDuration(FunkMotion.PRESS_MS);
+            mScaleAnimator.setInterpolator(FunkMotion.STANDARD);
+        } else {
+            mScaleAnimator.setDuration(FunkMotion.RELEASE_MS);
+            mScaleAnimator.setInterpolator(new OvershootInterpolator(1.6f));
+        }
         mScaleAnimator.addUpdateListener(a -> {
             mPressScale = (float) a.getAnimatedValue();
             invalidate();
@@ -307,11 +399,11 @@ public class PttButtonView extends View {
     }
 
     private void startPulse() {
-        if (mPulseAnimator != null) {
+        if (mPulseAnimator != null || !FunkMotion.enabled()) {
             return;
         }
         mPulseAnimator = ValueAnimator.ofFloat(0f, 1f);
-        mPulseAnimator.setDuration(1400);
+        mPulseAnimator.setDuration(PULSE_MS);
         mPulseAnimator.setRepeatCount(ValueAnimator.INFINITE);
         mPulseAnimator.setInterpolator(new LinearInterpolator());
         mPulseAnimator.addUpdateListener(a -> {
@@ -329,11 +421,11 @@ public class PttButtonView extends View {
     }
 
     private void startSpin() {
-        if (mSpinAnimator != null) {
+        if (mSpinAnimator != null || !FunkMotion.enabled()) {
             return;
         }
         mSpinAnimator = ValueAnimator.ofFloat(0f, 1f);
-        mSpinAnimator.setDuration(1100);
+        mSpinAnimator.setDuration(SPIN_MS);
         mSpinAnimator.setRepeatCount(ValueAnimator.INFINITE);
         mSpinAnimator.setInterpolator(new LinearInterpolator());
         mSpinAnimator.addUpdateListener(a -> {
@@ -357,12 +449,15 @@ public class PttButtonView extends View {
         if (mScaleAnimator != null) {
             mScaleAnimator.cancel();
         }
+        if (mChangeAnimator != null) {
+            mChangeAnimator.cancel();
+        }
         super.onDetachedFromWindow();
     }
 
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        applyMode();
+        applyMode(false);
     }
 }

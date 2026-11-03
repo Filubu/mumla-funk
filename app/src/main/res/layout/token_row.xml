@@ -26,9 +26,10 @@
         android:id="@+id/tokenItemTitle"
         android:layout_width="0dp"
         android:layout_height="48dp"
-        android:textSize="18sp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
+        android:textSize="16sp"
+        android:textColor="?attr/colorOnSurface"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="10dp"
         android:gravity="left|center_vertical"
         android:layout_weight="1"/>
 
@@ -37,7 +38,7 @@
         android:layout_width="64dp"
         android:layout_height="48dp"
         app:srcCompat="@drawable/ic_action_delete_dark"
-        android:tint="?android:attr/textColorPrimary"
-        android:background="?attr/selectableItemBackground"/>
+        app:tint="?attr/colorOnSurfaceVariant"
+        android:background="?attr/selectableItemBackgroundBorderless"/>
 
 </LinearLayout>

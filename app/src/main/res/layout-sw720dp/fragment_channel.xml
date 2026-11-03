@@ -60,7 +60,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="#dadada"
+                android:background="?attr/colorOutlineVariant"
                 android:layout_gravity="top"/>
 
             <TextView
@@ -69,7 +69,7 @@
                 android:layout_height="match_parent"
                 android:text="Shouting to Channel"
                 android:textSize="8pt"
-                android:textColor="?android:textColorPrimary"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:singleLine="true"
                 android:gravity="left|center_vertical"
                 android:textStyle="italic"
@@ -80,7 +80,7 @@
                 android:layout_width="24dp"
                 android:layout_height="match_parent"
                 app:srcCompat="@drawable/ic_action_delete_dark"
-                android:tint="?android:textColorPrimary"
+                app:tint="?attr/colorOnSurfaceVariant"
                 android:layout_gravity="center_vertical|end"
                 android:background="?attr/selectableItemBackgroundBorderless"/>
 
@@ -96,18 +96,14 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="#dadada" />
+                android:background="?attr/colorOutlineVariant" />
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/pushtotalk"
+                style="@style/Widget.Funk.PttBar"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="@string/ptt"
-                android:textAllCaps="true"
-                android:textStyle="bold"
-                android:textSize="14sp"
-                android:textColor="#858585"
-                android:background="?attr/selectableItemBackground"/>
+                android:text="@string/ptt" />
         </LinearLayout>
     </LinearLayout>
 

@@ -276,8 +276,8 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
             label = getString(R.string.funk_tap_to_connect);
         }
         mPtt.setMode(mode);
-        mLabel.setText(label);
-        mHint.setText(hint);
+        FunkMotion.swapText(mLabel, label);
+        FunkMotion.swapText(mHint, hint);
     }
 
     private boolean isTransmitting(@NonNull FunkState state) {
@@ -325,9 +325,9 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
             now = getString(R.string.funk_not_connected);
             nowColor = color(R.color.funk_on_surface_muted);
         }
-        mNow.setText(now);
-        mNow.setTextColor(nowColor);
-        mNowSub.setText(sub);
+        // The caller-ID line fades to the new text, like a radio display.
+        FunkMotion.swapText(mNow, now, nowColor);
+        FunkMotion.swapText(mNowSub, sub);
     }
 
     private String lastTalkerLine() {

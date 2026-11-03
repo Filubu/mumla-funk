@@ -21,10 +21,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:divider="?attr/dividerVertical"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:ignore="NewApi"
-    android:showDividers="middle" >
+    tools:ignore="NewApi">
 
     <ListView
         android:id="@+id/tokenList"
@@ -34,15 +32,28 @@
         tools:listitem="@layout/token_row">
     </ListView>
 
+        <!-- Mumla Funk: rounded field and an indigo add button, as in the chat bar. -->
         <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="12dp"
+                android:paddingTop="6dp"
+                android:paddingEnd="4dp"
+                android:paddingBottom="8dp">
 
             <EditText
                     android:id="@+id/tokenField"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:background="@drawable/bg_funk_input"
+                    android:paddingStart="18dp"
+                    android:paddingEnd="18dp"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textColorHint="?attr/colorOnSurfaceVariant"
+                    android:textSize="15sp"
                     android:inputType="text"
                     android:imeOptions="actionSend"
                     android:hint="@string/accessAdd"
@@ -50,11 +61,12 @@
 
             <ImageButton
                 android:id="@+id/tokenAddButton"
-                android:layout_width="64dp"
+                android:layout_width="56dp"
                 android:layout_height="48dp"
+                android:contentDescription="@string/accessAdd"
                 app:srcCompat="@drawable/ic_action_add_dark"
-                android:tint="?android:attr/textColorPrimary"
-                android:background="?attr/selectableItemBackground"/>
+                app:tint="?attr/colorPrimary"
+                android:background="?attr/selectableItemBackgroundBorderless"/>
         </LinearLayout>
 
 </LinearLayout>
