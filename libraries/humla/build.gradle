@@ -103,6 +103,15 @@ android {
         compileTask -> compileTask.dependsOn ndkBuild
     }
 
+    // The tasks that package the native libraries (src/main/libs/) must run after ndkBuild too.
+    // Depending only on javac is not enough: in a clean build (as on CI) they ran first, found
+    // nothing and the APK had no .so files, so the app crashed when connecting.
+    tasks.configureEach { task ->
+        if (task.name ==~ /(merge|copy)\w*(JniLib|NativeLib)\w*/) {
+            task.dependsOn ndkBuild
+        }
+    }
+
     lint {
         abortOnError = true
         // InvalidPackage is spongycastle-related
