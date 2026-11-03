@@ -1,1 +1,1 @@
-Audiochat für Mumble-Server
+Walkie-Talkie für Mumble-Server: halten zum Sprechen

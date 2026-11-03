@@ -1,20 +1,11 @@
-A client for the Mumble voice chat system. Host or connect to one of the many community run public servers (see https://www.mumble.info). Mumla is an updated and maintained version (a fork) of the app Plumble.
+Mumla Funk turns Mumble into a walkie-talkie. It connects to regular Mumble servers and is made for groups that use a Mumble server as their radio network: everyone talks with push-to-talk, quickly and without looking.
 
-Some of the features:
+* Push-to-talk popup: one big button, hold to talk, release to stop. Shows the server, the connection and who is talking. Volume-down is the talk key while it is open. Works over the lock screen.
+* Hold the power button to open the popup (set Mumla Funk as digital assistant app).
+* Hold volume-down for 2 seconds to open the popup; a short press still changes the volume.
+* Two home screen widgets, each bound to a server: a small talk button and a large widget with everyone online. A crossed-out radio tower shows when you are not connected.
+* Simple home screen with server, status, talk button and user list.
+* Reliable end of transmission: the end-of-transmission flag is always sent when you release the button, like the desktop Mumble client.
+* Everything from Mumla stays available: channels, chat, certificates, access tokens, Tor.
 
-* Certificate generation, import and export
-* Browse public servers
-* Voice activated transmission (the default), or different Push-to-talk buttons
-* Bluetooth headset support
-* Self-registration on server
-* Access tokens
-* Opus, CELT, and Speex codec support
-* Automatic reconnection
-* Tor support through the Orbot app
-* Text-to-speech for messages (turned on by default)
-* Light and dark theme
-
-Voice activated transmission currently works best when using a headset. Echo cancellation and noise reduction needs work.
-Tweaking the Detection threshold in the settings helps.
-
-Mumla is copylefted libre software. Find out more at: https://mumla-app.gitlab.io/
+Mumla Funk is a fork of Mumla and can be installed next to it. It is copylefted libre software (GPLv3): https://github.com/Filubu/mumla-funk

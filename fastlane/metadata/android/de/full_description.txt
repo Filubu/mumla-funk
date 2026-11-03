@@ -1,20 +1,11 @@
-Ein Client für das Mumble Audiochatsystem. Hosten oder verbinden Sie sich mit einem der vielen von der Gemeinschaft ausgeführten öffentlichen Server (siehe https://www.mumble.info). Mumla ist eine aktualisierte und gewartete Version (eine Gabelung) der Anwendung Plumble.
+Mumla Funk macht Mumble zum Walkie-Talkie. Die App verbindet sich mit normalen Mumble-Servern und ist für Gruppen gedacht, die einen Mumble-Server als Funknetz nutzen: Jeder spricht per Push-to-Talk, schnell und ohne Hinschauen.
 
-Einige der Funktionen:
+* Funk-Fenster: ein großer Knopf, halten zum Sprechen, loslassen beendet. Zeigt Server, Verbindung und wer gerade spricht. Solange es offen ist, ist die Leiser-Taste die Sprechtaste. Funktioniert auch über dem Sperrbildschirm.
+* Ein/Aus-Taste gedrückt halten öffnet das Funk-Fenster (Mumla Funk als digitalen Assistenten festlegen).
+* Leiser-Taste 2 Sekunden halten öffnet das Funk-Fenster; kurz drücken regelt weiterhin die Lautstärke.
+* Zwei Homescreen-Widgets, jeweils an einen Server gebunden: ein kleiner Sprechknopf und ein großes Widget mit allen Teilnehmern. Ein durchgestrichener Funkmast zeigt, wenn keine Verbindung besteht.
+* Einfacher Startbildschirm mit Server, Status, Sprechtaste und Teilnehmerliste.
+* Zuverlässiges Sende-Ende: Beim Loslassen wird immer das Ende-Flag gesendet, wie beim Desktop-Client von Mumble.
+* Alles aus Mumla bleibt erreichbar: Kanäle, Chat, Zertifikate, Zugriffstoken, Tor.
 
-* Zertifikatserstellung, Import und Export
-* Durchsuchen Sie öffentliche Server
-* Sprachaktivierte Übertragung (Standardeinstellung) oder verschiedene "Zum Sprechen drücken" (Push-to-Talk) Tasten
-* Unterstützung für Bluetooth-Headsets
-* Selbstregistrierung auf dem Server
-* Zugriffstoken
-* Unterstützung für Opus-, CELT- und Speex-Codecs
-* Automatische Wiederverbindung
-* Tor-Unterstützung über die Orbot-App
-* Sprachsynthese für Nachrichten (standardmäßig aktiviert)
-* Helles und dunkles Thema
-
-Die sprachaktivierte Übertragung funktioniert derzeit am besten, wenn Sie ein Headset verwenden. Echokompensation und Rauschunterdrückung erfordern Arbeit.
-Das Ändern des Erkennungsschwellenwerts in den Einstellungen hilft.
-
-Mumla ist eine freie Software mit Copyleft. Weitere Informationen finden Sie unter: https://mumla-app.gitlab.io/
+Mumla Funk ist ein Fork von Mumla und lässt sich parallel dazu installieren. Freie Software unter GPLv3: https://github.com/Filubu/mumla-funk

@@ -1,0 +1,2 @@
+* Erste Version von Mumla Funk: Funk-Fenster, Ein/Aus- und Leiser-Taste, zwei Widgets, einfacher Startbildschirm.
+* Beim Loslassen der Sprechtaste wird jetzt immer das Ende-Flag gesendet.

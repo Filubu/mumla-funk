@@ -1,4 +1,8 @@
 <!--
-This repository is a mirror of https://gitlab.com/quite/mumla
-Please, submit patches over there https://gitlab.com/quite/mumla/-/merge_requests
+Danke für den Beitrag! Bitte kurz beschreiben:
+- Was ändert sich und warum?
+- Wie wurde es getestet (Gerät, Android-Version, Mumble-Server)?
+
+Allgemeine Verbesserungen an Mumla selbst sind auch upstream willkommen:
+https://gitlab.com/quite/mumla/-/merge_requests
 -->
