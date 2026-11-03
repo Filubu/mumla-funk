@@ -17,6 +17,8 @@
 
 package se.lublin.humla.protocol;
 
+import java.util.Arrays;
+
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaRecorder;
@@ -411,18 +413,33 @@ public class AudioHandler extends HumlaNetworkListener implements AudioInput.Aud
     public void onAudioInputReceived(short[] frame, int frameSize) {
         boolean talking = mInputMode.shouldTransmit(frame, frameSize);
         talking &= !mMuted;
+        final boolean stoppedTalking = mTalking && !talking;
 
         if (mTalking ^ talking) {
             mEncodeListener.onTalkingStateChanged(talking);
             if (mHalfDuplex) {
                 mAudioManager.setStreamMute(getAudioStream(), talking);
             }
+        }
 
+        if (stoppedTalking) {
+            // End of transmission: like the desktop Mumble client, always send one final packet
+            // carrying the terminator flag. Previously terminate() only flagged audio that was
+            // still buffered, so whenever the last packet had just been flushed (every other time
+            // with 2 frames per packet) no terminator was sent at all and receivers / server-side
+            // effects had to fall back to a timeout. We therefore encode one silent closing frame
+            // first, which guarantees the terminator packet is never empty.
             synchronized (mEncoderLock) {
-                // Terminate encoding when talking stops.
-                if (!talking && mEncoder != null) {
+                if (mEncoder != null) {
                     try {
+                        Arrays.fill(frame, 0, frameSize, (short) 0);
+                        mEncoder.encode(frame, frameSize);
+                        mFrameCounter++;
+                        int buffered = mEncoder.getBufferedFrames();
                         mEncoder.terminate();
+                        // terminate() may pad the packet with silence. Count those frames as well,
+                        // so the final packet's sequence number does not overlap the previous one.
+                        mFrameCounter += Math.max(0, mEncoder.getBufferedFrames() - buffered);
                     } catch (NativeAudioException e) {
                         e.printStackTrace();
                     }

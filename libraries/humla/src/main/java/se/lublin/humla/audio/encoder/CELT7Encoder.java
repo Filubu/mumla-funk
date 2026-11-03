@@ -37,6 +37,7 @@ public class CELT7Encoder implements IEncoder {
     private final int mFramesPerPacket;
     private int mBufferedFrames;
     private boolean mReady;
+    private boolean mTerminated;
 
     private Pointer mMode;
     private Pointer mState;
@@ -97,19 +98,25 @@ public class CELT7Encoder implements IEncoder {
             byte[] frame = mBuffer[x];
             int length = mPacketLengths[x];
             int head = length;
-            if(x < mBufferedFrames - 1)
+            if(x < mBufferedFrames - 1 || mTerminated)
                 head |= 0x80;
             packetBuffer.append(head);
             packetBuffer.append(frame, length);
         }
+        if (mTerminated) {
+            // Legacy (CELT/Speex) voice format: an empty trailing frame marks end of transmission.
+            packetBuffer.append(0);
+        }
 
         mBufferedFrames = 0;
         mReady = false;
+        mTerminated = false;
     }
 
     @Override
     public void terminate() throws NativeAudioException {
         mReady = true;
+        mTerminated = true;
     }
 
     @Override
