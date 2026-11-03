@@ -46,6 +46,8 @@ behält das komplette Mumla und setzt eine Funk-Bedienung obendrauf.
 - **Einfacher Startbildschirm**: Server, Status, Sprechtaste und Teilnehmerliste.
 - **Zuverlässiges Sende-Ende**: Beim Loslassen wird immer das Ende-Flag (Terminator) gesendet,
   wie beim Desktop-Client.
+- **Energiesparen**: Mikrofon nur beim Senden, Ruhezustand wenn niemand spricht, das Handy
+  darf schlafen. Siehe [Energiesparen](#energiesparen).
 - **Alles aus Mumla bleibt**: Kanäle, Chat, Zertifikate, Zugriffstoken, Tor, Overlay und alle
   Einstellungen sind über das Menü erreichbar.
 
@@ -58,6 +60,7 @@ behält das komplette Mumla und setzt eine Funk-Bedienung obendrauf.
 | Startbildschirm | Serverliste | Funk-Bildschirm (Serverliste im Menü) |
 | Hardware-Tasten | nur bei geöffneter App | Ein/Aus-Taste (Assistent), Leiser-Taste (Bedienungshilfe) |
 | Widgets | keine | klein und groß |
+| Leerlauf | Handy dauerhaft wach, Mikrofon offen, Ping alle 5 s | Mikrofon aus, Ruhe-Ping alle 2 min, Handy darf schlafen |
 | Ende-Flag beim Loslassen | fehlt bei Standardeinstellung etwa jedes zweite Mal | immer |
 | Humla (Protokoll-Bibliothek) | Git-Submodul | direkt im Repo, gepatcht |
 | Version | 3.7.3 | eigene Zählung ab 1.0.0 |
@@ -80,6 +83,55 @@ Voraussetzung ist Android 5.0 oder neuer.
    die Bedienungshilfe „Mumla Funk“ aktivieren. Ist der Schalter ausgegraut (App nicht aus
    einem Store installiert): App-Info › ⋮ › „Eingeschränkte Einstellungen zulassen“.
 4. **Widgets**: Homescreen lange drücken › Widgets › Mumla Funk, dann den Server auswählen.
+5. **Akku**: Beim ersten Verbinden fragt die App, ob sie von der Akku-Optimierung ausgenommen
+   werden darf: erlauben. Auf dem Server `timeout=300` setzen (siehe [Energiesparen](#energiesparen)).
+
+## Energiesparen
+
+Mumla hielt das Handy dauerhaft wach, ließ das Mikrofon offen und pingte den Server alle
+5 Sekunden an. Dadurch kam das Mobilfunkmodem nie zur Ruhe. Mumla Funk macht das so:
+
+- **Mikrofon nur beim Senden** (Sprechtasten-Modus). Es wird beim Drücken eingeschaltet
+  und beim Loslassen wieder freigegeben.
+- **Ruhezustand**: 30 s nach der letzten Durchsage (egal von wem) geht die Verbindung in den
+  Ruhezustand. Dann gibt es nur noch einen Ruhe-Ping alle paar Minuten (Einstellung, Standard
+  2 min). Sprache kommt über TCP statt UDP, weil Mobilfunknetze UDP-Verbindungen schon nach
+  etwa einer Minute Stille vergessen. Wer spricht oder angesprochen wird, ist sofort wieder
+  im Normalbetrieb (UDP, Ping alle 5 s).
+- **Handy darf schlafen**, wenn Mumla Funk von der Akku-Optimierung ausgenommen ist (fragt die
+  App einmal, sonst Einstellungen › Funk › „Schlafen erlauben“). Ankommende Daten wecken das
+  Handy von selbst. Ohne die Ausnahme bleibt das Handy wach wie bisher, gespart wird dann nur
+  beim Funkmodul. Grund: Android stellt Wecker im Tiefschlaf nur ausgenommenen Apps pünktlich zu.
+- **Tote Verbindung erkennen**: Kommt auf einen Ruhe-Ping 15 s lang keine Antwort, verbindet
+  die App neu. Das Neuverbinden klappt auch, während das Handy schläft.
+- Abschaltbar unter Einstellungen › Funk › „Energie sparen, wenn niemand spricht“.
+  Dann verhält sich die Verbindung wie früher (nur das Mikrofon bleibt trotzdem aus).
+
+**Server einstellen (wichtig):** Ein Mumble-Server trennt Clients, von denen er länger nichts
+hört (Standard: 30 s). Das muss länger sein als der Ruhe-Ping, am besten mehr als das
+Doppelte. In der `mumble-server.ini` (früher `murmur.ini`):
+
+```ini
+timeout=300
+```
+
+Danach den Server neu starten. Passende Werte:
+
+| Ruhe-Ping in der App | `timeout=` im Server |
+|---|---|
+| 20 s | Standard (30) reicht |
+| 1 min | mindestens 120 |
+| 2 min (Standard) | mindestens 300 |
+| 4 min | mindestens 600 |
+
+Ein höherer `timeout` hat einen Nachteil: Verliert ein Handy plötzlich das Netz, steht es bis
+zu dieser Zeit noch als „online“ in der Liste. Vergisst man die Einstellung, merkt die App das:
+Wird die ruhende Verbindung zweimal hintereinander getrennt, nimmt sie bis zum nächsten
+Verbinden 20 s und schreibt einen Hinweis in den Chat.
+
+**Messen:** Mit `adb shell dumpsys deviceidle force-idle` lässt sich der Tiefschlaf (Doze)
+erzwingen, mit `adb shell dumpsys deviceidle unforce` beenden. Den Verbrauch zeigt
+Einstellungen › Akku › Akkunutzung, genauer `adb shell dumpsys batterystats io.github.filubu.mumlafunk`.
 
 ### Grenzen, die von Android kommen
 
@@ -194,6 +246,9 @@ Durchgang auf einem echten Gerät:
   - Verbindungsaufbau aus dem Widget,
   - Wechsel auf einen anderen Server,
   - Anzeige von Sprechern und Teilnehmern.
+- **Energiesparen**: Nach 30 s Stille steht im Log (`adb logcat | grep IdleController`)
+  „idle“; eine Durchsage im Ruhezustand muss ankommen, mit gesperrtem Handy und erzwungenem
+  Doze ebenso.
 - **Ende-Flag**: In einem Desktop-Mumble-Client auf demselben Server muss die Sprechanzeige
   sofort beim Loslassen ausgehen und nicht erst verzögert. Ebenso sollten die Server-Effekte
   sofort reagieren.

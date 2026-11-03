@@ -38,4 +38,11 @@ public interface IInputMode {
      * This function should return immediately when shouldTransmit is returning true.
      */
     void waitForInput();
+
+    /**
+     * Whether the microphone may be released right now, because {@link #waitForInput()} would
+     * block until transmission is wanted again (e.g. push to talk is released). Modes that need
+     * to listen to the microphone to decide (voice activity) or always send return false.
+     */
+    boolean canSuspendCapture();
 }

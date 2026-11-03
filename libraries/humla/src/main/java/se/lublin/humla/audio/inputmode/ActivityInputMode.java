@@ -58,6 +58,11 @@ public class ActivityInputMode implements IInputMode {
 
     }
 
+    @Override
+    public boolean canSuspendCapture() {
+        return false; // Voice activity detection needs to listen all the time.
+    }
+
     public void setThreshold(float threshold) {
         mVADThreshold = threshold;
     }

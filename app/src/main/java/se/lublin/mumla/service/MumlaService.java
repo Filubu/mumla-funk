@@ -567,6 +567,13 @@ public class MumlaService extends HumlaService implements
             case Settings.PREF_FRAMES_PER_PACKET:
                 changedExtras.putInt(EXTRAS_FRAMES_PER_PACKET, mSettings.getFramesPerPacket());
                 break;
+            case Settings.PREF_ENERGY_SAVING:
+                // Directly, not via configureExtras(): that would also restart the audio.
+                setEnergySavingEnabled(mSettings.isEnergySavingEnabled());
+                break;
+            case Settings.PREF_IDLE_KEEPALIVE:
+                setIdleKeepAliveSeconds(mSettings.getIdleKeepAliveSeconds());
+                break;
             case Settings.PREF_CERT_ID:
             case Settings.PREF_FORCE_TCP:
             case Settings.PREF_USE_TOR:

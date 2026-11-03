@@ -120,6 +120,9 @@ public class HumlaTCP extends HumlaNetworkThread {
 
                 final HumlaTCPMessageType tcpMessageType = HumlaTCPMessageType.values()[messageType];
                 if (mListener != null) {
+                    // Directly on this thread: the phone may be asleep and must be kept awake
+                    // before the message is handed over to the main thread.
+                    mListener.onTCPMessageArrived();
                     executeOnMainThread(new Runnable() {
                         @Override
                         public void run() {
@@ -147,6 +150,11 @@ public class HumlaTCP extends HumlaNetworkThread {
             error("An error occurred when communicating with the host", e);
         } finally {
             mConnected = false;
+            if (mListener != null) {
+                // E.g. the server closed the connection while the phone sleeps: keep it awake
+                // until the main thread has handled that (and scheduled a reconnect).
+                mListener.onTCPConnectionClosing();
+            }
             try {
                 if (mDataInput != null) mDataInput.close();
                 if (mDataOutput != null) mDataOutput.close();
@@ -264,5 +272,9 @@ public class HumlaTCP extends HumlaNetworkThread {
         public void onTCPConnectionFailed(HumlaException e);
         public void onTCPConnectionDisconnect();
         public void onTCPMessageReceived(HumlaTCPMessageType type, int length, byte[] data);
+        /** Called on the network thread as soon as a message arrived, before it is dispatched. */
+        public void onTCPMessageArrived();
+        /** Called on the network thread when the connection ends, before that is dispatched. */
+        public void onTCPConnectionClosing();
     }
 }

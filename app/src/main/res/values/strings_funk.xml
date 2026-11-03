@@ -51,7 +51,7 @@
     <string name="funk_widget_other_server">Active: %1$s</string>
 
     <string name="pref_funk_header">Walkie-talkie</string>
-    <string name="pref_funk_header_summary">Power button, volume key, popup</string>
+    <string name="pref_funk_header_summary">Power button, volume key, popup, energy saving</string>
     <string name="pref_funk_assistant_title">Hold power button to open the walkie-talkie</string>
     <string name="pref_funk_assistant_on">Active: Mumla Funk is your digital assistant app.</string>
     <string name="pref_funk_assistant_off">Tap and choose Mumla Funk as default digital assistant app. Then make sure \"Press and hold power button\" is set to \"Digital assistant\" in the system gesture settings.</string>
@@ -61,6 +61,30 @@
     <string name="pref_funk_volume_ptt_title">Volume-down is the talk key in the popup</string>
     <string name="pref_funk_volume_ptt_summary">While the walkie-talkie popup is open: hold to talk, release to stop.</string>
     <string name="pref_funk_settings_unavailable">Could not open the system settings on this device.</string>
+
+    <string name="pref_funk_energy_category">Energy saving</string>
+    <string name="pref_funk_energy_saving_title">Save energy while nobody talks</string>
+    <string name="pref_funk_energy_saving_summary">From 30 s after the last transmission: only one keep-alive ping every few minutes, voice over TCP. If battery optimization is off, the phone may also sleep. Transmissions still come through right away.</string>
+    <string name="pref_funk_idle_keepalive_title">Keep-alive ping while idle</string>
+    <string-array name="funk_idle_keepalive_names">
+        <item>20 s – works with every server</item>
+        <item>1 min – server timeout of 120 s or more</item>
+        <item>2 min – server timeout of 300 s or more (recommended)</item>
+        <item>4 min – server timeout of 600 s or more</item>
+    </string-array>
+    <string-array name="funk_idle_keepalive_values" translatable="false">
+        <item>20</item>
+        <item>60</item>
+        <item>120</item>
+        <item>240</item>
+    </string-array>
+    <string name="pref_funk_battery_title">Allow sleeping (battery optimization)</string>
+    <string name="pref_funk_battery_on">Done: Mumla Funk is exempt from battery optimization, the phone may sleep while nobody talks.</string>
+    <string name="pref_funk_battery_off">Tap and allow. Otherwise the phone is kept awake while connected and only the radio saves energy.</string>
+    <string name="funk_battery_dialog_title">Save battery</string>
+    <string name="funk_battery_dialog_message">While nobody talks, Mumla Funk can let your phone sleep. Transmissions still wake it up right away. For this, Android has to exempt Mumla Funk from battery optimization. Please allow it in the next window.</string>
+    <string name="funk_battery_dialog_allow">Allow</string>
+    <string name="funk_battery_dialog_later">Not now</string>
 
     <string name="funk_accessibility_label">Mumla Funk volume key</string>
     <string name="funk_accessibility_description">Opens the Mumla Funk walkie-talkie popup when you hold the volume-down key for 2 seconds. A short press keeps changing the volume as usual. The service only looks at the volume-down key; it does not read screen content.</string>

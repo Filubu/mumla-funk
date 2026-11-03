@@ -19,6 +19,7 @@ package se.lublin.humla.net;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.google.protobuf.ByteString;
@@ -103,6 +104,18 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
     private long mStartTimestamp; // Time that the connection was initiated in nanoseconds
     private final CryptState mCryptState = new CryptState();
 
+    /** Interval of the automatic pings while not idle. */
+    private static final long ACTIVE_PING_INTERVAL_MS = 5000;
+    /**
+     * Idle (energy saving): voice is tunneled over TCP, there are no UDP and no automatic pings.
+     * The owner sends keep-alive pings itself with {@link #sendPing()}.
+     */
+    private volatile boolean mIdle;
+    /** {@link SystemClock#elapsedRealtime()} of the last ping sent, 0 if none yet. */
+    private volatile long mLastPingSentTime;
+    /** {@link SystemClock#elapsedRealtime()} of the last TCP message received, 0 if none yet. */
+    private volatile long mLastTCPReceiveTime;
+
     // Latency
     private long mLastUDPPing;
     private long mLastTCPPing;
@@ -137,10 +150,8 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
             }
 
             // Start TCP/UDP ping thread. FIXME is this the right place?
-            try {
-                mPingTask = mPingExecutorService.scheduleAtFixedRate(mPingRunnable, 0, 5, TimeUnit.SECONDS);
-            } catch(RejectedExecutionException e) {
-                Log.w(TAG, "failed to start ping thread, in \"shutdown\"? ", e);
+            if (!mIdle) {
+                startPingTask();
             }
 
             mSession = msg.getSession();
@@ -270,8 +281,9 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
 
             // In microseconds
             long t = getElapsed();
+            mLastPingSentTime = SystemClock.elapsedRealtime();
 
-            if (!shouldForceTCP()) {
+            if (!shouldForceTCP() && !mIdle) {
                 ByteBuffer buffer = ByteBuffer.allocate(16);
                 buffer.put((byte) ((HumlaUDPMessageType.UDPPing.ordinal() << 5) & 0xFF));
                 buffer.putLong(t);
@@ -323,6 +335,9 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
         mError = null;
         mExceptionHandled = false;
         mUsingUDP = !shouldForceTCP();
+        mIdle = false;
+        mLastPingSentTime = 0;
+        mLastTCPReceiveTime = 0;
         mStartTimestamp = System.nanoTime();
 
         mPingExecutorService = Executors.newSingleThreadScheduledExecutor();
@@ -471,6 +486,79 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
         return mForceTCP || mUseTor;
     }
 
+    private void startPingTask() {
+        stopPingTask();
+        try {
+            mPingTask = mPingExecutorService.scheduleWithFixedDelay(mPingRunnable, 0,
+                    ACTIVE_PING_INTERVAL_MS, TimeUnit.MILLISECONDS);
+        } catch (RejectedExecutionException e) {
+            Log.w(TAG, "failed to start ping thread, in \"shutdown\"? ", e);
+        }
+    }
+
+    private void stopPingTask() {
+        if (mPingTask != null) {
+            mPingTask.cancel(false);
+            mPingTask = null;
+        }
+    }
+
+    /**
+     * Switches the energy saving idle mode. Call on the main thread.
+     * <p>
+     * Idle: the automatic pings stop (send keep-alives with {@link #sendPing()}), UDP pings stop
+     * and the server is asked to tunnel voice to us over TCP: on many (mobile) networks, UDP NAT
+     * mappings expire after a minute of silence, while the TCP connection stays open.
+     * <p>
+     * Not idle: pings every 5 s, starting at once. That also reopens UDP; voice we send goes out
+     * over UDP again, which makes the server switch back to UDP for us as well.
+     */
+    public void setIdle(boolean idle) {
+        if (mIdle == idle) return;
+        mIdle = idle;
+        if (!mSynchronized) return; // The ping task is started on ServerSync.
+        if (idle) {
+            stopPingTask();
+            enableForceTCP();
+        } else {
+            startPingTask();
+        }
+    }
+
+    public boolean isIdle() {
+        return mIdle;
+    }
+
+    /** Sends one ping over TCP (and UDP, unless idle). Thread-safe. */
+    public void sendPing() {
+        if (!mSynchronized) return;
+        try {
+            mPingExecutorService.execute(mPingRunnable);
+        } catch (RejectedExecutionException e) {
+            Log.w(TAG, "failed to send ping, in \"shutdown\"? ", e);
+        }
+    }
+
+    /** @return {@link SystemClock#elapsedRealtime()} of the last ping sent, 0 if none yet. */
+    public long getLastPingSentTime() {
+        return mLastPingSentTime;
+    }
+
+    /** @return {@link SystemClock#elapsedRealtime()} of the last TCP message, 0 if none yet. */
+    public long getLastTCPReceiveTime() {
+        return mLastTCPReceiveTime;
+    }
+
+    /**
+     * Treats the connection as lost, e.g. because a keep-alive ping was not answered. Reported
+     * like a network error, so the owner may reconnect. Call on the main thread.
+     */
+    public void reportConnectionLost(String reason) {
+        mConnected = false;
+        handleFatalException(new HumlaException(reason,
+                HumlaException.HumlaDisconnectReason.CONNECTION_ERROR));
+    }
+
     /**
      * Gracefully shuts down all networking. Blocks until all network threads have stopped.
      */
@@ -482,6 +570,7 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
 
         // Stop running network resources
         if(mPingTask != null) mPingTask.cancel(true);
+        mIdle = false;
         if(mTCP != null) mTCP.disconnect();
         if(mUDP != null) mUDP.disconnect();
         mPingExecutorService.shutdown();
@@ -578,7 +667,7 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
                     "available data length " + data.length + "!");
         }
         if (mServerVersion == 0x10202) applyLegacyCodecWorkaround(data);
-        if (!force && (shouldForceTCP() || !mUsingUDP) && mTCP != null) {
+        if (!force && (shouldForceTCP() || !mUsingUDP || mIdle) && mTCP != null) {
             mTCP.sendMessage(data, length, HumlaTCPMessageType.UDPTunnel);
         } else if (!shouldForceTCP() && mUDP != null) {
             mUDP.sendMessage(data, length);
@@ -624,6 +713,26 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
         } catch (InvalidProtocolBufferException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void onTCPMessageArrived() {
+        mLastTCPReceiveTime = SystemClock.elapsedRealtime();
+        HumlaConnectionListener listener = mListener;
+        if (listener != null) listener.onConnectionDataArriving();
+    }
+
+    @Override
+    public void onTCPConnectionClosing() {
+        // Not a message: only wake up, keep mLastTCPReceiveTime.
+        HumlaConnectionListener listener = mListener;
+        if (listener != null) listener.onConnectionDataArriving();
+    }
+
+    @Override
+    public void onUDPDataArrived() {
+        HumlaConnectionListener listener = mListener;
+        if (listener != null) listener.onConnectionDataArriving();
     }
 
     @Override
@@ -919,5 +1028,11 @@ public class HumlaConnection implements HumlaTCP.TCPConnectionListener, HumlaUDP
          * @param warning A user-readable warning.
          */
         public void onConnectionWarning(String warning);
+
+        /**
+         * Called on a network thread as soon as data arrived, before it is dispatched to the main
+         * thread. Lets the listener keep a sleeping phone awake long enough to handle it.
+         */
+        public void onConnectionDataArriving();
     }
 }

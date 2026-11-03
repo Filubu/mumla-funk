@@ -150,6 +150,13 @@ public class Settings {
     public static final String PREF_STAY_AWAKE = "stay_awake";
     public static final boolean DEFAULT_STAY_AWAKE = false;
 
+    /** Mumla Funk: energy saving while nobody talks (see Humla's IdleController). */
+    public static final String PREF_ENERGY_SAVING = "funk_energy_saving";
+    public static final boolean DEFAULT_ENERGY_SAVING = true;
+    /** Seconds between keep-alive pings while idle; the server's timeout must be longer. */
+    public static final String PREF_IDLE_KEEPALIVE = "funk_idle_keepalive";
+    public static final String DEFAULT_IDLE_KEEPALIVE = "120";
+
     public static final String PREF_SHOW_USER_COUNT = "show_user_count";
     public static final boolean DEFAULT_SHOW_USER_COUNT = false;
 
@@ -364,6 +371,18 @@ public class Settings {
 
     public String getEchoCancellationMethod() {
         return preferences.getString(PREF_ECHO_CANCELLATION_METHOD, DEFAULT_ECHO_CANCELLATION_METHOD);
+    }
+
+    public boolean isEnergySavingEnabled() {
+        return preferences.getBoolean(PREF_ENERGY_SAVING, DEFAULT_ENERGY_SAVING);
+    }
+
+    public int getIdleKeepAliveSeconds() {
+        try {
+            return Integer.parseInt(preferences.getString(PREF_IDLE_KEEPALIVE, DEFAULT_IDLE_KEEPALIVE));
+        } catch (NumberFormatException e) {
+            return Integer.parseInt(DEFAULT_IDLE_KEEPALIVE);
+        }
     }
 
     public boolean shouldStayAwake() {
