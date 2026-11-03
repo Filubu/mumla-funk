@@ -125,8 +125,13 @@ Signiert wird es nur mit `app/signing.gradle`, siehe Haupt-README.
    </en-US>
    ```
 
-4. **Weiter › Speichern › Release überprüfen › Einführung im internen Test starten**.
-5. Unter **Tester** den Link „Tester-Einladung kopieren“ an die Gruppe schicken. Jeder Tester
+4. **Automatischen Schutz** (App-Bundle-Optimierungen) ausschalten: Info-Symbol neben
+   „Automatischer Schutz“ › „Schutz für diesen Release deaktivieren“, oder dauerhaft unter
+   **App-Integrität**. Der Schutz setzt mindestens SDK 24 voraus, Mumla Funk unterstützt aber
+   SDK 21. Er baut außerdem Google-Code in die APK ein, der zur GPL nicht passt, und wirkt
+   ohnehin nicht, solange es die APK auch auf GitHub gibt.
+5. **Weiter › Speichern › Release überprüfen › Einführung im internen Test starten**.
+6. Unter **Tester** den Link „Tester-Einladung kopieren“ an die Gruppe schicken. Jeder Tester
    öffnet den Link mit seinem Google-Konto, nimmt teil und installiert über den Play Store.
 
 Hinweise:
