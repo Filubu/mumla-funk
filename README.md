@@ -46,6 +46,9 @@ dem Schlüssel aus den Repository-Secrets:
 - `MUMLA_FUNK_KEYSTORE_BASE64`: der Keystore, base64-kodiert (`base64 -w0 mumla-funk-release.jks`)
 - `MUMLA_FUNK_KEYSTORE_PASSWORD`: das Keystore-Passwort (Alias `mumlafunk`)
 
+Der Workflow muss dafür auf dem Standard-Branch liegen. In einem Fork sind GitHub Actions
+anfangs deaktiviert und müssen einmal im Tab „Actions“ aktiviert werden.
+
 Updates lassen sich nur installieren, wenn sie mit **demselben** Schlüssel signiert sind.
 Der Schlüssel gehört deshalb sicher aufbewahrt und **nie** ins Repository.
 
