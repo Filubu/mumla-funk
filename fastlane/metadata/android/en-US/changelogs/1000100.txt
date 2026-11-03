@@ -1,0 +1,2 @@
+* Energy saving: microphone only while sending. While nobody talks, only one keep-alive ping every 2 minutes, and the phone may sleep (turn off battery optimization). Server: set timeout=300.
+* Dead connections are detected, reconnecting also works in standby.

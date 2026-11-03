@@ -1,27 +1,90 @@
+<p align="center"><img src="docs/images/icon.png" width="96" alt="Mumla Funk"></p>
+
 # Mumla Funk
 
-Mumla Funk ist eine Walkie-Talkie-Variante von [Mumla](https://gitlab.com/quite/mumla)
-(Mumble-Client für Android). Das Mumble-Backend ist dasselbe, man verbindet sich mit ganz
-normalen Mumble-Servern. Die App lässt sich parallel zu Mumla installieren
-(Paket `io.github.filubu.mumlafunk`).
+**Mumble als Walkie-Talkie auf Android.**
+
+Mumla Funk ist ein Fork von [Mumla](https://gitlab.com/quite/mumla), dem freien
+Mumble-Client für Android. Das Mumble-Backend bleibt unverändert: Die App verbindet sich mit
+ganz normalen Mumble-Servern. Neu ist die Bedienung: Statt einer Chat-App mit vielen Menüs
+gibt es eine große Sprechtaste, die man auch erreicht, ohne die App zu öffnen. Das geht über
+die Ein/Aus-Taste, die Leiser-Taste oder ein Homescreen-Widget.
+
+## Wozu?
+
+Eine Gruppe nutzt einen eigenen Mumble-Server als Funknetz. Jeder spricht per Push-to-Talk,
+der Server legt Funkgeräusche und Effekte über die Stimmen. Auf dem Handy braucht man dafür:
+
+- **Sprechen wie mit einem Funkgerät**: schnell, ohne Hinschauen, ohne durch Menüs zu tippen.
+- **Den Überblick auf einen Blick**: Bin ich verbunden? Wer ist da? Wer spricht gerade?
+- **Ein sauberes Sende-Ende**: Beim Loslassen muss das Ende-Signal der Durchsage sofort
+  ankommen, denn serverseitige Effekte reagieren darauf. Mumla hat es nicht zuverlässig gesendet.
+
+Mumla beherrscht das Mumble-Protokoll, ist aber ein allgemeiner Mumble-Client. Mumla Funk
+behält das komplette Mumla und setzt eine Funk-Bedienung obendrauf.
+
+| Funk-Fenster | Beim Senden | Widgets | Startbildschirm |
+|:---:|:---:|:---:|:---:|
+| <img src="docs/images/popup-bereit.png" width="190" alt="Funk-Fenster"> | <img src="docs/images/popup-sendet.png" width="190" alt="Funk-Fenster beim Senden"> | <img src="docs/images/widgets.png" width="190" alt="Widgets"> | <img src="docs/images/startbildschirm.png" width="190" alt="Startbildschirm"> |
+
+<sub>Gerenderte Vorschau der echten Layouts mit Beispieldaten.</sub>
 
 ## Funktionen
 
-- **Funk-Fenster**: ein großer Knopf, gedrückt halten zum Sprechen. Zeigt Server,
-  Verbindung und wer gerade spricht. Nicht verbunden: Knopf antippen verbindet.
-  Solange es offen ist, ist die Leiser-Taste die Sprechtaste (abschaltbar).
-- **Ein/Aus-Taste gedrückt halten** öffnet das Funk-Fenster (über die Assistent-Funktion).
-- **Leiser-Taste 2 Sekunden halten** öffnet das Funk-Fenster. Kurz drücken regelt
-  weiterhin die Lautstärke.
+- **Funk-Fenster**: ein großer Knopf, gedrückt halten zum Sprechen, loslassen beendet.
+  Es zeigt Server, Verbindung und wer gerade spricht. Ist man nicht verbunden, verbindet ein
+  Tipp auf den Knopf. Solange das Fenster offen ist, ist die Leiser-Taste die Sprechtaste.
+  Es erscheint über jeder App und auch über dem Sperrbildschirm.
+- **Ein/Aus-Taste gedrückt halten** öffnet das Funk-Fenster (Mumla Funk als digitaler Assistent).
+- **Leiser-Taste 2 Sekunden halten** öffnet das Funk-Fenster. Kurz drücken regelt weiterhin
+  die Lautstärke.
 - **Zwei Homescreen-Widgets**, jeweils fest an einen Server gebunden:
-  ein kleiner runder Funk-Knopf und ein großes Widget mit Status, allen Teilnehmern
-  und Sprechen/Verbinden. Nicht verbunden = durchgestrichener Funkmast.
-- **Einfacher Startbildschirm** mit Server, Status, Sprechtaste und Teilnehmerliste.
-  Die volle Mumla-Oberfläche (Kanäle, Chat, Server verwalten) bleibt im Menü.
-- **Sauberes Sende-Ende**: Beim Loslassen wird immer das Ende-Flag (Terminator) gesendet,
-  wie beim Desktop-Client. In Mumla fehlte es etwa bei jedem zweiten Loslassen.
-- **Energiesparen**: Die Verbindung bleibt bestehen, kostet im Leerlauf aber kaum Strom,
-  siehe unten.
+  - ein kleiner runder Funk-Knopf,
+  - ein großes Widget mit Status, allen Teilnehmern und einem Knopf für Sprechen oder Verbinden.
+  
+  Ohne Verbindung zeigen beide einen durchgestrichenen Funkmast.
+- **Einfacher Startbildschirm**: Server, Status, Sprechtaste und Teilnehmerliste.
+- **Zuverlässiges Sende-Ende**: Beim Loslassen wird immer das Ende-Flag (Terminator) gesendet,
+  wie beim Desktop-Client.
+- **Energiesparen**: Mikrofon nur beim Senden, Ruhezustand wenn niemand spricht, das Handy
+  darf schlafen. Siehe [Energiesparen](#energiesparen).
+- **Alles aus Mumla bleibt**: Kanäle, Chat, Zertifikate, Zugriffstoken, Tor, Overlay und alle
+  Einstellungen sind über das Menü erreichbar.
+
+## Unterschiede zu Mumla
+
+| | Mumla | Mumla Funk |
+|---|---|---|
+| App | `se.lublin.mumla` | `io.github.filubu.mumlafunk`, parallel zu Mumla installierbar |
+| Standard-Eingabe | Sprachaktivierung | Push-to-Talk |
+| Startbildschirm | Serverliste | Funk-Bildschirm (Serverliste im Menü) |
+| Hardware-Tasten | nur bei geöffneter App | Ein/Aus-Taste (Assistent), Leiser-Taste (Bedienungshilfe) |
+| Widgets | keine | klein und groß |
+| Leerlauf | Handy dauerhaft wach, Mikrofon offen, Ping alle 5 s | Mikrofon aus, Ruhe-Ping alle 2 min, Handy darf schlafen |
+| Ende-Flag beim Loslassen | fehlt bei Standardeinstellung etwa jedes zweite Mal | immer |
+| Humla (Protokoll-Bibliothek) | Git-Submodul | direkt im Repo, gepatcht |
+| Version | 3.7.3 | eigene Zählung ab 1.0.0 |
+
+## Installation und Einrichtung
+
+Die APK gibt es unter [Releases](https://github.com/Filubu/mumla-funk/releases).
+Voraussetzung ist Android 5.0 oder neuer.
+
+1. **App installieren**, Server anlegen und verbinden. Beim ersten Mal muss ggf. das
+   Server-Zertifikat bestätigt werden.
+   Mumla Funk ist eine eigene App, Server und Zertifikat aus Mumla werden nicht übernommen. Wer
+   auf dem Server registriert ist, exportiert das Zertifikat in Mumla
+   (Einstellungen › Authentifizierung) und importiert es in Mumla Funk.
+2. **Ein/Aus-Taste**: Einstellungen › Funk › „Ein/Aus-Taste halten öffnet Funk“ antippen und
+   Mumla Funk als *Standard-App für den digitalen Assistenten* wählen. Dann in den
+   Android-Einstellungen unter System › Gesten › „Ein/Aus-Taste gedrückt halten“ den digitalen
+   Assistenten einstellen (Pixel; bei anderen Herstellern ähnlich benannt).
+3. **Leiser-Taste**: Einstellungen › Funk › „Leiser-Taste 2 s halten öffnet Funk“ antippen und
+   die Bedienungshilfe „Mumla Funk“ aktivieren. Ist der Schalter ausgegraut (App nicht aus
+   einem Store installiert): App-Info › ⋮ › „Eingeschränkte Einstellungen zulassen“.
+4. **Widgets**: Homescreen lange drücken › Widgets › Mumla Funk, dann den Server auswählen.
+5. **Akku**: Beim ersten Verbinden fragt die App, ob sie von der Akku-Optimierung ausgenommen
+   werden darf: erlauben. Auf dem Server `timeout=300` setzen (siehe [Energiesparen](#energiesparen)).
 
 ## Energiesparen
 
@@ -40,7 +103,7 @@ Mumla hielt das Handy dauerhaft wach, ließ das Mikrofon offen und pingte den Se
   Handy von selbst. Ohne die Ausnahme bleibt das Handy wach wie bisher, gespart wird dann nur
   beim Funkmodul. Grund: Android stellt Wecker im Tiefschlaf nur ausgenommenen Apps pünktlich zu.
 - **Tote Verbindung erkennen**: Kommt auf einen Ruhe-Ping 15 s lang keine Antwort, verbindet
-  die App neu. Das Neuverbinden klappt jetzt auch, während das Handy schläft.
+  die App neu. Das Neuverbinden klappt auch, während das Handy schläft.
 - Abschaltbar unter Einstellungen › Funk › „Energie sparen, wenn niemand spricht“.
   Dann verhält sich die Verbindung wie früher (nur das Mikrofon bleibt trotzdem aus).
 
@@ -63,34 +126,93 @@ Danach den Server neu starten. Passende Werte:
 
 Ein höherer `timeout` hat einen Nachteil: Verliert ein Handy plötzlich das Netz, steht es bis
 zu dieser Zeit noch als „online“ in der Liste. Vergisst man die Einstellung, merkt die App das:
-Trennt der Server die ruhende Verbindung zweimal hintereinander, nimmt sie bis zum nächsten
+Wird die ruhende Verbindung zweimal hintereinander getrennt, nimmt sie bis zum nächsten
 Verbinden 20 s und schreibt einen Hinweis in den Chat.
 
-**Testen:** Mit `adb shell dumpsys deviceidle force-idle` lässt sich der Tiefschlaf (Doze)
+**Messen:** Mit `adb shell dumpsys deviceidle force-idle` lässt sich der Tiefschlaf (Doze)
 erzwingen, mit `adb shell dumpsys deviceidle unforce` beenden. Den Verbrauch zeigt
 Einstellungen › Akku › Akkunutzung, genauer `adb shell dumpsys batterystats io.github.filubu.mumlafunk`.
 
-## Einrichtung
+### Grenzen, die von Android kommen
 
-1. App installieren, Server anlegen, verbinden (beim ersten Mal ggf. Zertifikat bestätigen).
-2. **Ein/Aus-Taste**: Einstellungen › Funk › „Ein/Aus-Taste halten öffnet Funk“ antippen
-   und Mumla Funk als *Standard-App für den digitalen Assistenten* wählen. Dann in den
-   Android-Einstellungen unter System › Gesten › „Ein/Aus-Taste gedrückt halten“ den
-   digitalen Assistenten einstellen (Pixel; bei anderen Herstellern ähnlich).
-   Auf gesperrtem Gerät fragt Android dabei zuerst nach dem Entsperren.
-3. **Leiser-Taste**: Einstellungen › Funk › „Leiser-Taste 2 s halten öffnet Funk“ antippen
-   und die Bedienungshilfe „Mumla Funk“ aktivieren. Ist der Schalter ausgegraut
-   (App nicht aus einem Store installiert): App-Info › ⋮ › „Eingeschränkte Einstellungen
-   zulassen“, danach nochmal. Funktioniert nur bei eingeschaltetem Bildschirm.
-4. **Widgets**: Homescreen lange drücken › Widgets › Mumla Funk, Server auswählen.
-   Android-Widgets erkennen nur Antippen (kein Halten), deshalb öffnen sie das Funk-Fenster.
-5. **Akku**: Beim ersten Verbinden fragt die App, ob sie von der Akku-Optimierung ausgenommen
-   werden darf: erlauben. Auf dem Server `timeout=300` setzen (siehe [Energiesparen](#energiesparen)).
+- **Widgets** erkennen nur Antippen, kein Gedrückthalten. Darum öffnen sie das Funk-Fenster.
+- **Ein/Aus-Taste**: Android meldet nur „lange gedrückt“, nicht das Loslassen. Darum öffnet
+  auch sie das Funk-Fenster. Bei gesperrtem Gerät fragt Android zuerst nach dem Entsperren.
+- **Leiser-Taste** funktioniert nur bei eingeschaltetem Bildschirm. Bei ausgeschaltetem
+  Bildschirm leitet Android die Taste direkt an die Medienwiedergabe weiter.
 
-## Releases bauen
+## Für Entwickler
 
-Release auf GitHub anlegen (Tag `v1.2.3`). Der Workflow `.github/workflows/release.yml`
-läuft dabei automatisch mit und entscheidet:
+### Projektstruktur
+
+```
+app/                                Android-App: Mumla plus die Funk-Erweiterungen
+  src/main/java/se/lublin/mumla/
+    funk/                           alles Neue von Mumla Funk (Funk-Fenster, Zustand, Tasten)
+    funk/widget/                    Homescreen-Widgets und deren Einrichtung
+    service/MumlaService.java       Vordergrunddienst, hält die Mumble-Verbindung
+    app/MumlaActivity.java          Haupt-Activity mit Menü (Drawer)
+    channel/, servers/, preference/ Mumla-Oberfläche: Kanäle, Chat, Serverliste, Einstellungen
+libraries/humla/                    Mumble-Protokoll (Humla), im Repo und gepatcht
+  src/main/jni/                     Opus, Speex, CELT als Submodule, per NDK gebaut
+  libs/humla-spongycastle/          Krypto-Bibliothek als Submodul, wird als JAR gebaut
+docs/                               Architektur, Bilder, Original-README von Mumla
+.github/workflows/release.yml       Release-Workflow
+```
+
+Die Java-Pakete heißen weiterhin `se.lublin.mumla`. Nur die Application-ID ist neu. So bleiben
+Updates aus Mumla leichter übernehmbar.
+
+### Architektur in Kürze
+
+```mermaid
+flowchart LR
+    Widget[Widgets] --> Popup
+    Power[Ein/Aus-Taste<br>ACTION_ASSIST] --> Popup
+    Vol[Leiser-Taste 2 s<br>FunkKeyService] --> Popup
+    Popup[PttActivity<br>Funk-Fenster] -- onTalkKeyDown/Up --> Service
+    Home[FunkFragment<br>Startbildschirm] -- onTalkKeyDown/Up --> Service
+    Service[MumlaService] <--> Humla[Humla] <--> Server[(Mumble-Server)]
+    Service -- Ereignisse --> State[FunkState]
+    State --> Popup
+    State --> Home
+    State --> Widget
+```
+
+- Alle Wege zum Sprechen laufen über `IMumlaService.onTalkKeyDown()/onTalkKeyUp()`.
+  Push-to-Talk-Modus und Umschaltmodus aus den Einstellungen gelten damit überall.
+- `MumlaService` fasst Verbindungs- und Teilnehmer-Ereignisse zu einem unveränderlichen
+  Schnappschuss `FunkState` zusammen. Funk-Fenster, Startbildschirm und Widgets zeigen nur
+  diesen Zustand an.
+- Der Ende-Flag-Fix steckt in `libraries/humla/.../protocol/AudioHandler.java`.
+
+Details zu allen Teilen, Abläufen und Design-Entscheidungen stehen in
+[docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md).
+
+### Bauen
+
+Benötigt werden JDK 21, das Android SDK (Plattform 36) und das NDK `25.1.8937393`.
+
+```bash
+git clone --recursive https://github.com/Filubu/mumla-funk.git
+cd mumla-funk
+(cd libraries/humla/libs/humla-spongycastle && ../../gradlew jar)
+./gradlew assembleFossDebug
+```
+
+Die APK liegt danach in `app/build/outputs/apk/foss/debug/`. Bei einem Klon ohne
+`--recursive` holt `git submodule update --init --recursive` die Submodule nach.
+
+Build-Varianten (Flavors) aus Mumla:
+
+- `foss`: empfohlen, ohne Google-Bibliotheken.
+- `goog`: mit Play-Billing für Spenden.
+- `donation` und `beta`: bekommen eine eigene Application-ID mit Suffix.
+
+### Releases
+
+Ein Release wird auf GitHub mit einem Tag `vX.Y.Z` angelegt. Der Workflow
+`.github/workflows/release.yml` läuft dabei mit und entscheidet:
 
 - Hängt am Release schon eine APK (von Hand hochgeladen), ist nichts zu tun.
 - Liegt im getaggten Commit eine fertig signierte APK unter `release/`, wird sie angehängt.
@@ -101,138 +223,72 @@ läuft dabei automatisch mit und entscheidet:
 
 In einem Fork müssen GitHub Actions einmal im Tab „Actions“ aktiviert werden.
 
+Version und Versionscode stehen in `app/build.gradle` (`funkVersion`, `versionCode`).
+
 Updates lassen sich nur installieren, wenn sie mit **demselben** Schlüssel signiert sind.
-Der Schlüssel gehört deshalb sicher aufbewahrt und **nie** ins Repository.
+Der Schlüssel gehört deshalb sicher aufbewahrt und **nie** ins Repository. Lokal signiert
+`app/signing.gradle` (per `.gitignore` ausgeschlossen) mit den Umgebungsvariablen
+`MUMLA_FUNK_KEYSTORE` und `MUMLA_FUNK_KEYSTORE_PASSWORD`.
 
-Lokal bauen: `git submodule update --init --recursive`, Android SDK + NDK 25.1.8937393,
-dann in `libraries/humla/libs/humla-spongycastle` `../../gradlew jar` und im
-Hauptordner `./gradlew assembleFossDebug`.
+### Testen
 
----
+Für die Funk-Oberfläche gibt es keine automatischen Tests. Vor einem Release lohnt sich ein
+Durchgang auf einem echten Gerät:
 
+- **Funk-Fenster**:
+  - verbinden, sprechen, loslassen,
+  - Leiser-Taste als Sprechtaste,
+  - Fenster schließen während des Sendens: das Senden muss enden.
+- **Ein/Aus-Taste** (als Assistent eingerichtet) bei entsperrtem und bei gesperrtem Gerät.
+- **Leiser-Taste**: kurz drücken ändert die Lautstärke, 2 s halten öffnet das Funk-Fenster.
+- **Widgets**:
+  - einrichten,
+  - Verbindungsaufbau aus dem Widget,
+  - Wechsel auf einen anderen Server,
+  - Anzeige von Sprechern und Teilnehmern.
+- **Energiesparen**: Nach 30 s Stille steht im Log (`adb logcat | grep IdleController`)
+  „idle“; eine Durchsage im Ruhezustand muss ankommen, mit gesperrtem Handy und erzwungenem
+  Doze ebenso.
+- **Ende-Flag**: In einem Desktop-Mumble-Client auf demselben Server muss die Sprechanzeige
+  sofort beim Loslassen ausgehen und nicht erst verzögert. Ebenso sollten die Server-Effekte
+  sofort reagieren.
 
-# Software maintenance situation
+### Updates aus Mumla übernehmen
 
-Current maintainer [Daniel Lublin](https://lublin.se)
-([@quite@mstdn.social](https://mstdn.social/@quite) on fedi) has very
-little time to do voluntary work on Mumla. My focus is strictly on
-maintaining stability and security. This includes migrations to newer
-Android SDKs, as they become requirements by Google/Alphabet for even
-getting updates published on Google Play. There are also other
-maintenance and administrative work, which barely gets done in a
-timely manner.
+```bash
+git remote add upstream https://gitlab.com/quite/mumla.git
+git fetch upstream
+git merge upstream/master
+```
 
-At some point I expect Mumla to disappear from Google Play, because
-there will be some requirement that I did not have time to fulfill.
-Eventually it will also rot and no longer work well in general on
-newer releases of Android.
+Konflikte sind vor allem in diesen Dateien zu erwarten:
 
-Mumla needs a new maintainer that can allocate time to take on, to
-begin with, all these tasks. To maintain stability and security. And
-then hopefully also work with the community on for example protocol
-parity with desktop Mumble, support for various hardware accessories,
-general usability, and new features.
+- `app/build.gradle`
+- `MumlaActivity.java`
+- `MumlaService.java`
+- `AndroidManifest.xml`
+- den Icons
 
-Until there is a new maintainer with time on their hands you cannot
-expect new features, or even the continued existance of a usable
-Mumble app for Android.
+Humla liegt nicht mehr als Submodul vor. Neuere Humla-Versionen werden nach
+`libraries/humla/` kopiert. Danach muss der Ende-Flag-Fix wieder enthalten sein (siehe
+`docs/ARCHITEKTUR.md`).
 
-# Mumla
+### Mitmachen
 
-Mumla is a fork and continuation of
-[Plumble](https://github.com/acomminos/Plumble), a robust GPLv3 Mumble
-client for Android originally written by Andrew Comminos. It uses the
-the [Humla](https://gitlab.com/quite/humla) protocol implementation
-(forked from Comminos's
-[Jumble](https://github.com/acomminos/Jumble)).
+Fehler und Ideen zur Funk-Bedienung bitte hier als
+[Issue](https://github.com/Filubu/mumla-funk/issues) melden. Allgemeine Fehler, die genauso in
+Mumla auftreten, gehören zu [Mumla](https://gitlab.com/quite/mumla/-/issues).
 
-Mumla should run on Android 5.0 (Lollipop, "L", SDK/API 21) and later.
+## Lizenz und Herkunft
 
-Mumla is available [on
-F-Droid](https://f-droid.org/packages/se.lublin.mumla/).
+Mumla Funk steht wie Mumla unter der [GNU GPL v3](LICENSE).
 
-There is a small [landing page](https://mumla-app.gitlab.io/).
+Herkunft:
 
-## FAQs -- Frequently Asked Questions
+- Mumla Funk ist ein Fork von [Mumla](https://gitlab.com/quite/mumla) (Daniel Lublin).
+- Mumla ist ein Fork von [Plumble](https://github.com/acomminos/Plumble) (Andrew Comminos).
+- Das Protokoll stammt aus [Humla](https://gitlab.com/quite/humla), einem Fork von
+  [Jumble](https://github.com/acomminos/Jumble).
 
-### Action that my user has permission for does not show up in overflow menu
-
-Question: The Mumble server I use has an ACL that should give my user
-(or a group it's in) permission to carry out a specific action (like
-"Move"). Why doesn't Mumla show this action in the overflow menu
-(three dots) for a channel or user?
-
-Answer: Try to disconnect and then reconnect to the server. The
-decision to show a menu item depending on whether the user has the
-required permission is done upon connecting, when the UI is set up. It
-is *not* updated on the fly if permissions change while connected.
-
-## Translations
-
-If you want to help out translating Mumla, the project is [on
-Weblate](https://hosted.weblate.org/engage/mumla/) -- thanks for
-gratis hosting of our libre project!
-
-## Repository submodules
-
-Note that this Mumla git repository has submodule(s). You either need
-to clone it using `git clone --recursive`, or you need to get the
-submodule(s) in place after cloning:
-
-    git submodule update --init --recursive
-
-## Building on GNU/Linux
-
-Building is verified to work using JDK 21. So you typically want to
-set and export the JAVA_HOME environment variable like `export
-JAVA_HOME=/usr/lib/jvm/java-21-openjdk`.
-
-The Android SDK need to be specified as usual, for example by setting
-`ANDROID_SDK_ROOT`, or writing it to local.properties as `echo
->local.properties sdk.dir=/home/user/Android/Sdk`
-
-TODO: humla-spongycastle should be built as a sub-project of Humla's
-Gradle, but currently isn't.
-
-    git submodule update --init --recursive
-
-    pushd libraries/humla/libs/humla-spongycastle
-    ../../gradlew jar
-    popd
-
-    ./gradlew assembleDebug
-
-If you get an error running out of Java heap space, try raising the
--Xmx in `./gradle.properties`.
-
-### Notes on NDK
-
-The NDK is the toolchain used for building the native code (C/C++) of
-Humla. We specify the version needed using `ndkVersion` in
-`libraries/humla/build.gradle`.
-
-We currently use Android Gradle Plugin (AGP) version 8.x, which should
-come bundled with NDK 25.1.8937393 that we currently use. It is
-typically installed in a directory in `~/Android/Sdk/ndk/`. Using
-newer NDK might give build errors. See also:
-https://developer.android.com/studio/projects/install-ndk
-
-If Android Studio does not automatically install the mentioned version
-of the NDK in the mentioned directory, then you may be able to get it
-installed by using the SDK Manager:
-
-- Click SDK Tools tab.
-- Check "Show Package Details"
-- In the list view, expand "NDK (Side by side)"
-- Check 25.1.8937393
-- Click OK
-
-### Container image
-
-I'm also maintaining a container image that is used to build Mumla in
-[.gitlab-ci.yml](.gitlab-ci.yml). Source at
-https://gitlab.com/quite/android-sdk-ndk
-
-## License
-
-Mumla's [LICENSE](LICENSE) is GNU GPL v3.
+Das Original-README von Mumla mit FAQ und Build-Hinweisen liegt unter
+[docs/MUMLA-UPSTREAM.md](docs/MUMLA-UPSTREAM.md).

@@ -1,1 +1,1 @@
-Voice chat on Mumble servers
+Walkie-talkie for Mumble servers: hold to talk

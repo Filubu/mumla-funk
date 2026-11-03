@@ -1,0 +1,2 @@
+* Energiesparen: Mikrofon nur beim Senden. Wenn niemand spricht, nur noch ein Ruhe-Ping alle 2 Minuten, und das Handy darf schlafen (Akku-Optimierung ausschalten). Server: timeout=300 setzen.
+* Tote Verbindungen werden erkannt, Neuverbinden klappt auch im Standby.
