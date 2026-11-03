@@ -242,8 +242,8 @@ Clients weiterhin an.
 
 Damit Mumla Funk neben Mumla installierbar ist:
 
-- **Application-ID** `io.github.filubu.mumlafunk`. Die Flavors `donation` und `beta`
-  bekommen Suffixe.
+- **Application-ID** `de.filubu.funk`, abgeleitet von der Domain `filubu.de`. Bis 1.0.3
+  war es `io.github.filubu.mumlafunk`. Die Flavors `donation` und `beta` bekommen Suffixe.
 - **Java-Pakete** bleiben `se.lublin.mumla`. Das erleichtert das Übernehmen von
   Mumla-Updates.
 - **Such-Provider**: Seine Authority wird aus der Application-ID gebildet

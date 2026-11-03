@@ -69,7 +69,7 @@ android {
         targetSdk 36
 
         // Own application ID so that Mumla Funk can be installed next to the regular Mumla app.
-        applicationId "io.github.filubu.mumlafunk"
+        applicationId "de.filubu.funk"
         // code: XYYZZbb (bb for build)
         versionCode 1000400
         versionName funkVersion
@@ -84,27 +84,27 @@ android {
     productFlavors {
         goog {
             dimension "release"
-            resValue "string", "search_authority", "io.github.filubu.mumlafunk.channel.ChannelSearchProvider"
+            resValue "string", "search_authority", "de.filubu.funk.channel.ChannelSearchProvider"
         }
         foss {
             dimension "release"
-            resValue "string", "search_authority", "io.github.filubu.mumlafunk.channel.ChannelSearchProvider"
+            resValue "string", "search_authority", "de.filubu.funk.channel.ChannelSearchProvider"
         }
         // Mumla Funk: build for Google Play (./gradlew bundlePlayRelease). Same app ID as foss,
         // without donation links and without the billing library.
         play {
             dimension "release"
-            resValue "string", "search_authority", "io.github.filubu.mumlafunk.channel.ChannelSearchProvider"
+            resValue "string", "search_authority", "de.filubu.funk.channel.ChannelSearchProvider"
         }
         donation {
             dimension "release"
             applicationIdSuffix ".donation"
-            resValue "string", "search_authority", "io.github.filubu.mumlafunk.donation.channel.ChannelSearchProvider"
+            resValue "string", "search_authority", "de.filubu.funk.donation.channel.ChannelSearchProvider"
         }
         beta {
             dimension "release"
             applicationIdSuffix ".beta"
-            resValue "string", "search_authority", "io.github.filubu.mumlafunk.beta.channel.ChannelSearchProvider"
+            resValue "string", "search_authority", "de.filubu.funk.beta.channel.ChannelSearchProvider"
         }
     }
 

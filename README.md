@@ -55,7 +55,7 @@ behält das komplette Mumla und setzt eine Funk-Bedienung obendrauf.
 
 | | Mumla | Mumla Funk |
 |---|---|---|
-| App | `se.lublin.mumla` | `io.github.filubu.mumlafunk`, parallel zu Mumla installierbar |
+| App | `se.lublin.mumla` | `de.filubu.funk`, parallel zu Mumla installierbar |
 | Standard-Eingabe | Sprachaktivierung | Push-to-Talk |
 | Startbildschirm | Serverliste | Funk-Bildschirm (Serverliste im Menü) |
 | Hardware-Tasten | nur bei geöffneter App | Ein/Aus-Taste (Assistent), Leiser-Taste (Bedienungshilfe) |
@@ -69,6 +69,11 @@ behält das komplette Mumla und setzt eine Funk-Bedienung obendrauf.
 
 Die APK gibt es unter [Releases](https://github.com/Filubu/mumla-funk/releases).
 Voraussetzung ist Android 5.0 oder neuer.
+
+**Umstieg von 1.0.3 oder älter:** Ab 1.0.4 heißt das Paket `de.filubu.funk` statt
+`io.github.filubu.mumlafunk`. Android installiert 1.0.4 daher als eigene App neben der alten.
+Vorher in der alten Version das Zertifikat exportieren (Einstellungen › Authentifizierung), in
+1.0.4 importieren, die Server neu anlegen und danach die alte Version deinstallieren.
 
 1. **App installieren**, Server anlegen und verbinden. Beim ersten Mal muss ggf. das
    Server-Zertifikat bestätigt werden.
@@ -131,7 +136,7 @@ Verbinden 20 s und schreibt einen Hinweis in den Chat.
 
 **Messen:** Mit `adb shell dumpsys deviceidle force-idle` lässt sich der Tiefschlaf (Doze)
 erzwingen, mit `adb shell dumpsys deviceidle unforce` beenden. Den Verbrauch zeigt
-Einstellungen › Akku › Akkunutzung, genauer `adb shell dumpsys batterystats io.github.filubu.mumlafunk`.
+Einstellungen › Akku › Akkunutzung, genauer `adb shell dumpsys batterystats de.filubu.funk`.
 
 ### Grenzen, die von Android kommen
 
