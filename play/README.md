@@ -27,7 +27,7 @@ Stand: November 2026.
 | Vordergrunddienst Typ Mikrofon | Erklärung mit Video in der Play Console offen |
 | Datenschutzerklärung | Website und Link in der App, Seite muss noch live gehen |
 | Werbe-ID | nicht genutzt, die Berechtigung `AD_ID` fehlt im Manifest |
-| Paketname | `io.github.filubu.mumlafunk`, nach dem ersten Upload nicht mehr änderbar |
+| Paketname | `de.filubu.funk`, nach dem ersten Upload nicht mehr änderbar |
 
 Der interne Test braucht davon nur das App Bundle. Google prüft interne Tests in der Regel nicht
 und gibt sie nach wenigen Minuten frei. Die Erklärungen unter
@@ -118,11 +118,13 @@ Signiert wird es nur mit `app/signing.gradle`, siehe Haupt-README.
 
    ```text
    <de-DE>
+   * Neue Paket-ID de.filubu.funk: 1.0.4 wird als eigene App neben 1.0.3 installiert. Zertifikat in der alten Version exportieren, hier importieren, Server neu anlegen, danach die alte Version deinstallieren.
    * Erste Version für Google Play (ohne Spenden-Links).
    * Bevor die Bedienungshilfe für die Leiser-Taste eingeschaltet wird, erklärt die App, was sie damit tut und was nicht.
    * Link zur Datenschutzerklärung unter Einstellungen › Über.
    </de-DE>
    <en-US>
+   * New package ID de.filubu.funk: 1.0.4 installs as a separate app next to 1.0.3. Export the certificate in the old version, import it here, add the servers again, then uninstall the old version.
    * First version for Google Play (without donation links).
    * Before you switch on the accessibility service for the volume-down key, the app explains what it does with it and what it does not.
    * Link to the privacy policy under Settings › About.
@@ -135,8 +137,10 @@ Signiert wird es nur mit `app/signing.gradle`, siehe Haupt-README.
 
 Hinweise:
 
-- Wer die GitHub-APK schon installiert hat, bekommt die Play-Version als normales Update, da der
-  Schlüssel gleich ist. Server und Zertifikate bleiben erhalten.
+- Ab 1.0.4 ist die Paket-ID `de.filubu.funk`. Wer die GitHub-APK 1.0.3 oder älter hat
+  (`io.github.filubu.mumlafunk`), bekommt die Play-Version als eigene, zweite App und muss Server
+  und Zertifikat einmal übertragen. Ab 1.0.4 sind GitHub-APK und Play-Version gegenseitig
+  updatefähig, da Paket-ID und Schlüssel gleich sind.
 - Jeder neue Upload braucht einen höheren Versionscode als der vorherige. Version und Code stehen
   in `app/build.gradle` (`funkVersion`, `versionCode`).
 - Für einen schnellen Test ohne Track gibt es zusätzlich **Interne App-Freigabe**: Bundle hochladen
