@@ -484,7 +484,15 @@ public class AudioHandler extends HumlaNetworkListener implements AudioInput.Aud
 
         mTalking = talking;
         if (!talking) {
-            mInputMode.waitForInput();
+            if (mInputMode.canSuspendCapture()) {
+                // Push to talk is released: release the microphone (and the audio hardware
+                // behind it) until the button is pressed again, instead of keeping it open.
+                mInput.pauseCapture();
+                mInputMode.waitForInput();
+                mInput.resumeCapture();
+            } else {
+                mInputMode.waitForInput();
+            }
         }
     }
 

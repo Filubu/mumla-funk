@@ -30,7 +30,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.PowerManager;
 import android.util.Log;
 
 import org.minidns.dnsserverlookup.android21.AndroidUsingLinkProperties;
@@ -119,6 +118,13 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
     public static final String EXTRAS_LOCAL_IGNORE_HISTORY = "local_ignore_history";
     public static final String EXTRAS_ENABLE_PREPROCESSOR = "enable_preprocessor";
     public static final String EXTRAS_ECHO_CANCELLATION_METHOD = "echo_cancellation_method";
+    /** Boolean: energy saving while nobody talks, see {@link IdleController}. Default true. */
+    public static final String EXTRAS_ENERGY_SAVING = "energy_saving";
+    /**
+     * Int, seconds between keep-alive pings while idle (energy saving). Must be shorter than the
+     * server's timeout (mumble-server.ini {@code timeout=}, default 30 s).
+     */
+    public static final String EXTRAS_IDLE_KEEPALIVE = "idle_keepalive";
 
     // Service settings
     private Server mServer;
@@ -142,7 +148,10 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
     private byte mVoiceTargetId;
     private WhisperTargetList mWhisperTargetList;
 
-    private PowerManager.WakeLock mWakeLock;
+    /** Wake locks, keep-alive and reconnect timing; energy saving while nobody talks. */
+    private IdleController mIdleController;
+    /** The server timed us out while idle; tell the user once connected again. */
+    private boolean mKeepAliveFallbackNotice;
     private Handler mHandler;
     private HumlaCallbacks mCallbacks;
 
@@ -196,6 +205,7 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
+                            mIdleController.onActivity();
                             try {
                                 // If the server session is inactive, ignore this message.
                                 // It's likely that this is leftover from a terminated connection.
@@ -221,6 +231,7 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
     private AudioOutput.AudioOutputListener mAudioOutputListener = new AudioOutput.AudioOutputListener() {
         @Override
         public void onUserTalkStateUpdated(final User user) {
+            mIdleController.onActivity(); // Someone else talks (or stopped): stay active a while.
             mCallbacks.onUserTalkStateUpdated(user);
         }
 
@@ -250,6 +261,7 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
                     // Ensure that we have been provided all required attributes.```
                     throw new RuntimeException(ACTION_CONNECT + " requires a server provided in extras.");
                 }
+                mIdleController.resetKeepAliveFallback(); // A new start: trust the setting again.
                 connect();
             }
         }
@@ -260,8 +272,17 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
     @Override
     public void onCreate() {
         super.onCreate();
-        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-        mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Humla:HumlaService");
+        mIdleController = new IdleController(this, new IdleController.Host() {
+            @Override
+            public boolean isTalkActivity() {
+                return isAnyoneTalking();
+            }
+
+            @Override
+            public void onReconnectDue() {
+                if (mReconnecting) connect();
+            }
+        });
         mHandler = new Handler(getMainLooper());
         mCallbacks = new HumlaCallbacks();
         mAudioBuilder = new AudioHandler.Builder()
@@ -289,6 +310,17 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
         } catch (IllegalArgumentException e) {
             Log.e(TAG, "Error unregistering bluetooth receiver: " + e.getMessage());
         }
+        mIdleController.release();
+    }
+
+    /** @return true while we or anyone else on the server is talking. */
+    private boolean isAnyoneTalking() {
+        if (mToggleInputMode.isTalkingOn()) return true;
+        if (mModelHandler == null) return false;
+        for (User user : mModelHandler.getUsers().values()) {
+            if (user.getTalkState() != TalkState.PASSIVE) return true;
+        }
+        return false;
     }
 
     public IBinder onBind(Intent intent) {
@@ -302,6 +334,7 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
             mVoiceTargetId = 0;
             mWhisperTargetList.clear();
 
+            mIdleController.onConnecting();
             mConnection = new HumlaConnection(this);
             mConnection.setForceTCP(mForceTcp);
             mConnection.setUseTor(mUseTor);
@@ -379,7 +412,7 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
         mConnectionState = ConnectionState.CONNECTED;
 
         Log.v(TAG, "Connected");
-        mWakeLock.acquire();
+        mIdleController.start(mConnection);
 
         try {
             mAudioHandler = mAudioBuilder.initialize(
@@ -396,6 +429,12 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
         }
 
         mCallbacks.onConnected();
+
+        if (mKeepAliveFallbackNotice) {
+            mKeepAliveFallbackNotice = false;
+            logWarning(getString(R.string.idle_keepalive_fallback,
+                    mIdleController.getEffectiveKeepAliveSeconds()));
+        }
     }
 
     @Override
@@ -405,6 +444,11 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
 
     @Override
     public void onConnectionDisconnected(HumlaException e) {
+        // First, while it still knows whether we were idle.
+        if (mIdleController.onDisconnected(e != null)) {
+            mKeepAliveFallbackNotice = true;
+        }
+
         if (e != null) {
             Log.e(TAG, "Error: " + e.getMessage() + " (reason: " + e.getReason().name() + ")");
             mConnectionState = ConnectionState.CONNECTION_LOST;
@@ -414,10 +458,6 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
         } else {
             Log.v(TAG, "Disconnected");
             mConnectionState = ConnectionState.DISCONNECTED;
-        }
-
-        if(mWakeLock.isHeld()) {
-            mWakeLock.release();
         }
 
         if (mAudioHandler != null) {
@@ -438,6 +478,21 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
     @Override
     public void onConnectionWarning(String warning) {
         logWarning(warning);
+    }
+
+    @Override
+    public void onConnectionDataArriving() {
+        mIdleController.onDataArriving();
+    }
+
+    /** Like {@link #EXTRAS_ENERGY_SAVING}, applied at once without restarting the audio. */
+    public void setEnergySavingEnabled(boolean enabled) {
+        mIdleController.setEnabled(enabled);
+    }
+
+    /** Like {@link #EXTRAS_IDLE_KEEPALIVE}, applied at once without restarting the audio. */
+    public void setIdleKeepAliveSeconds(int seconds) {
+        mIdleController.setKeepAliveSeconds(seconds);
     }
 
     @Override
@@ -467,13 +522,8 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
             NetworkInfo info = cm.getActiveNetworkInfo();
             if (info != null && info.isConnected()) {
                 Log.v(TAG, "Connection lost due to non-connectivity issue. Start reconnect polling.");
-                Handler mainHandler = new Handler();
-                mainHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mReconnecting) connect();
-                    }
-                }, mAutoReconnectDelay);
+                // Also happens while the phone sleeps (alarm or wake lock), see IdleController.
+                mIdleController.scheduleReconnect(mAutoReconnectDelay);
             } else {
                 // In the event that we've lost connectivity, don't poll. Wait until network
                 // returns before we resume connection attempts.
@@ -486,6 +536,7 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
                 }
             }
         } else {
+            mIdleController.cancelReconnect();
             try {
                 unregisterReceiver(mConnectivityReceiver);
             } catch (IllegalArgumentException e) {
@@ -641,6 +692,12 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
         }
         if (extras.containsKey(EXTRAS_ECHO_CANCELLATION_METHOD)) {
             mAudioBuilder.setEchoCancellationMethod(extras.getString(EXTRAS_ECHO_CANCELLATION_METHOD));
+        }
+        if (extras.containsKey(EXTRAS_ENERGY_SAVING)) {
+            mIdleController.setEnabled(extras.getBoolean(EXTRAS_ENERGY_SAVING));
+        }
+        if (extras.containsKey(EXTRAS_IDLE_KEEPALIVE)) {
+            mIdleController.setKeepAliveSeconds(extras.getInt(EXTRAS_IDLE_KEEPALIVE));
         }
 
         // Reload audio subsystem if initialized
@@ -936,6 +993,16 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
     @Override
     public void setTalkingState(boolean talking) {
         mToggleInputMode.setTalkingOn(talking);
+        if (talking) {
+            // Leave energy saving right away (UDP, frequent pings) rather than with the first
+            // encoded frame. The controller is not thread-safe, hence the main thread.
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mIdleController.onActivity();
+                }
+            });
+        }
     }
 
     @Override

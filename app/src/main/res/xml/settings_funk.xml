@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Mumla Funk: hardware key shortcuts for the walkie-talkie popup. -->
+<!-- Mumla Funk: hardware key shortcuts for the walkie-talkie popup, and energy saving. -->
 <androidx.preference.PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
     <Preference
         app:key="funk_assistant"
@@ -15,4 +15,30 @@
         app:key="funk_volume_ptt_in_popup"
         app:summary="@string/pref_funk_volume_ptt_summary"
         app:title="@string/pref_funk_volume_ptt_title" />
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:key="funk_energy"
+        app:title="@string/pref_funk_energy_category">
+        <SwitchPreferenceCompat
+            app:defaultValue="true"
+            app:iconSpaceReserved="false"
+            app:key="funk_energy_saving"
+            app:summary="@string/pref_funk_energy_saving_summary"
+            app:title="@string/pref_funk_energy_saving_title" />
+        <ListPreference
+            app:defaultValue="120"
+            app:dependency="funk_energy_saving"
+            app:entries="@array/funk_idle_keepalive_names"
+            app:entryValues="@array/funk_idle_keepalive_values"
+            app:iconSpaceReserved="false"
+            app:key="funk_idle_keepalive"
+            app:title="@string/pref_funk_idle_keepalive_title"
+            app:useSimpleSummaryProvider="true" />
+        <Preference
+            app:dependency="funk_energy_saving"
+            app:iconSpaceReserved="false"
+            app:key="funk_battery_optimization"
+            app:title="@string/pref_funk_battery_title" />
+    </PreferenceCategory>
 </androidx.preference.PreferenceScreen>

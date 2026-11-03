@@ -105,6 +105,9 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
         FunkState.addListener(this);
         resolveServer(FunkState.current());
         render(FunkState.current());
+        if (FunkState.current().connection == FunkState.Connection.CONNECTED) {
+            BatteryOptimization.maybeAskOnce(requireActivity());
+        }
     }
 
     @Override
@@ -139,6 +142,10 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
             resolveServer(state);
         }
         render(state);
+        if (state.connection == FunkState.Connection.CONNECTED && isResumed()) {
+            // First connection: offer to let the phone sleep while nobody talks.
+            BatteryOptimization.maybeAskOnce(requireActivity());
+        }
     }
 
     private int attrColor(int attr) {

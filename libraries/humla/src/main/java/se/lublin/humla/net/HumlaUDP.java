@@ -120,6 +120,7 @@ public class HumlaUDP implements Runnable {
 
                     if (mListener != null) {
                         if (buffer != null) {
+                            mListener.onUDPDataArrived();
                             mCallbackHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
@@ -218,6 +219,8 @@ public class HumlaUDP implements Runnable {
      */
     public interface UDPConnectionListener {
         void onUDPDataReceived(byte[] data);
+        /** Called on the UDP thread as soon as a valid packet arrived, before it is dispatched. */
+        void onUDPDataArrived();
         void onUDPConnectionError(Exception e);
         void resyncCryptState();
     }

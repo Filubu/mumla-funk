@@ -30,7 +30,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ToggleInputMode implements IInputMode {
     private static final String TAG = ToggleInputMode.class.getName();
 
-    private boolean mInputOn;
+    private volatile boolean mInputOn;
     private final Lock mToggleLock;
     private final Condition mToggleCondition;
 
@@ -58,6 +58,12 @@ public class ToggleInputMode implements IInputMode {
     @Override
     public boolean shouldTransmit(short[] pcm, int length) {
         return mInputOn;
+    }
+
+    @Override
+    public boolean canSuspendCapture() {
+        // Nothing is sent until the button is pressed, so the microphone is not needed.
+        return !mInputOn;
     }
 
     @Override

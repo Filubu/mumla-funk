@@ -33,6 +33,7 @@ public final class FunkPrefs {
     public static final String PREF_VOLUME_PTT_IN_POPUP = "funk_volume_ptt_in_popup";
     public static final boolean DEFAULT_VOLUME_PTT_IN_POPUP = true;
     private static final String PREF_NOTIFICATIONS_ASKED = "funk_notifications_asked";
+    private static final String PREF_BATTERY_OPTIMIZATION_ASKED = "funk_battery_optimization_asked";
     private static final String PREF_WIDGET_SERVER = "funk_widget_server_";
     private static final String PREF_WIDGET_SERVER_NAME = "funk_widget_server_name_";
 
@@ -66,6 +67,14 @@ public final class FunkPrefs {
 
     public void setNotificationsAsked() {
         mPrefs.edit().putBoolean(PREF_NOTIFICATIONS_ASKED, true).apply();
+    }
+
+    public boolean wasBatteryOptimizationAsked() {
+        return mPrefs.getBoolean(PREF_BATTERY_OPTIMIZATION_ASKED, false);
+    }
+
+    public void setBatteryOptimizationAsked() {
+        mPrefs.edit().putBoolean(PREF_BATTERY_OPTIMIZATION_ASKED, true).apply();
     }
 
     public long getWidgetServerId(int appWidgetId) {

@@ -49,4 +49,5 @@
     <string name="perm_denied">Permission denied.</string>
     <string name="server">Server</string>
     <string name="the_server">the server</string>
+    <string name="idle_keepalive_fallback">The idle connection was dropped twice before the first keep-alive ping. Probably the server\'s timeout (or the network) is shorter than the keep-alive interval. Keep-alive is now sent every %d s until the next connect, which costs more battery. To fix it, raise timeout= in the server configuration (mumble-server.ini) or choose a shorter keep-alive in the settings.</string>
 </resources>

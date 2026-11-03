@@ -31,4 +31,9 @@ public class ContinuousInputMode implements IInputMode {
     public void waitForInput() {
 
     }
+
+    @Override
+    public boolean canSuspendCapture() {
+        return false;
+    }
 }

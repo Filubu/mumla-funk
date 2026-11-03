@@ -28,6 +28,7 @@ import android.widget.Toast;
 import androidx.preference.Preference;
 
 import se.lublin.mumla.R;
+import se.lublin.mumla.funk.BatteryOptimization;
 import se.lublin.mumla.funk.FunkKeyService;
 
 /**
@@ -37,6 +38,7 @@ import se.lublin.mumla.funk.FunkKeyService;
 public class FunkSettingsFragment extends MumlaPreferenceFragment {
     private static final String KEY_ASSISTANT = "funk_assistant";
     private static final String KEY_VOLUME_SERVICE = "funk_volume_service";
+    private static final String KEY_BATTERY = "funk_battery_optimization";
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -54,6 +56,17 @@ public class FunkSettingsFragment extends MumlaPreferenceFragment {
             openFirst(FunkKeyService.settingsIntent());
             return true;
         });
+        Preference battery = findPreference(KEY_BATTERY);
+        if (battery != null) {
+            if (BatteryOptimization.isRelevant()) {
+                battery.setOnPreferenceClickListener(p -> {
+                    BatteryOptimization.request(requireActivity());
+                    return true;
+                });
+            } else {
+                battery.setVisible(false); // Android 5: no Doze, nothing to allow.
+            }
+        }
     }
 
     @Override
@@ -69,6 +82,11 @@ public class FunkSettingsFragment extends MumlaPreferenceFragment {
         if (volume != null) {
             volume.setSummary(FunkKeyService.isEnabled(context)
                     ? R.string.pref_funk_volume_on : R.string.pref_funk_volume_off);
+        }
+        Preference battery = findPreference(KEY_BATTERY);
+        if (battery != null) {
+            battery.setSummary(BatteryOptimization.isExempt(context)
+                    ? R.string.pref_funk_battery_on : R.string.pref_funk_battery_off);
         }
     }
 

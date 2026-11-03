@@ -170,6 +170,30 @@ public class AudioInput implements Runnable {
     }
 
     /**
+     * Stops capturing, releasing the microphone, while the record thread keeps running.
+     * Must only be called on the record thread (from {@link AudioInputListener}).
+     */
+    public void pauseCapture() {
+        if (mAudioRecord != null
+                && mAudioRecord.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING) {
+            mAudioRecord.stop();
+            Log.v(TAG, "capture paused, microphone released");
+        }
+    }
+
+    /**
+     * Resumes capturing after {@link #pauseCapture()}, unless recording is being shut down.
+     * Must only be called on the record thread (from {@link AudioInputListener}).
+     */
+    public void resumeCapture() {
+        if (mRecording && mAudioRecord != null
+                && mAudioRecord.getRecordingState() != AudioRecord.RECORDSTATE_RECORDING) {
+            mAudioRecord.startRecording();
+            Log.v(TAG, "capture resumed");
+        }
+    }
+
+    /**
      * @return the sample rate used by the AudioRecord instance.
      */
     public int getSampleRate() {
