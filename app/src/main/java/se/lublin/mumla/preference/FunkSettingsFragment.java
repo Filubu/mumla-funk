@@ -27,6 +27,8 @@ import android.widget.Toast;
 
 import androidx.preference.Preference;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
 import se.lublin.mumla.R;
 import se.lublin.mumla.funk.BatteryOptimization;
 import se.lublin.mumla.funk.FunkKeyService;
@@ -53,7 +55,11 @@ public class FunkSettingsFragment extends MumlaPreferenceFragment {
             return true;
         });
         findPreference(KEY_VOLUME_SERVICE).setOnPreferenceClickListener(p -> {
-            openFirst(FunkKeyService.settingsIntent());
+            if (FunkKeyService.isEnabled(requireContext())) {
+                openFirst(FunkKeyService.settingsIntent()); // To switch it off again.
+            } else {
+                showVolumeServiceDisclosure();
+            }
             return true;
         });
         Preference battery = findPreference(KEY_BATTERY);
@@ -88,6 +94,20 @@ public class FunkSettingsFragment extends MumlaPreferenceFragment {
             battery.setSummary(BatteryOptimization.isExempt(context)
                     ? R.string.pref_funk_battery_on : R.string.pref_funk_battery_off);
         }
+    }
+
+    /**
+     * Google Play requires a prominent disclosure and the user's consent before an app that is
+     * not an accessibility tool sends the user to switch on its accessibility service.
+     */
+    private void showVolumeServiceDisclosure() {
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.funk_accessibility_disclosure_title)
+                .setMessage(R.string.funk_accessibility_disclosure_message)
+                .setPositiveButton(R.string.funk_accessibility_disclosure_accept,
+                        (d, w) -> openFirst(FunkKeyService.settingsIntent()))
+                .setNegativeButton(R.string.funk_accessibility_disclosure_decline, null)
+                .show();
     }
 
     private static boolean isAssistant(Context context) {

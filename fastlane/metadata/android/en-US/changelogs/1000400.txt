@@ -1,0 +1,3 @@
+* First version for Google Play (without donation links).
+* Before you switch on the accessibility service for the volume-down key, the app explains what it does with it and what it does not.
+* Link to the privacy policy under Settings › About.
