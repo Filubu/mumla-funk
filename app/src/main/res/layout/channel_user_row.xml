@@ -22,7 +22,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:background="?attr/selectableItemBackground">
+    android:background="@drawable/bg_channel_user_row">
 
     <FrameLayout
         android:layout_width="32dp"

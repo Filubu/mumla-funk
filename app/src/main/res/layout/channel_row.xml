@@ -23,7 +23,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:background="?attr/selectableItemBackground">
+    android:background="@drawable/bg_channel_user_row">
 
     <ImageView
         android:id="@+id/channel_row_expand"
@@ -46,16 +46,25 @@
         android:textColor="?attr/colorOnSurface"
         android:text="Channel name\nLine 2\nLine 3\nLine 4"/>
 
+    <!-- Mumla Funk: the number of people as a small pill. -->
     <TextView
         android:id="@+id/channel_row_count"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:text="10"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
+        android:background="@drawable/bg_funk_count"
         android:fontFamily="sans-serif-medium"
-        android:textSize="13sp"
+        android:gravity="center"
+        android:minWidth="26dp"
+        android:paddingStart="8dp"
+        android:paddingTop="2dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="2dp"
+        android:text="10"
         android:textColor="?attr/colorOnSurfaceVariant"
-        android:padding="10dp"/>
+        android:textSize="12sp"/>
 
     <ImageView
         android:id="@+id/channel_row_join"

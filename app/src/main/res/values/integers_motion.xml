@@ -4,6 +4,7 @@
 <resources>
     <integer name="funk_motion_press">110</integer>
     <integer name="funk_motion_release">320</integer>
+    <integer name="funk_motion_change">220</integer>
     <integer name="funk_motion_enter">300</integer>
     <integer name="funk_motion_exit">150</integer>
 </resources>

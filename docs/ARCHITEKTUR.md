@@ -66,6 +66,7 @@ Geänderte Mumla-Dateien:
 | `preference/MumlaPreferenceFragment.java` | Interne Einstellungs-Links fest an das eigene Paket gebunden (siehe [Eigene App-ID](#eigene-app-id)). |
 | `channel/ChannelFragment.java`, `service/MumlaHotCorner.java`, `service/MumlaOverlay.java` | Senden endet auch bei abgebrochener Berührung (`ACTION_CANCEL`). Kanal-Tabs in den Farben des Designs. |
 | `channel/ChannelListFragment.java`, `res/menu/` | Symbole der App-Leiste in der Textfarbe (die App-Leiste ist im hellen Design hell). |
+| `channel/ChannelListAdapter.java` | Hebt die Zeile hervor, solange jemand spricht. |
 | `AndroidManifest.xml` | Funk-Fenster, Widgets und Widget-Einrichtung. Dienst und interne Activities nicht exportiert. |
 
 ## Zustand: FunkState
@@ -379,6 +380,10 @@ Alle in `res/values/styles_ui.xml`, im Theme als Standard gesetzt:
 - **Dialoge**: weiß im hellen, `#23262D` im dunklen Design, Titel 20 sp Medium.
 - **Einstellungen**: Abschnittstitel als Label, Schalter wie im Server-Formular
   (`preference_widget_funk_switch`).
+- **Kanalliste**: Zeilen wie die Teilnehmer im Display. Wer spricht, bekommt die rötlich
+  getönte, runde Hervorhebung (`bg_channel_user_row`, `ChannelListAdapter` setzt dafür
+  `activated`), sie blendet weich ein und aus. Ruhige Teilnehmer haben einen dezenten Ring
+  statt der grauen Umrandung, die Personenzahl eines Kanals steht in einer kleinen Pille.
 - **Chat und Zugriffstoken**: Nachrichten als flache Blasen, Eingabe als runde Fläche ohne
   Unterstrich (`bg_funk_input`), Senden in Indigo.
 - **Overlay** über anderen Apps: dunkle Karte wie das Funk-Fenster.
