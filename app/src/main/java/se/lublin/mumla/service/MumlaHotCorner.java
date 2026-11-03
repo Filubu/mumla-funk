@@ -83,6 +83,7 @@ public class MumlaHotCorner implements View.OnTouchListener {
                 mListener.onHotCornerDown();
                 return true;
             case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
                 mView.setBackgroundColor(0);
                 mListener.onHotCornerUp();
                 return true;

@@ -60,6 +60,8 @@ public class DrawerAdapter extends ArrayAdapter<DrawerAdapter.DrawerRow> {
     public static final int ITEM_PUBLIC = 8;
     public static final int HEADER_GENERAL = 9;
     public static final int ITEM_SETTINGS = 10;
+    /** Mumla Funk: the simple walkie-talkie screen (home). */
+    public static final int ITEM_FUNK = 11;
 
     private static final int HEADER_TYPE = 0;
     private static final int ITEM_TYPE = 1;
@@ -97,6 +99,7 @@ public class DrawerAdapter extends ArrayAdapter<DrawerAdapter.DrawerRow> {
     public DrawerAdapter(Context context, DrawerDataProvider provider) {
         super(context, 0);
         mProvider = provider;
+        add(new DrawerAdapter.DrawerItem(ITEM_FUNK, context.getString(R.string.drawer_funk), R.drawable.ic_funk_walkie));
         add(new DrawerAdapter.DrawerHeader(HEADER_CONNECTED_SERVER, context.getString(R.string.drawer_not_connected)));
         add(new DrawerAdapter.DrawerItem(ITEM_SERVER, context.getString(R.string.drawer_server), R.drawable.ic_action_channels));
         add(new DrawerAdapter.DrawerItem(ITEM_PINNED_CHANNELS, context.getString(R.string.drawer_pinned), R.drawable.ic_action_comment));

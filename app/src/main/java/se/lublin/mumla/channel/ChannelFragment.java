@@ -168,6 +168,9 @@ public class ChannelFragment extends HumlaServiceFragment implements SharedPrefe
                         }
                         break;
                     case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_CANCEL:
+                        // CANCEL too (e.g. notification shade pulled down while holding),
+                        // otherwise transmission would get stuck and never be terminated.
                         if (getService() != null) {
                             getService().onTalkKeyUp();
                         }

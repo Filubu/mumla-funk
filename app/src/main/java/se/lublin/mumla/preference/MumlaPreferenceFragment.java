@@ -1,5 +1,6 @@
 package se.lublin.mumla.preference;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -21,6 +22,14 @@ public abstract class MumlaPreferenceFragment extends PreferenceFragmentCompat {
             bundle.putCharSequence("title", preference.getTitle());
             getParentFragmentManager().setFragmentResult("launchFragment", bundle);
             return true;
+        }
+        // Our own activities are reached via implicit "se.lublin.mumla.app.*" actions. Pin
+        // them to this package, otherwise an installed regular Mumla app would also match
+        // and the user could end up editing the other app's certificates.
+        Intent intent = preference.getIntent();
+        if (intent != null && intent.getAction() != null
+                && intent.getAction().startsWith("se.lublin.mumla.app.")) {
+            intent.setPackage(requireContext().getPackageName());
         }
         return super.onPreferenceTreeClick(preference);
     }

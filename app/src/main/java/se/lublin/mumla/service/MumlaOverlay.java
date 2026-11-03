@@ -173,7 +173,8 @@ public class MumlaOverlay {
                 if(MotionEvent.ACTION_DOWN == event.getAction()) {
                     mService.setTalkingState(true);
                     return true;
-                } else if(MotionEvent.ACTION_UP == event.getAction()) {
+                } else if(MotionEvent.ACTION_UP == event.getAction()
+                        || MotionEvent.ACTION_CANCEL == event.getAction()) {
                     mService.setTalkingState(false);
                     return true;
                 }

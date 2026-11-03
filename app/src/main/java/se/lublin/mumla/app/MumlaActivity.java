@@ -98,6 +98,8 @@ import se.lublin.mumla.db.DatabaseProvider;
 import se.lublin.mumla.db.MumlaDatabase;
 import se.lublin.mumla.db.MumlaSQLiteDatabase;
 import se.lublin.mumla.db.PublicServer;
+import se.lublin.mumla.funk.FunkFragment;
+import se.lublin.mumla.funk.FunkPrefs;
 import se.lublin.mumla.preference.MumlaCertificateGenerateTask;
 import se.lublin.mumla.preference.SettingsActivity;
 import se.lublin.mumla.servers.FavouriteServerListFragment;
@@ -119,6 +121,8 @@ public class MumlaActivity extends AppCompatActivity implements ListView.OnItemC
      * If specified, the provided integer drawer fragment ID is shown when the activity is created.
      */
     public static final String EXTRA_DRAWER_FRAGMENT = "drawer_fragment";
+    /** Mumla Funk: connect to this saved server id (e.g. from the popup, to confirm a certificate). */
+    public static final String EXTRA_CONNECT_SERVER_ID = "se.lublin.mumla.funk.extra.CONNECT_SERVER_ID";
 
     private IMumlaService mService;
     private MumlaDatabase mDatabase;
@@ -153,10 +157,9 @@ public class MumlaActivity extends AppCompatActivity implements ListView.OnItemC
             for (HumlaServiceFragment fragment : mServiceFragments)
                 fragment.setServiceBound(true);
 
-            // Re-show server list if we're showing a fragment that depends on the service.
-            if (getSupportFragmentManager().findFragmentById(R.id.content_frame) instanceof HumlaServiceFragment &&
-                    !mService.isConnected()) {
-                loadDrawerFragment(DrawerAdapter.ITEM_FAVOURITES);
+            // Re-show the walkie-talkie screen if we're showing a fragment that depends on the service.
+            if (isConnectionDependentFragmentShown() && !mService.isConnected()) {
+                loadDrawerFragment(DrawerAdapter.ITEM_FUNK);
             }
             updateConnectionState(getService());
         }
@@ -173,7 +176,8 @@ public class MumlaActivity extends AppCompatActivity implements ListView.OnItemC
             if (mSettings.shouldStartUpInPinnedMode()) {
                 loadDrawerFragment(DrawerAdapter.ITEM_PINNED_CHANNELS);
             } else {
-                loadDrawerFragment(DrawerAdapter.ITEM_SERVER);
+                // Mumla Funk: the simple walkie-talkie screen is home.
+                loadDrawerFragment(DrawerAdapter.ITEM_FUNK);
             }
 
             mDrawerAdapter.notifyDataSetChanged();
@@ -189,9 +193,9 @@ public class MumlaActivity extends AppCompatActivity implements ListView.OnItemC
 
         @Override
         public void onDisconnected(HumlaException e) {
-            // Re-show server list if we're showing a fragment that depends on the service.
-            if (getSupportFragmentManager().findFragmentById(R.id.content_frame) instanceof HumlaServiceFragment) {
-                loadDrawerFragment(DrawerAdapter.ITEM_FAVOURITES);
+            // Re-show the walkie-talkie screen if we're showing a fragment that depends on the service.
+            if (isConnectionDependentFragmentShown()) {
+                loadDrawerFragment(DrawerAdapter.ITEM_FUNK);
             }
             mDrawerAdapter.notifyDataSetChanged();
             supportInvalidateOptionsMenu();
@@ -278,7 +282,7 @@ public class MumlaActivity extends AppCompatActivity implements ListView.OnItemC
                             .setMessage(getString(R.string.disconnectSure, mService.getTargetServer().getName()))
                             .setPositiveButton(R.string.confirm, (dialog, which) -> {
                                 mService.disconnect();
-                                loadDrawerFragment(DrawerAdapter.ITEM_FAVOURITES);
+                                loadDrawerFragment(DrawerAdapter.ITEM_FUNK);
                             })
                             .setNegativeButton(android.R.string.cancel, null)
                             .show();
@@ -352,10 +356,11 @@ public class MumlaActivity extends AppCompatActivity implements ListView.OnItemC
         if (savedInstanceState == null) {
             if (getIntent() != null && getIntent().hasExtra(EXTRA_DRAWER_FRAGMENT)) {
                 loadDrawerFragment(getIntent().getIntExtra(EXTRA_DRAWER_FRAGMENT,
-                        DrawerAdapter.ITEM_FAVOURITES));
+                        DrawerAdapter.ITEM_FUNK));
             } else {
-                loadDrawerFragment(DrawerAdapter.ITEM_FAVOURITES);
+                loadDrawerFragment(DrawerAdapter.ITEM_FUNK);
             }
+            handleConnectExtra(getIntent());
         }
 
         // If we're given a Mumble URL to show, open up a server edit fragment.
@@ -387,6 +392,40 @@ public class MumlaActivity extends AppCompatActivity implements ListView.OnItemC
                 new StartupAction().execute(this);
             }
         }
+    }
+
+    @Override
+    protected void onNewIntent(@NonNull Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleConnectExtra(intent);
+    }
+
+    /** Mumla Funk: the popup asks us to connect (to show certificate / password dialogs). */
+    private void handleConnectExtra(@Nullable Intent intent) {
+        if (intent == null || !intent.hasExtra(EXTRA_CONNECT_SERVER_ID)) {
+            return;
+        }
+        long id = intent.getLongExtra(EXTRA_CONNECT_SERVER_ID, -1);
+        intent.removeExtra(EXTRA_CONNECT_SERVER_ID);
+        for (Server server : mDatabase.getServers()) {
+            if (server.getId() == id) {
+                loadDrawerFragment(DrawerAdapter.ITEM_FUNK);
+                connectToServer(server);
+                return;
+            }
+        }
+    }
+
+    /** True if the shown fragment only makes sense while connected (channels, info, ...). */
+    private boolean isConnectionDependentFragmentShown() {
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.content_frame);
+        return fragment instanceof HumlaServiceFragment && !(fragment instanceof FunkFragment);
+    }
+
+    /** Shows one of the drawer's screens. */
+    public void showDrawerItem(int drawerItemId) {
+        loadDrawerFragment(drawerItemId);
     }
 
     @Override
@@ -518,6 +557,9 @@ public class MumlaActivity extends AppCompatActivity implements ListView.OnItemC
         Class<? extends Fragment> fragmentClass = null;
         Bundle args = new Bundle();
         switch (fragmentId) {
+            case DrawerAdapter.ITEM_FUNK:
+                fragmentClass = FunkFragment.class;
+                break;
             case DrawerAdapter.ITEM_SERVER:
                 fragmentClass = ChannelFragment.class;
                 break;
@@ -588,6 +630,9 @@ public class MumlaActivity extends AppCompatActivity implements ListView.OnItemC
 
         Server server = mServerPendingPerm;
         mServerPendingPerm = null;
+        if (server.isSaved()) {
+            FunkPrefs.get(this).setLastServerId(server.getId());
+        }
 
         // Check if we're already connected to a server; if so, inform user.
         if (mService != null && mService.isConnected()) {
@@ -876,7 +921,13 @@ public class MumlaActivity extends AppCompatActivity implements ListView.OnItemC
         switch (action) {
             case ADD_ACTION:
                 mDatabase.addServer(server);
-                loadDrawerFragment(DrawerAdapter.ITEM_FAVOURITES);
+                if (getSupportFragmentManager().findFragmentById(R.id.content_frame) instanceof FunkFragment) {
+                    // Added from the walkie-talkie screen: select it there.
+                    FunkPrefs.get(this).setLastServerId(server.getId());
+                    loadDrawerFragment(DrawerAdapter.ITEM_FUNK);
+                } else {
+                    loadDrawerFragment(DrawerAdapter.ITEM_FAVOURITES);
+                }
                 break;
             case EDIT_ACTION:
                 mDatabase.updateServer(server);

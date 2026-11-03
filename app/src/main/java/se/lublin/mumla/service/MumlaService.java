@@ -26,7 +26,9 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.PowerManager;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
@@ -45,6 +47,7 @@ import java.util.List;
 import se.lublin.humla.Constants;
 import se.lublin.humla.HumlaService;
 import se.lublin.humla.exception.AudioException;
+import se.lublin.humla.model.IChannel;
 import se.lublin.humla.model.IMessage;
 import se.lublin.humla.model.IUser;
 import se.lublin.humla.model.Message;
@@ -53,6 +56,8 @@ import se.lublin.humla.util.HumlaException;
 import se.lublin.humla.util.HumlaObserver;
 import se.lublin.mumla.R;
 import se.lublin.mumla.Settings;
+import se.lublin.mumla.funk.FunkState;
+import se.lublin.mumla.funk.widget.FunkWidgets;
 import se.lublin.mumla.service.ipc.TalkBroadcastReceiver;
 import se.lublin.mumla.util.HtmlUtils;
 
@@ -115,6 +120,90 @@ public class MumlaService extends HumlaService implements
     };
 
     private BroadcastReceiver mTalkReceiver;
+
+    /*
+     * Mumla Funk: publish connection / user state for the walkie-talkie popup, main screen and
+     * home screen widgets. Bursts of events (e.g. talk state changes) are coalesced.
+     */
+    private static final long FUNK_UPDATE_DELAY_MS = 150;
+    private final Handler mFunkHandler = new Handler(Looper.getMainLooper());
+    private boolean mFunkUpdateScheduled;
+    private final Runnable mFunkPublish = new Runnable() {
+        @Override
+        public void run() {
+            mFunkUpdateScheduled = false;
+            FunkState.publish(FunkState.build(MumlaService.this));
+            FunkWidgets.updateAll(MumlaService.this);
+        }
+    };
+
+    private void scheduleFunkUpdate(boolean urgent) {
+        if (urgent) {
+            mFunkHandler.removeCallbacks(mFunkPublish);
+            mFunkHandler.post(mFunkPublish);
+            mFunkUpdateScheduled = true;
+        } else if (!mFunkUpdateScheduled) {
+            mFunkUpdateScheduled = true;
+            mFunkHandler.postDelayed(mFunkPublish, FUNK_UPDATE_DELAY_MS);
+        }
+    }
+
+    private final HumlaObserver mFunkObserver = new HumlaObserver() {
+        @Override
+        public void onConnecting() {
+            scheduleFunkUpdate(true);
+        }
+
+        @Override
+        public void onConnected() {
+            scheduleFunkUpdate(true);
+        }
+
+        @Override
+        public void onDisconnected(HumlaException e) {
+            scheduleFunkUpdate(true);
+        }
+
+        @Override
+        public void onUserConnected(IUser user) {
+            scheduleFunkUpdate(false);
+        }
+
+        @Override
+        public void onUserRemoved(IUser user, String reason) {
+            scheduleFunkUpdate(false);
+        }
+
+        @Override
+        public void onUserStateUpdated(IUser user) {
+            scheduleFunkUpdate(false);
+        }
+
+        @Override
+        public void onUserTalkStateUpdated(IUser user) {
+            scheduleFunkUpdate(false);
+        }
+
+        @Override
+        public void onUserJoinedChannel(IUser user, IChannel newChannel, IChannel oldChannel) {
+            scheduleFunkUpdate(false);
+        }
+
+        @Override
+        public void onChannelAdded(IChannel channel) {
+            scheduleFunkUpdate(false);
+        }
+
+        @Override
+        public void onChannelStateUpdated(IChannel channel) {
+            scheduleFunkUpdate(false);
+        }
+
+        @Override
+        public void onChannelRemoved(IChannel channel) {
+            scheduleFunkUpdate(false);
+        }
+    };
 
     private HumlaObserver mObserver = new HumlaObserver() {
         @Override
@@ -292,6 +381,7 @@ public class MumlaService extends HumlaService implements
     public void onCreate() {
         super.onCreate();
         registerObserver(mObserver);
+        registerObserver(mFunkObserver);
 
         // Register for preference changes
         mSettings = Settings.getInstance(this);
@@ -343,6 +433,10 @@ public class MumlaService extends HumlaService implements
         }
 
         unregisterObserver(mObserver);
+        unregisterObserver(mFunkObserver);
+        mFunkHandler.removeCallbacks(mFunkPublish);
+        FunkState.publish(FunkState.DISCONNECTED);
+        FunkWidgets.updateAll(this);
         if(mTTS != null) mTTS.shutdown();
         mMessageLog = null;
         mMessageNotification.dismiss();
