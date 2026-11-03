@@ -1,3 +1,60 @@
+# Mumla Funk
+
+Mumla Funk ist eine Walkie-Talkie-Variante von [Mumla](https://gitlab.com/quite/mumla)
+(Mumble-Client für Android). Das Mumble-Backend ist dasselbe, man verbindet sich mit ganz
+normalen Mumble-Servern. Die App lässt sich parallel zu Mumla installieren
+(Paket `io.github.filubu.mumlafunk`).
+
+## Funktionen
+
+- **Funk-Fenster**: ein großer Knopf, gedrückt halten zum Sprechen. Zeigt Server,
+  Verbindung und wer gerade spricht. Nicht verbunden: Knopf antippen verbindet.
+  Solange es offen ist, ist die Leiser-Taste die Sprechtaste (abschaltbar).
+- **Ein/Aus-Taste gedrückt halten** öffnet das Funk-Fenster (über die Assistent-Funktion).
+- **Leiser-Taste 2 Sekunden halten** öffnet das Funk-Fenster. Kurz drücken regelt
+  weiterhin die Lautstärke.
+- **Zwei Homescreen-Widgets**, jeweils fest an einen Server gebunden:
+  ein kleiner runder Funk-Knopf und ein großes Widget mit Status, allen Teilnehmern
+  und Sprechen/Verbinden. Nicht verbunden = durchgestrichener Funkmast.
+- **Einfacher Startbildschirm** mit Server, Status, Sprechtaste und Teilnehmerliste.
+  Die volle Mumla-Oberfläche (Kanäle, Chat, Server verwalten) bleibt im Menü.
+- **Sauberes Sende-Ende**: Beim Loslassen wird immer das Ende-Flag (Terminator) gesendet,
+  wie beim Desktop-Client. In Mumla fehlte es etwa bei jedem zweiten Loslassen.
+
+## Einrichtung
+
+1. App installieren, Server anlegen, verbinden (beim ersten Mal ggf. Zertifikat bestätigen).
+2. **Ein/Aus-Taste**: Einstellungen › Funk › „Ein/Aus-Taste halten öffnet Funk“ antippen
+   und Mumla Funk als *Standard-App für den digitalen Assistenten* wählen. Dann in den
+   Android-Einstellungen unter System › Gesten › „Ein/Aus-Taste gedrückt halten“ den
+   digitalen Assistenten einstellen (Pixel; bei anderen Herstellern ähnlich).
+   Auf gesperrtem Gerät fragt Android dabei zuerst nach dem Entsperren.
+3. **Leiser-Taste**: Einstellungen › Funk › „Leiser-Taste 2 s halten öffnet Funk“ antippen
+   und die Bedienungshilfe „Mumla Funk“ aktivieren. Ist der Schalter ausgegraut
+   (App nicht aus einem Store installiert): App-Info › ⋮ › „Eingeschränkte Einstellungen
+   zulassen“, danach nochmal. Funktioniert nur bei eingeschaltetem Bildschirm.
+4. **Widgets**: Homescreen lange drücken › Widgets › Mumla Funk, Server auswählen.
+   Android-Widgets erkennen nur Antippen (kein Halten), deshalb öffnen sie das Funk-Fenster.
+
+## Releases bauen
+
+Beim Push eines Tags `v*` erstellt der Workflow `.github/workflows/release.yml`
+den GitHub-Release. Liegt im getaggten Commit eine fertig signierte APK unter
+`release/`, wird diese veröffentlicht. Sonst baut der Workflow selbst und signiert mit
+dem Schlüssel aus den Repository-Secrets:
+
+- `MUMLA_FUNK_KEYSTORE_BASE64`: der Keystore, base64-kodiert (`base64 -w0 mumla-funk-release.jks`)
+- `MUMLA_FUNK_KEYSTORE_PASSWORD`: das Keystore-Passwort (Alias `mumlafunk`)
+
+Updates lassen sich nur installieren, wenn sie mit **demselben** Schlüssel signiert sind.
+Der Schlüssel gehört deshalb sicher aufbewahrt und **nie** ins Repository.
+
+Lokal bauen: `git submodule update --init --recursive`, Android SDK + NDK 25.1.8937393,
+dann in `libraries/humla/libs/humla-spongycastle` `../../gradlew jar` und im
+Hauptordner `./gradlew assembleFossDebug`.
+
+---
+
 
 # Software maintenance situation
 

@@ -1,0 +1,89 @@
+name: Release
+
+# Publishes a GitHub release when a tag "v*" is pushed (or manually for an existing tag).
+# - If the tagged commit contains pre-built, signed APKs in release/, those are published.
+# - Otherwise the APK is built here and signed with the keystore from the repository
+#   secrets MUMLA_FUNK_KEYSTORE_BASE64 and MUMLA_FUNK_KEYSTORE_PASSWORD (see README).
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to publish, e.g. v1.0.0'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+          submodules: recursive
+
+      - name: Look for pre-built APKs
+        id: prebuilt
+        run: |
+          if ls release/*.apk >/dev/null 2>&1; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Java
+        if: steps.prebuilt.outputs.found != 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Build and sign the APK
+        if: steps.prebuilt.outputs.found != 'true'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.MUMLA_FUNK_KEYSTORE_BASE64 }}
+          MUMLA_FUNK_KEYSTORE_PASSWORD: ${{ secrets.MUMLA_FUNK_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$MUMLA_FUNK_KEYSTORE_PASSWORD" ]; then
+            echo "::error::Secrets MUMLA_FUNK_KEYSTORE_BASE64 and MUMLA_FUNK_KEYSTORE_PASSWORD are missing (see README)."
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          export MUMLA_FUNK_KEYSTORE="$RUNNER_TEMP/release.jks"
+          cat > app/signing.gradle <<'GRADLE'
+          android {
+              signingConfigs {
+                  release {
+                      storeFile file(System.getenv("MUMLA_FUNK_KEYSTORE"))
+                      storePassword System.getenv("MUMLA_FUNK_KEYSTORE_PASSWORD")
+                      keyAlias "mumlafunk"
+                      keyPassword System.getenv("MUMLA_FUNK_KEYSTORE_PASSWORD")
+                  }
+              }
+          }
+          GRADLE
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;25.1.8937393" > /dev/null
+          (cd libraries/humla/libs/humla-spongycastle && ../../gradlew jar)
+          ./gradlew assembleFossRelease
+          mkdir -p release
+          cp app/build/outputs/apk/foss/release/mumla-foss-release.apk "release/mumla-funk-${TAG#v}.apk"
+
+      - name: Release notes
+        run: |
+          if [ ! -f release/NOTES.md ]; then
+            echo "Mumla Funk ${TAG}" > release/NOTES.md
+          fi
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: Mumla Funk ${{ env.TAG }}
+          body_path: release/NOTES.md
+          files: release/*.apk
