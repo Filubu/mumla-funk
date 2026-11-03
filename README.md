@@ -6,9 +6,10 @@
 
 Mumla Funk ist ein Fork von [Mumla](https://gitlab.com/quite/mumla), dem freien
 Mumble-Client für Android. Das Mumble-Backend bleibt unverändert: Die App verbindet sich mit
-ganz normalen Mumble-Servern. Neu ist die Bedienung: Statt einer Chat-App mit vielen Menüs
-gibt es eine große Sprechtaste, die man auch erreicht, ohne die App zu öffnen. Das geht über
-die Ein/Aus-Taste, die Leiser-Taste oder ein Homescreen-Widget.
+jedem Mumble-Server. Neu ist die Bedienung: Für jeden Server lässt sich einstellen, ob er ein
+Funk-Server ist. Dann gibt es statt einer Chat-App mit vielen Menüs eine große Sprechtaste,
+die man auch erreicht, ohne die App zu öffnen, über die Ein/Aus-Taste oder ein
+Homescreen-Widget. Alle anderen Server zeigen die gewohnte Mumla-Ansicht mit Kanälen und Chat.
 
 ## Wozu?
 
@@ -23,27 +24,32 @@ der Server legt Funkgeräusche und Effekte über die Stimmen. Auf dem Handy brau
 Mumla beherrscht das Mumble-Protokoll, ist aber ein allgemeiner Mumble-Client. Mumla Funk
 behält das komplette Mumla und setzt eine Funk-Bedienung obendrauf.
 
-| Funk-Fenster | Beim Senden | Widgets | Startbildschirm |
+| Funk-Fenster | Beim Senden | Widgets | Funk-Bildschirm |
 |:---:|:---:|:---:|:---:|
-| <img src="docs/images/popup-bereit.png" width="190" alt="Funk-Fenster"> | <img src="docs/images/popup-sendet.png" width="190" alt="Funk-Fenster beim Senden"> | <img src="docs/images/widgets.png" width="190" alt="Widgets"> | <img src="docs/images/startbildschirm.png" width="190" alt="Startbildschirm"> |
+| <img src="docs/images/popup-bereit.png" width="190" alt="Funk-Fenster"> | <img src="docs/images/popup-sendet.png" width="190" alt="Funk-Fenster beim Senden"> | <img src="docs/images/widgets.png" width="190" alt="Widgets"> | <img src="docs/images/startbildschirm.png" width="190" alt="Funk-Bildschirm"> |
 
 <sub>Gerenderte Vorschau der echten Layouts mit Beispieldaten.</sub>
 
 ## Funktionen
 
+- **Funk-Server oder normaler Server**: pro Server einstellbar (Schalter „Funk-Server“ beim
+  Anlegen und Bearbeiten). Nach dem Verbinden zeigt die App bei Funk-Servern den
+  Funk-Bildschirm, sonst Mumlas Kanalliste mit Chat. Öffentliche Server und „Schnell verbinden“
+  nutzen immer die normale Ansicht.
 - **Funk-Fenster**: ein großer Knopf, gedrückt halten zum Sprechen, loslassen beendet.
   Es zeigt Server, Verbindung und wer gerade spricht. Ist man nicht verbunden, verbindet ein
   Tipp auf den Knopf. Solange das Fenster offen ist, ist die Leiser-Taste die Sprechtaste.
   Es erscheint über jeder App und auch über dem Sperrbildschirm.
 - **Ein/Aus-Taste gedrückt halten** öffnet das Funk-Fenster (Mumla Funk als digitaler Assistent).
-- **Leiser-Taste 2 Sekunden halten** öffnet das Funk-Fenster. Kurz drücken regelt weiterhin
-  die Lautstärke.
 - **Zwei Homescreen-Widgets**, jeweils fest an einen Server gebunden:
   - ein kleiner runder Funk-Knopf,
   - ein großes Widget mit Status, allen Teilnehmern und einem Knopf für Sprechen oder Verbinden.
   
   Ohne Verbindung zeigen beide einen durchgestrichenen Funkmast.
-- **Einfacher Startbildschirm**: Server, Status, Sprechtaste und Teilnehmerliste.
+- **Startbildschirm**: die Serverliste. Ohne Server erklärt eine Willkommen-Seite den Einstieg
+  und bietet „Server hinzufügen“ und die öffentlichen Server an. Das Server-Formular zeigt
+  Beispiele und Hinweise zu jedem Feld.
+- **Funk-Bildschirm**: Server, Status, Sprechtaste und Teilnehmerliste.
 - **Zuverlässiges Sende-Ende**: Beim Loslassen wird immer das Ende-Flag (Terminator) gesendet,
   wie beim Desktop-Client.
 - **Energiesparen**: Mikrofon nur beim Senden, Ruhezustand wenn niemand spricht, das Handy
@@ -57,12 +63,15 @@ behält das komplette Mumla und setzt eine Funk-Bedienung obendrauf.
 |---|---|---|
 | App | `se.lublin.mumla` | `de.filubu.funk`, parallel zu Mumla installierbar |
 | Standard-Eingabe | Sprachaktivierung | Push-to-Talk |
-| Startbildschirm | Serverliste | Funk-Bildschirm (Serverliste im Menü) |
-| Hardware-Tasten | nur bei geöffneter App | Ein/Aus-Taste (Assistent), Leiser-Taste (Bedienungshilfe) |
+| Startbildschirm | Serverliste | Serverliste mit Einstiegshilfe, nach dem Verbinden je nach Server Funk-Bildschirm oder Kanalliste |
+| Hardware-Tasten | nur bei geöffneter App | Ein/Aus-Taste (Assistent), Leiser-Taste im Funk-Fenster |
 | Widgets | keine | klein und groß |
 | Leerlauf | Handy dauerhaft wach, Mikrofon offen, Ping alle 5 s | Mikrofon aus, Ruhe-Ping alle 2 min, Handy darf schlafen |
 | Ende-Flag beim Loslassen | fehlt bei Standardeinstellung etwa jedes zweite Mal | immer |
 | Humla (Protokoll-Bibliothek) | Git-Submodul | direkt im Repo, gepatcht |
+| Spenden-Links, Billing | ja (je nach Variante) | keine |
+| Steuerung durch andere Apps | jede App kann per Broadcast das Senden auslösen | nicht möglich |
+| Build-Varianten | `foss`, `goog`, `donation`, `beta` | eine |
 | Version | 3.7.3 | eigene Zählung ab 1.0.0 |
 
 ## Installation und Einrichtung
@@ -75,8 +84,10 @@ Voraussetzung ist Android 5.0 oder neuer.
 Vorher in der alten Version das Zertifikat exportieren (Einstellungen › Authentifizierung), in
 1.0.4 importieren, die Server neu anlegen und danach die alte Version deinstallieren.
 
-1. **App installieren**, Server anlegen und verbinden. Beim ersten Mal muss ggf. das
-   Server-Zertifikat bestätigt werden.
+1. **App installieren** und auf der Willkommen-Seite „Server hinzufügen“ antippen. Adresse,
+   Benutzername und ggf. Passwort eintragen, „Funk-Server“ an lassen (für die normale
+   Mumble-Ansicht ausschalten). Danach den Server antippen. Beim ersten Mal fragt die App, ob
+   sie dem Zertifikat des Servers vertrauen soll: „Vertrauen und verbinden“.
    Mumla Funk ist eine eigene App, Server und Zertifikat aus Mumla werden nicht übernommen. Wer
    auf dem Server registriert ist, exportiert das Zertifikat in Mumla
    (Einstellungen › Authentifizierung) und importiert es in Mumla Funk.
@@ -84,12 +95,10 @@ Vorher in der alten Version das Zertifikat exportieren (Einstellungen › Authen
    Mumla Funk als *Standard-App für den digitalen Assistenten* wählen. Dann in den
    Android-Einstellungen unter System › Gesten › „Ein/Aus-Taste gedrückt halten“ den digitalen
    Assistenten einstellen (Pixel; bei anderen Herstellern ähnlich benannt).
-3. **Leiser-Taste**: Einstellungen › Funk › „Leiser-Taste 2 s halten öffnet Funk“ antippen und
-   die Bedienungshilfe „Mumla Funk“ aktivieren. Ist der Schalter ausgegraut (App nicht aus
-   einem Store installiert): App-Info › ⋮ › „Eingeschränkte Einstellungen zulassen“.
-4. **Widgets**: Homescreen lange drücken › Widgets › Mumla Funk, dann den Server auswählen.
-5. **Akku**: Beim ersten Verbinden fragt die App, ob sie von der Akku-Optimierung ausgenommen
-   werden darf: erlauben. Auf dem Server `timeout=300` setzen (siehe [Energiesparen](#energiesparen)).
+3. **Widgets**: Homescreen lange drücken › Widgets › Mumla Funk, dann den Server auswählen.
+4. **Akku**: Einstellungen › Funk › „Schlafen erlauben“ öffnet die Liste der Akku-Optimierung.
+   Dort Mumla Funk auf „Nicht optimieren“ bzw. „Nicht eingeschränkt“ stellen. Auf dem Server
+   `timeout=300` setzen (siehe [Energiesparen](#energiesparen)).
 
 ## Energiesparen
 
@@ -103,8 +112,9 @@ Mumla hielt das Handy dauerhaft wach, ließ das Mikrofon offen und pingte den Se
   2 min). Sprache kommt über TCP statt UDP, weil Mobilfunknetze UDP-Verbindungen schon nach
   etwa einer Minute Stille vergessen. Wer spricht oder angesprochen wird, ist sofort wieder
   im Normalbetrieb (UDP, Ping alle 5 s).
-- **Handy darf schlafen**, wenn Mumla Funk von der Akku-Optimierung ausgenommen ist (fragt die
-  App einmal, sonst Einstellungen › Funk › „Schlafen erlauben“). Ankommende Daten wecken das
+- **Handy darf schlafen**, wenn Mumla Funk von der Akku-Optimierung ausgenommen ist
+  (Einstellungen › Funk › „Schlafen erlauben“). Die App fragt nicht selbst danach, denn die
+  dafür nötige Berechtigung schränkt Google Play ein. Ankommende Daten wecken das
   Handy von selbst. Ohne die Ausnahme bleibt das Handy wach wie bisher, gespart wird dann nur
   beim Funkmodul. Grund: Android stellt Wecker im Tiefschlaf nur ausgenommenen Apps pünktlich zu.
 - **Tote Verbindung erkennen**: Kommt auf einen Ruhe-Ping 15 s lang keine Antwort, verbindet
@@ -143,8 +153,6 @@ Einstellungen › Akku › Akkunutzung, genauer `adb shell dumpsys batterystats 
 - **Widgets** erkennen nur Antippen, kein Gedrückthalten. Darum öffnen sie das Funk-Fenster.
 - **Ein/Aus-Taste**: Android meldet nur „lange gedrückt“, nicht das Loslassen. Darum öffnet
   auch sie das Funk-Fenster. Bei gesperrtem Gerät fragt Android zuerst nach dem Entsperren.
-- **Leiser-Taste** funktioniert nur bei eingeschaltetem Bildschirm. Bei ausgeschaltetem
-  Bildschirm leitet Android die Taste direkt an die Medienwiedergabe weiter.
 
 ## Für Entwickler
 
@@ -174,9 +182,8 @@ Updates aus Mumla leichter übernehmbar.
 flowchart LR
     Widget[Widgets] --> Popup
     Power[Ein/Aus-Taste<br>ACTION_ASSIST] --> Popup
-    Vol[Leiser-Taste 2 s<br>FunkKeyService] --> Popup
     Popup[PttActivity<br>Funk-Fenster] -- onTalkKeyDown/Up --> Service
-    Home[FunkFragment<br>Startbildschirm] -- onTalkKeyDown/Up --> Service
+    Home[FunkFragment<br>Funk-Bildschirm] -- onTalkKeyDown/Up --> Service
     Service[MumlaService] <--> Humla[Humla] <--> Server[(Mumble-Server)]
     Service -- Ereignisse --> State[FunkState]
     State --> Popup
@@ -187,7 +194,7 @@ flowchart LR
 - Alle Wege zum Sprechen laufen über `IMumlaService.onTalkKeyDown()/onTalkKeyUp()`.
   Push-to-Talk-Modus und Umschaltmodus aus den Einstellungen gelten damit überall.
 - `MumlaService` fasst Verbindungs- und Teilnehmer-Ereignisse zu einem unveränderlichen
-  Schnappschuss `FunkState` zusammen. Funk-Fenster, Startbildschirm und Widgets zeigen nur
+  Schnappschuss `FunkState` zusammen. Funk-Fenster, Funk-Bildschirm und Widgets zeigen nur
   diesen Zustand an.
 - Der Ende-Flag-Fix steckt in `libraries/humla/.../protocol/AudioHandler.java`.
 
@@ -202,19 +209,16 @@ Benötigt werden JDK 21, das Android SDK (Plattform 36) und das NDK `25.1.893739
 git clone --recursive https://github.com/Filubu/mumla-funk.git
 cd mumla-funk
 (cd libraries/humla/libs/humla-spongycastle && ../../gradlew jar)
-./gradlew assembleFossDebug
+./gradlew assembleDebug
 ```
 
-Die APK liegt danach in `app/build/outputs/apk/foss/debug/`. Bei einem Klon ohne
+Die APK liegt danach in `app/build/outputs/apk/debug/`. Bei einem Klon ohne
 `--recursive` holt `git submodule update --init --recursive` die Submodule nach.
 
-Build-Varianten (Flavors) aus Mumla:
-
-- `foss`: empfohlen, ohne Google-Bibliotheken. Daraus entsteht die APK auf GitHub.
-- `play`: für Google Play (`./gradlew bundlePlayRelease`), wie `foss`, aber ohne Spenden-Link,
-  da Google Play nur Zahlungen über Play-Billing erlaubt.
-- `goog`: aus Mumla, mit Play-Billing für Spenden an Mumla. Wird für Mumla Funk nicht genutzt.
-- `donation` und `beta`: bekommen eine eigene Application-ID mit Suffix.
+Es gibt seit 1.0.5 nur noch eine Build-Variante, ohne Google-Bibliotheken, Spenden-Links und
+Billing. Dieselbe App geht als APK auf GitHub (`./gradlew assembleRelease`) und als App
+Bundle zu Google Play (`./gradlew bundleRelease`). Mumlas Varianten `foss`, `goog`, `donation`
+und `beta` sind entfernt.
 
 ### Releases
 
@@ -251,7 +255,13 @@ Durchgang auf einem echten Gerät:
   - Leiser-Taste als Sprechtaste,
   - Fenster schließen während des Sendens: das Senden muss enden.
 - **Ein/Aus-Taste** (als Assistent eingerichtet) bei entsperrtem und bei gesperrtem Gerät.
-- **Leiser-Taste**: kurz drücken ändert die Lautstärke, 2 s halten öffnet das Funk-Fenster.
+- **Start ohne Server**: Willkommen-Seite, „Server hinzufügen“, Fehlermeldungen im Formular
+  (leere Adresse, URL statt Adresse, kein Name), danach „Verbinden“ in der Meldung unten.
+- **Funk-Schalter**: ein Funk-Server öffnet nach dem Verbinden den Funk-Bildschirm, ein Server
+  mit ausgeschaltetem Schalter und ein öffentlicher Server die Kanalliste. Umschalten im
+  Bearbeiten-Dialog, während man verbunden ist, wechselt die Ansicht sofort.
+- **Dunkles Design**: Texte, Schalter und Knöpfe in Funk-Bildschirm, Serverliste und
+  Einstellungen gut lesbar.
 - **Widgets**:
   - einrichten,
   - Verbindungsaufbau aus dem Widget,

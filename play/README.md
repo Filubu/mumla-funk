@@ -6,11 +6,12 @@ Feature-Grafik und Screenshots.
 
 Im Repo vorbereitet:
 
-- Build-Variante `play`: wie `foss`, aber ohne Spenden-Link und ohne Billing-Bibliothek
+- Eine einzige Build-Variante für GitHub und Play: ohne Spenden-Links, ohne Billing-Bibliothek,
+  ohne Bedienungshilfe, ohne Absturzbericht und ohne die Berechtigung für die Akku-Ausnahme.
+  Damit fallen die Erklärungen zu Bedienungshilfe und Zahlungen weg (seit 1.0.5).
 - Workflow `.github/workflows/play.yml`: baut das signierte App Bundle, optional mit Upload in den internen Test
-- Hinweisdialog vor dem Einschalten der Bedienungshilfe, wie Google ihn verlangt
 - Link zur Datenschutzerklärung unter Einstellungen › Über
-- Version 1.0.4 (Versionscode 1000400) mit Release Notes in `fastlane/metadata/android/*/changelogs/1000400.txt`
+- Version 1.0.5 (Versionscode 1000500) mit Release Notes in `fastlane/metadata/android/*/changelogs/1000500.txt`
 - Website mit Datenschutzerklärung im Repo [mumla-funk-website](https://github.com/Filubu/mumla-funk-website)
 
 ## Prüfung der Play-Anforderungen
@@ -22,9 +23,11 @@ Stand: November 2026.
 | Ziel-API 36, Pflicht für neue Apps und Updates seit 31.08.2026 | erfüllt, `targetSdk 36` |
 | Format App Bundle (`.aab`) | `./gradlew bundlePlayRelease` oder Workflow |
 | 16-KB-Speicherseiten für 64-Bit-Code, Pflicht seit 01.11.2025 | erfüllt, die Codecs werden mit `max-page-size=16384` gelinkt, im Test-Build geprüft |
-| Zahlungsrichtlinie | erfüllt durch `play`: kein Liberapay-Link, kein Spendendialog |
-| Bedienungshilfe für Nicht-Hilfs-Apps | Hinweis und Zustimmung in der App, Erklärung mit Video in der Play Console offen |
-| Vordergrunddienst Typ Mikrofon | Erklärung mit Video in der Play Console offen |
+| Zahlungsrichtlinie | erfüllt: keine Spenden-Links, kein Billing |
+| Bedienungshilfe (Accessibility API) | entfällt: seit 1.0.5 nicht mehr in der App |
+| Akku-Optimierung (`REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`) | entfällt: Berechtigung entfernt, die App öffnet nur die Systemliste |
+| Datensicherheit | „Keine Daten erhoben“, siehe [Datensicherheit](#datensicherheit) |
+| Vordergrunddienst Typ Mikrofon | Erklärung mit Video in der Play Console offen. Pflicht für jede App, die im Hintergrund Sprache überträgt, lässt sich nicht vermeiden |
 | Datenschutzerklärung | Website und Link in der App, Seite muss noch live gehen |
 | Werbe-ID | nicht genutzt, die Berechtigung `AD_ID` fehlt im Manifest |
 | Paketname | `de.filubu.funk`, nach dem ersten Upload nicht mehr änderbar |
@@ -32,7 +35,7 @@ Stand: November 2026.
 Der interne Test braucht davon nur das App Bundle. Google prüft interne Tests in der Regel nicht
 und gibt sie nach wenigen Minuten frei. Die Erklärungen unter
 [App-Inhalte](#6-app-inhalte) sollten trotzdem gleich ausgefüllt werden, da die Play Console
-eine Freigabe mit Mikrofon-Dienst und Bedienungshilfe teilweise erst danach zulässt.
+eine Freigabe mit Mikrofon-Dienst teilweise erst danach zulässt.
 
 ## 1. Entwicklerkonto
 
@@ -90,9 +93,9 @@ er aber nicht nötig.
 Über GitHub:
 
 1. Auf GitHub › **Actions › Google Play › Run workflow** öffnen.
-2. Unter „Tag or branch“ `master` oder einen Tag wie `v1.0.4` eintragen, „upload“ leer lassen.
+2. Unter „Tag or branch“ `master` oder einen Tag wie `v1.0.5` eintragen, „upload“ leer lassen.
 3. Nach dem Lauf unter **Artifacts** `mumla-funk-play` herunterladen und entpacken. Darin
-   liegen `mumla-funk-1.0.4-play.aab` und die Release Notes unter `whatsnew/`.
+   liegen `mumla-funk-1.0.5.aab` und die Release Notes unter `whatsnew/`.
 
 Ein gepushter Tag `v*` baut das Bundle ebenfalls, parallel zum GitHub-Release.
 
@@ -103,10 +106,10 @@ Lokal:
 ```
 
 ```bash
-./gradlew bundlePlayRelease
+./gradlew bundleRelease
 ```
 
-Das Bundle liegt danach unter `app/build/outputs/bundle/playRelease/mumla-play-release.aab`.
+Das Bundle liegt danach unter `app/build/outputs/bundle/release/mumla-funk-release.aab`.
 Signiert wird es nur mit `app/signing.gradle`, siehe Haupt-README.
 
 ## 5. Interner Test
@@ -114,14 +117,24 @@ Signiert wird es nur mit `app/signing.gradle`, siehe Haupt-README.
 1. **Test und Release › Testen › Interner Test › Tester**: eine E-Mail-Liste anlegen, z. B.
    „Funkgruppe“, und die Google-Konten der Tester eintragen. Maximal 100 Tester.
 2. **Neuen Release erstellen**, die `.aab` hochladen.
-3. Release-Name: `1.0.4`. Release Notes aus `whatsnew/` oder hier kopieren:
+3. Release-Name: `1.0.5`. Release Notes aus `whatsnew/` oder hier kopieren:
 
    ```text
    <de-DE>
-   * Erste Version von Mumla Funk: Mumble als Walkie-Talkie. Halten zum Sprechen, loslassen beendet.
+   * Neuer Startbildschirm mit Hilfe für den Einstieg
+   * Pro Server wählbar: Funk-Server mit großem Sprechknopf oder normale Mumble-Ansicht
+   * Server einrichten mit Beispielen und klaren Hinweisen
+   * Besser lesbar im dunklen Design
+   * Entfernt: Leiser-Taste 2 s (Bedienungshilfe), Absturzbericht, Spenden-Links
+   * Andere Apps können keine Verbindung und kein Senden mehr auslösen
    </de-DE>
    <en-US>
-   * First version of Mumla Funk: Mumble as a walkie-talkie. Hold to talk, release to stop.
+   * New start screen with help for getting started
+   * Per server: walkie-talkie server with a big talk button, or the usual Mumble view
+   * Server setup with examples and clear hints
+   * Better readable in the dark theme
+   * Removed: hold volume-down for 2 s (accessibility service), crash report, donation links
+   * Other apps can no longer start a connection or a transmission
    </en-US>
    ```
 
@@ -131,7 +144,7 @@ Signiert wird es nur mit `app/signing.gradle`, siehe Haupt-README.
 
 Hinweise:
 
-- Ab 1.0.4 ist die Paket-ID `de.filubu.funk`. Wer die GitHub-APK 1.0.3 oder älter hat
+- Seit 1.0.4 ist die Paket-ID `de.filubu.funk`. Wer die GitHub-APK 1.0.3 oder älter hat
   (`io.github.filubu.mumlafunk`), bekommt die Play-Version als eigene, zweite App und muss Server
   und Zertifikat einmal übertragen. Ab 1.0.4 sind GitHub-APK und Play-Version gegenseitig
   updatefähig, da Paket-ID und Schlüssel gleich sind.
@@ -160,16 +173,20 @@ Anleitung mit Testserver eintragen:
 
 ```text
 Mumla Funk is a client for Mumble voice servers. To test it, add this server:
-Tap the menu (top left) > Servers > + and enter
+On the start screen, tap "Add server" and enter
   Address: [SERVER-ADRESSE]
   Port: [PORT, Standard 64738]
-  Username: any name, e.g. GoogleReview
+  Username: any name without spaces, e.g. GoogleReview
   Password: [leer lassen oder PASSWORT]
-Then tap the server to connect, accept the server certificate, and use the big
-button ("Halten zum Sprechen" / "Hold to talk") to talk.
+  Walkie-talkie server: on
+Tap "Add", then tap the server to connect and choose "Trust and connect" for the
+server certificate. Hold the big button ("Hold to talk") to talk.
+Alternatively, "Browse public servers" on the start screen lists public Mumble
+servers; they open in the regular Mumble view with channels and chat.
 ```
 
 Offen: welcher Server für die Prüfung erreichbar ist, eigener Server oder ein öffentlicher.
+Die öffentliche Serverliste ist eine Notlösung, sie zeigt aber nicht die Funk-Bedienung.
 
 ### Werbung
 
@@ -232,39 +249,15 @@ while the user holds the talk button (push-to-talk). A persistent notification s
 connection and lets the user disconnect, which stops the service.
 ```
 
+Diese Erklärung lässt sich nicht vermeiden: Ohne Vordergrunddienst beendet Android die
+Verbindung, sobald die App im Hintergrund ist. Jede Sprach- und Funk-App braucht sie.
+
 Video (YouTube „nicht gelistet“ oder Google-Drive-Link) mit der Bildschirmaufnahme von Android:
 
 1. Mit einem Server verbinden, Benachrichtigung zeigen.
 2. Zum Homescreen wechseln, über das Widget das Funk-Fenster öffnen.
 3. Sprechtaste halten und loslassen.
 4. In der Benachrichtigung trennen.
-
-### Bedienungshilfe (Accessibility API)
-
-Die Erklärung erscheint, sobald ein Bundle mit `FunkKeyService` hochgeladen ist.
-
-- Ist die App ein Tool für Barrierefreiheit (`isAccessibilityTool`): **Nein**
-- Zweck: App-Funktionalität
-
-```text
-Mumla Funk is a push-to-talk walkie-talkie. Its optional accessibility service
-"Mumla Funk volume key" only filters hardware key events (canRequestFilterKeyEvents) and
-reacts to a single key: holding volume-down for 2 seconds opens the walkie-talkie popup, even
-when the app is in the background. A short press is passed on as a normal volume change.
-Android only delivers hardware keys to background apps through an accessibility service.
-The service does not retrieve window content (canRetrieveWindowContent=false), does not
-observe other apps, does not perform actions, and does not store, send or share any data.
-Before the user is sent to the system settings, the app shows a prominent disclosure that
-explains this and asks for consent (Agree / Decline).
-```
-
-Video: Einstellungen › Funk › „Leiser-Taste 2 s halten öffnet Funk“ antippen, Dialog zeigen,
-**Ablehnen** (nichts passiert), erneut antippen, **Zustimmen**, Bedienungshilfe einschalten,
-zurück, App schließen, Leiser-Taste 2 s halten, Funk-Fenster öffnet sich.
-
-Das ist der Punkt mit dem höchsten Ablehnungsrisiko bei einer echten Prüfung. Falls Google die
-Bedienungshilfe ablehnt, bleibt die Leiser-Taste nur im offenen Funk-Fenster als Sprechtaste, die
-Ein/Aus-Taste und die Widgets funktionieren weiter.
 
 ### Weitere Erklärungen
 
@@ -296,21 +289,19 @@ Walkie-Talkie für Mumble-Server: halten zum Sprechen, loslassen beendet.
 Vollständige Beschreibung (max. 4000 Zeichen):
 
 ```text
-Mumla Funk macht Mumble zum Walkie-Talkie. Die App verbindet sich mit normalen Mumble-Servern und ist für Gruppen gedacht, die einen eigenen Mumble-Server als Funknetz nutzen: Jeder spricht per Push-to-Talk, schnell und ohne Hinschauen.
+Mumla Funk macht Mumble zum Walkie-Talkie. Die App verbindet sich mit jedem Mumble-Server, eigenem oder öffentlichem. Für jeden Server legst du fest, ob er ein Funk-Server ist: Dann gibt es einen großen Sprechknopf, das Funk-Fenster und Widgets. Sonst zeigt die App die gewohnte Mumble-Ansicht mit Kanälen und Chat.
 
-Voraussetzung ist ein Mumble-Server, eigener oder öffentlicher. Mumla Funk betreibt selbst keine Server.
+Voraussetzung ist ein Mumble-Server. Mumla Funk betreibt selbst keine Server.
 
 Funktionen:
-• Funk-Fenster: ein großer Knopf, halten zum Sprechen, loslassen beendet. Es zeigt Server, Verbindung und wer gerade spricht und erscheint über jeder App und über dem Sperrbildschirm.
+• Funk-Fenster: ein großer Knopf, halten zum Sprechen, loslassen beendet. Es zeigt Server, Verbindung und wer gerade spricht und erscheint auch über dem Sperrbildschirm. Solange es offen ist, ist die Leiser-Taste die Sprechtaste.
 • Ein/Aus-Taste gedrückt halten öffnet das Funk-Fenster, wenn Mumla Funk als digitaler Assistent festgelegt ist.
-• Leiser-Taste 2 Sekunden halten öffnet das Funk-Fenster, kurz drücken regelt weiterhin die Lautstärke. Dafür nutzt die App eine Bedienungshilfe, die nur die Leiser-Taste auswertet und keine Bildschirminhalte liest.
 • Zwei Homescreen-Widgets, jeweils an einen Server gebunden: ein kleiner Sprechknopf und ein großes Widget mit allen Teilnehmern.
-• Einfacher Startbildschirm mit Server, Status, Sprechtaste und Teilnehmerliste.
 • Zuverlässiges Sende-Ende: Beim Loslassen kommt das Ende der Durchsage sofort an, wie beim Desktop-Client von Mumble.
 • Energiesparen: Mikrofon nur beim Senden, Ruhezustand, solange niemand spricht.
 • Kanäle, Chat, Zertifikate, Zugriffstoken und Tor bleiben über das Menü erreichbar.
 
-Datenschutz: keine Werbung, kein Tracking, kein Konto. Sprache, Chat und Benutzername gehen nur an die Mumble-Server, die selbst eingetragen werden.
+Datenschutz: keine Werbung, kein Tracking, kein Konto, keine Datensammlung. Sprache, Chat und Benutzername gehen nur an die Mumble-Server, die du selbst einträgst.
 
 Mumla Funk ist ein inoffizieller Fork von Mumla und lässt sich parallel dazu installieren. Die App ist nicht mit Mumla oder dem Mumble-Projekt verbunden. Freie Software unter der GNU GPL v3, Quellcode: https://github.com/Filubu/mumla-funk
 ```
@@ -326,21 +317,19 @@ Walkie-talkie for Mumble servers: hold to talk, release to stop.
 ```
 
 ```text
-Mumla Funk turns Mumble into a walkie-talkie. It connects to regular Mumble servers and is made for groups that use their own Mumble server as a radio network: everyone talks with push-to-talk, quickly and without looking.
+Mumla Funk turns Mumble into a walkie-talkie. It connects to any Mumble server, your own or a public one. For each server you choose whether it is a walkie-talkie server: then you get a big hold-to-talk button, the walkie-talkie popup and widgets. Otherwise the app shows the usual Mumble view with channels and chat.
 
-You need a Mumble server, your own or a public one. Mumla Funk does not run any servers itself.
+You need a Mumble server. Mumla Funk does not run any servers itself.
 
 Features:
-• Walkie-talkie popup: one big button, hold to talk, release to stop. It shows the server, the connection and who is talking, and appears over any app and over the lock screen.
+• Walkie-talkie popup: one big button, hold to talk, release to stop. It shows the server, the connection and who is talking, and also appears over the lock screen. While it is open, volume-down is the talk key.
 • Hold the power button to open the popup, with Mumla Funk set as digital assistant app.
-• Hold volume-down for 2 seconds to open the popup, a short press still changes the volume. For this, the app uses an accessibility service that only evaluates the volume-down key and does not read screen content.
 • Two home screen widgets, each bound to a server: a small talk button and a large widget with everyone online.
-• Simple home screen with server, status, talk button and user list.
 • Reliable end of transmission: when you release the button, the end of the transmission arrives right away, like with the desktop Mumble client.
 • Energy saving: microphone only while talking, idle mode while nobody talks.
 • Channels, chat, certificates, access tokens and Tor stay available in the menu.
 
-Privacy: no ads, no tracking, no account. Voice, chat and your username only go to the Mumble servers you add yourself.
+Privacy: no ads, no tracking, no account, no data collection. Voice, chat and your username only go to the Mumble servers you add yourself.
 
 Mumla Funk is an unofficial fork of Mumla and can be installed next to it. It is not affiliated with Mumla or the Mumble project. Free software under the GNU GPL v3, source code: https://github.com/Filubu/mumla-funk
 ```
@@ -380,7 +369,7 @@ passiert das nur mit Haken bei „upload“.
   mindestens **12 Testern**, die **14 Tage am Stück** dabei sind. Erst danach lässt sich der
   Zugang zur Produktion beantragen.
 - Vor der Prüfung: Store-Eintrag mit echten Screenshots, App-Zugriff mit erreichbarem Testserver,
-  Videos für Mikrofon-Dienst und Bedienungshilfe.
+  Video für den Mikrofon-Dienst.
 - Icon und Name sind sehr nah an Mumla, siehe nächster Abschnitt. Das sollte vor einem
   öffentlichen Release geklärt sein.
 - Ziel-API: Google hebt die Vorgabe jedes Jahr zum 31.08. an. Upstream-Updates von Mumla bringen
@@ -409,13 +398,13 @@ gleichen Stand.
   used according to terms described in the Creative Commons 3.0 Attribution License.“
 - Mumble: Der Name wird nur beschreibend genutzt („für Mumble-Server“). Das Mumble-Logo aus der
   Mumla-Feature-Grafik ist in den neuen Grafiken bewusst nicht enthalten.
-- Spenden: Die Build-Variante `foss` verlinkt auf das Liberapay-Konto von Mumla (`quite`). Das
-  bleibt für GitHub, im Play-Build ist der Link entfernt.
+- Spenden: Seit 1.0.5 enthält die App keine Spenden-Links mehr, auch die GitHub-APK nicht.
 - Store-Texte im Repo: `fastlane/metadata/android/` enthält außer `de` und `en-US` noch die
   Mumla-Texte mit dem Titel „Mumla“. Diese Ordner daher nicht mit `fastlane supply` hochladen.
-- Updates übernehmen: Die Variante `play` ist neu und kollidiert nicht mit Upstream. Konflikte
-  entstehen wie bisher in `app/build.gradle`, `MumlaActivity.java`, `MumlaService.java`,
-  `AndroidManifest.xml`, den Icons und jetzt auch `settings_about.xml`.
+- Updates übernehmen: Mumla Funk hat seit 1.0.5 keine Build-Varianten (Flavors) mehr. Konflikte
+  entstehen daher in `app/build.gradle`, bei den Flavor-Ordnern (`app/src/foss` usw., einfach
+  gelöscht lassen), in `MumlaActivity.java`, `MumlaService.java`, `AndroidManifest.xml`, den
+  Icons und `settings_about.xml`.
 - Entwicklerverifizierung: Google verlangt seit September 2026 in ersten Ländern, dass auch
   Apps außerhalb von Play von verifizierten Entwicklern stammen, weltweit ab 2027. Für die
   GitHub-APK sollte der Paketname mit dem Schlüssel dann im Entwicklerkonto registriert sein.
