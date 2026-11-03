@@ -17,9 +17,7 @@
 
 package se.lublin.mumla.service;
 
-import android.content.BroadcastReceiver;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.net.Uri;
@@ -58,7 +56,6 @@ import se.lublin.mumla.R;
 import se.lublin.mumla.Settings;
 import se.lublin.mumla.funk.FunkState;
 import se.lublin.mumla.funk.widget.FunkWidgets;
-import se.lublin.mumla.service.ipc.TalkBroadcastReceiver;
 import se.lublin.mumla.util.HtmlUtils;
 
 /**
@@ -119,7 +116,6 @@ public class MumlaService extends HumlaService implements
         }
     };
 
-    private BroadcastReceiver mTalkReceiver;
 
     /*
      * Mumla Funk: publish connection / user state for the walkie-talkie popup, main screen and
@@ -405,7 +401,6 @@ public class MumlaService extends HumlaService implements
         if(mSettings.isTextToSpeechEnabled())
             mTTS = new TextToSpeech(this, mTTSInitListener);
 
-        mTalkReceiver = new TalkBroadcastReceiver(this);
     }
 
     @Override
@@ -426,11 +421,6 @@ public class MumlaService extends HumlaService implements
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         preferences.unregisterOnSharedPreferenceChangeListener(this);
-        try {
-            unregisterReceiver(mTalkReceiver);
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        }
 
         unregisterObserver(mObserver);
         unregisterObserver(mFunkObserver);
@@ -467,11 +457,8 @@ public class MumlaService extends HumlaService implements
             setSelfMuteDeafState(mSettings.isMuted(), mSettings.isDeafened());
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            registerReceiver(mTalkReceiver, new IntentFilter(TalkBroadcastReceiver.BROADCAST_TALK), RECEIVER_EXPORTED);
-        } else {
-            registerReceiver(mTalkReceiver, new IntentFilter(TalkBroadcastReceiver.BROADCAST_TALK));
-        }
+        // Mumla Funk: the TALK broadcast is not registered any more. It was exported, so any
+        // app on the device could start a transmission (open the microphone to the server).
 
         if (mSettings.isHotCornerEnabled()) {
             mHotCorner.setShown(true);
@@ -485,10 +472,6 @@ public class MumlaService extends HumlaService implements
     @Override
     public void onConnectionDisconnected(HumlaException e) {
         super.onConnectionDisconnected(e);
-        try {
-            unregisterReceiver(mTalkReceiver);
-        } catch (IllegalArgumentException iae) {
-        }
 
         // Remove overlay if present.
         mChannelOverlay.hide();

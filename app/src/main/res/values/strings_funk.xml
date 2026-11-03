@@ -18,7 +18,6 @@
     <string name="funk_several_talking">%1$s and %2$d more are talking</string>
     <string name="funk_online_count">%1$d online</string>
     <string name="funk_channel_online">%1$s · %2$d online</string>
-    <string name="funk_switch_to">Switch to %1$s</string>
     <string name="funk_open_app">Open app</string>
     <string name="funk_close">Close</string>
     <string name="funk_no_server">No server set up</string>
@@ -33,7 +32,6 @@
     <string name="funk_you">%1$s (you)</string>
     <string name="funk_choose_server">Choose server</string>
     <string name="funk_add_server">Add server</string>
-    <string name="funk_manage_servers">Manage servers</string>
     <string name="funk_channels_chat">Channels &amp; chat</string>
     <string name="funk_nobody_online">Nobody else is here yet</string>
     <string name="funk_online_header">Online · %1$d</string>
@@ -51,13 +49,10 @@
     <string name="funk_widget_other_server">Active: %1$s</string>
 
     <string name="pref_funk_header">Walkie-talkie</string>
-    <string name="pref_funk_header_summary">Power button, volume key, popup, energy saving</string>
+    <string name="pref_funk_header_summary">Power button, popup, energy saving</string>
     <string name="pref_funk_assistant_title">Hold power button to open the walkie-talkie</string>
     <string name="pref_funk_assistant_on">Active: Mumla Funk is your digital assistant app.</string>
     <string name="pref_funk_assistant_off">Tap and choose Mumla Funk as default digital assistant app. Then make sure \"Press and hold power button\" is set to \"Digital assistant\" in the system gesture settings.</string>
-    <string name="pref_funk_volume_title">Hold volume-down for 2 s to open the walkie-talkie</string>
-    <string name="pref_funk_volume_on">Active. A short press still changes the volume.</string>
-    <string name="pref_funk_volume_off">Tap and enable the \"Mumla Funk\" accessibility service. Works while the screen is on. If the switch is greyed out: App info › ⋮ › Allow restricted settings.</string>
     <string name="pref_funk_volume_ptt_title">Volume-down is the talk key in the popup</string>
     <string name="pref_funk_volume_ptt_summary">While the walkie-talkie popup is open: hold to talk, release to stop.</string>
     <string name="pref_funk_settings_unavailable">Could not open the system settings on this device.</string>
@@ -80,23 +75,36 @@
     </string-array>
     <string name="pref_funk_battery_title">Allow sleeping (battery optimization)</string>
     <string name="pref_funk_battery_on">Done: Mumla Funk is exempt from battery optimization, the phone may sleep while nobody talks.</string>
-    <string name="pref_funk_battery_off">Tap and allow. Otherwise the phone is kept awake while connected and only the radio saves energy.</string>
-    <string name="funk_battery_dialog_title">Save battery</string>
-    <string name="funk_battery_dialog_message">While nobody talks, Mumla Funk can let your phone sleep. Transmissions still wake it up right away. For this, Android has to exempt Mumla Funk from battery optimization. Please allow it in the next window.</string>
-    <string name="funk_battery_dialog_allow">Allow</string>
-    <string name="funk_battery_dialog_later">Not now</string>
+    <string name="pref_funk_battery_off">Tap, find Mumla Funk in the list and choose \"Don\'t optimize\" or \"Unrestricted\". Otherwise the phone is kept awake while connected and only the radio saves energy.</string>
 
-    <string name="funk_accessibility_label">Mumla Funk volume key</string>
-    <string name="funk_accessibility_description">Opens the Mumla Funk walkie-talkie popup when you hold the volume-down key for 2 seconds. A short press keeps changing the volume as usual. The service only looks at the volume-down key; it does not read screen content.</string>
-    <string name="funk_accessibility_disclosure_title">Volume key shortcut</string>
-    <string name="funk_accessibility_disclosure_message">Mumla Funk uses the Android accessibility service for one thing only: when you hold the volume-down key for 2 seconds, the walkie-talkie popup opens, even when the app is not open.\n\nFor this, Android passes the presses of the hardware keys to the service. Mumla Funk only evaluates the volume-down key. It does not read screen content or what you type, and it does not store, send or share any data.\n\nNext, the Android settings open. Switch on \u201cMumla Funk volume key\u201d there. You can switch it off there at any time.</string>
-    <string name="funk_accessibility_disclosure_accept">Agree</string>
-    <string name="funk_accessibility_disclosure_decline">Decline</string>
     <string name="privacy_policy">Privacy policy</string>
-    <string name="crash_dialog_title">Mumla Funk crashed</string>
-    <string name="crash_dialog_message">Last time, the app crashed. Please copy these details and send them to whoever maintains the app.</string>
-    <string name="crash_dialog_copy">Copy</string>
-    <string name="crash_dialog_share">Share</string>
-    <string name="crash_dialog_close">Close</string>
-    <string name="crash_dialog_copied">Copied</string>
+
+    <!-- Start screen, server setup and certificate (1.0.5) -->
+    <string name="drawer_my_servers">My servers</string>
+    <string name="server_list_hint">Tap a server to connect. Use ⋮ to edit or delete it.</string>
+    <string name="server_row_funk">Walkie-talkie</string>
+    <string name="server_row_more">Server options</string>
+    <string name="welcome_title">Welcome to Mumla Funk</string>
+    <string name="welcome_text">Mumla Funk connects to any Mumble server. Add your server to get started. You get the address and, if needed, a password from whoever runs the server.</string>
+    <string name="welcome_public_servers">Browse public servers</string>
+    <string name="welcome_funk_note">Walkie-talkie servers get a big hold-to-talk button, the popup and the widgets. Other servers show the usual Mumble view with channels and chat. You choose this for each server.</string>
+    <string name="server_edit_title_add">Add server</string>
+    <string name="server_edit_title_edit">Edit server</string>
+    <string name="server_edit_save">Save</string>
+    <string name="server_edit_intro">You get these details from whoever runs the server.</string>
+    <string name="server_edit_host_placeholder">e.g. mumble.example.org</string>
+    <string name="server_edit_host_invalid">Enter the address only, e.g. mumble.example.org</string>
+    <string name="server_edit_username_helper">Others see you under this name. Best without spaces.</string>
+    <string name="server_edit_username_missing">Please enter a name.</string>
+    <string name="server_edit_password_hint">Password (optional)</string>
+    <string name="server_edit_password_helper">Only needed if the server has a password.</string>
+    <string name="server_edit_name_hint">Name in the list (optional)</string>
+    <string name="server_edit_funk">Walkie-talkie server</string>
+    <string name="server_edit_funk_summary">On: big hold-to-talk button, popup and widgets. Off: the usual Mumble view with channels and chat.</string>
+    <string name="server_added">%1$s saved</string>
+    <string name="funk_cert_title">Trust this server?</string>
+    <string name="funk_cert_message">%1$s identifies itself with its own certificate, which Android does not know. That is normal for private Mumble servers. Trust it if you got the address from whoever runs the server. The app remembers the certificate and warns you if it ever changes.</string>
+    <string name="funk_cert_trust">Trust and connect</string>
+    <string name="funk_server_removed">Server deleted</string>
+    <string name="funk_server_removed_hint">The server of this widget no longer exists. Long-press the widget to choose another one.</string>
 </resources>

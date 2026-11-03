@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Mumla Funk main screen: server, status, big push-to-talk button, who is online. -->
+<!-- Mumla Funk walkie-talkie screen: server, status, big push-to-talk button, who is online. -->
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -18,8 +18,6 @@
             style="@style/Widget.Material3.CardView.Filled"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:clickable="true"
-            android:focusable="true"
             app:cardCornerRadius="20dp">
 
             <LinearLayout
@@ -48,29 +46,14 @@
                     android:layout_weight="1"
                     android:orientation="vertical">
 
-                    <LinearLayout
-                        android:layout_width="wrap_content"
+                    <TextView
+                        android:id="@+id/funk_server_name"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:id="@+id/funk_server_name"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:ellipsize="end"
-                            android:singleLine="true"
-                            android:textAppearance="?attr/textAppearanceTitleMedium"
-                            tools:text="Funkserver" />
-
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_marginStart="2dp"
-                            android:importantForAccessibility="no"
-                            android:src="@drawable/ic_funk_expand"
-                            app:tint="?attr/colorOnSurfaceVariant" />
-                    </LinearLayout>
+                        android:ellipsize="end"
+                        android:singleLine="true"
+                        android:textAppearance="?attr/textAppearanceTitleMedium"
+                        tools:text="Funkserver" />
 
                     <TextView
                         android:id="@+id/funk_server_status"

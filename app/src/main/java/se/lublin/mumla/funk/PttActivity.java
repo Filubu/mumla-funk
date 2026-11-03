@@ -72,9 +72,9 @@ import se.lublin.mumla.service.MumlaService;
 /**
  * The walkie-talkie popup: one big hold-to-talk button for one server.
  * <p>
- * Opened from the home screen widgets, by holding the power button (when Mumla Funk is the
- * default digital assistant, via {@code ACTION_ASSIST}) and by holding volume-down
- * ({@link FunkKeyService}). It can show over the lock screen.
+ * Opened from the home screen widgets and by holding the power button (when Mumla Funk is the
+ * default digital assistant, via {@code ACTION_ASSIST}). It can show over the lock screen.
+ * While it is open, volume-down is a push-to-talk key.
  */
 public class PttActivity extends AppCompatActivity implements FunkState.Listener,
         PttButtonView.Listener {
@@ -87,8 +87,6 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
     private static final int REQUEST_NOTIFICATIONS = 2;
     private static final long IDLE_CLOSE_MS = 30_000;
     private static final long SWITCH_TIMEOUT_MS = 4_000;
-
-    private static volatile boolean sVisible;
 
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     private final Runnable mIdleClose = this::closeAnimated;
@@ -113,6 +111,8 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
     private String mError;
     private boolean mErrorNeedsApp;
     private boolean mKeyTalking;
+    /** The widget's server was deleted meanwhile. */
+    private boolean mServerMissing;
 
     private View mRoot;
     private View mCard;
@@ -123,11 +123,6 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
     private TextView mLabel;
     private TextView mHint;
     private MaterialButton mAction;
-
-    /** True while the popup is in the foreground. Used by {@link FunkKeyService}. */
-    public static boolean isVisible() {
-        return sVisible;
-    }
 
     @NonNull
     public static Intent createIntent(Context context, long serverId, boolean autoConnect) {
@@ -268,9 +263,15 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
         mError = null;
         mErrorNeedsApp = false;
 
+        mServerMissing = false;
         if (requested < 0 && state.connection != FunkState.Connection.DISCONNECTED) {
-            // Power / volume key: talk on whatever we are connected to right now.
+            // Power button: talk on whatever we are connected to right now.
             mServer = state.serverId >= 0 ? FunkServers.resolve(this, state.serverId) : null;
+        } else if (requested >= 0
+                && FunkServers.find(FunkServers.loadAll(this), requested) == null) {
+            // A widget of a deleted server: never fall back to talking on another server.
+            mServer = null;
+            mServerMissing = true;
         } else {
             mServer = FunkServers.resolve(this, requested);
         }
@@ -292,13 +293,11 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
     @Override
     protected void onResume() {
         super.onResume();
-        sVisible = true;
         scheduleIdleClose();
     }
 
     @Override
     protected void onPause() {
-        sVisible = false;
         mHandler.removeCallbacks(mIdleClose);
         // Never keep transmitting once the popup is gone (screen off, home button, ...).
         if (mButton.isHolding() || mKeyTalking) {
@@ -435,8 +434,8 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
             mServerSub.setText(R.string.funk_connecting);
         } else if (mServer == null) {
             mode = PttButtonView.Mode.OFFLINE;
-            label = getString(R.string.funk_no_server);
-            hint = getString(R.string.funk_no_server_hint);
+            label = getString(mServerMissing ? R.string.funk_server_removed : R.string.funk_no_server);
+            hint = getString(mServerMissing ? R.string.funk_server_removed_hint : R.string.funk_no_server_hint);
             action = getString(R.string.funk_open_app);
             mServerSub.setText(R.string.funk_not_connected);
         } else {
@@ -463,7 +462,8 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
         if (action != null) {
             mAction.setText(action);
             mAction.setVisibility(View.VISIBLE);
-            final boolean switchToPtt = action.equals(getString(R.string.funk_switch_to_ptt));
+            final boolean switchToPtt = connected && !state.selfMuted
+                    && !Settings.ARRAY_INPUT_METHOD_PTT.equals(mSettings.getInputMethod());
             mAction.setOnClickListener(v -> {
                 if (switchToPtt) {
                     mSettings.setInputMethod(Settings.ARRAY_INPUT_METHOD_PTT);

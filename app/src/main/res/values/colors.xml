@@ -4,10 +4,24 @@
     <color name="md_theme_light_primary_darker">#212b64</color> <!-- for pttPressed -->
     <color name="md_theme_light_onPrimary">#ffffff</color>
 
-    <color name="md_theme_dark_primary">#001b2b</color>
+    <!-- Mumla Funk: containers in the app's indigo instead of the purple Material 3 defaults. -->
+    <color name="md_theme_light_primaryContainer">#dee0ff</color>
+    <color name="md_theme_light_onPrimaryContainer">#00105c</color>
+    <color name="md_theme_light_secondaryContainer">#e0e1f9</color>
+    <color name="md_theme_light_onSecondaryContainer">#181a2c</color>
+
+    <!-- Dark theme. The app bar, status bar, drawer and PTT bar stay dark navy
+         (colorPrimaryDark). Everything that is drawn with colorPrimary on the dark background
+         (text buttons, switches, headers, filled buttons) uses a light indigo, otherwise it was
+         almost invisible (contrast 1.1:1). -->
+    <color name="md_theme_dark_appbar">#001b2b</color>
     <color name="md_theme_dark_primary_lighter">#002b45</color> <!-- for pttPressed -->
-    <color name="md_theme_dark_primary_lighter_more">#0093eb</color> <!-- for higher-contrast buttons in dark mode -->
-    <color name="md_theme_dark_onPrimary">#1795c2</color>
+    <color name="md_theme_dark_primary">#b9c3ff</color>
+    <color name="md_theme_dark_onPrimary">#0f2178</color>
+    <color name="md_theme_dark_primaryContainer">#2c3e91</color>
+    <color name="md_theme_dark_onPrimaryContainer">#dee0ff</color>
+    <color name="md_theme_dark_secondaryContainer">#414659</color>
+    <color name="md_theme_dark_onSecondaryContainer">#dfe1f9</color>
 
     <color name="hot_corner_highlight">#ff2079ab</color>
 

@@ -17,7 +17,6 @@ public class MumlaApplication extends Application implements SharedPreferences.O
     @Override
     public void onCreate() {
         super.onCreate();
-        se.lublin.mumla.util.CrashReporter.install(this);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         applyTheme(preferences);
         preferences.registerOnSharedPreferenceChangeListener(this);

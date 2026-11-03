@@ -114,7 +114,6 @@
     <string name="status_notify_muted_and_deafened">Muto ed Escluso.</string>
     <string name="user_menu_deafen">Escluditi</string>
     <string name="user_menu_priority_speaker">Altoparlante prioritario</string>
-    <string name="donation_thanks">Grazie per la donazione.</string>
     <string name="default_">Predefinito</string>
     <string name="orbot_tor_failed">Impossibile connettersi al proxy locale Tor sulla porta %d (SOCKS).
 \n
@@ -216,13 +215,6 @@
     <string name="app_news_footer_on_startup">Queste novità possono essere visualizzate di nuovo dalla pagina \"Info su\".</string>
     <string name="app_news_items_v3_7_0">• Molto lavoro è stato fatto per aggiornare Mumla per Android 15 e 16 (API 35 e 36).\n • Come conseguenza Android 5.0 (API 21) o successivo è ora richiesto.\n • Il tema è stato aggiornato per supportare le modalità chiaro/scuro di sistema.\n • La schermata impostazioni è stata adattata alle nuove API.\n • Aggiunte preferenza lingua in app.\n</string>
     <string name="app_news_items_v3_7_1">• Rilascio minore con al più aggiornamenti di traduzione, grazie a tutti i traduttori!\n</string>
-    <string name="donate_dialog_title_goog">Ti piace Mumla?</string>
-    <string name="donate_dialog_message_goog">Grazie per usare Mumla! Per favore considera di fare una piccola donazione per aiutare a mantenere Mumla in vita — e per rimuovere questo messaggio.</string>
-    <string name="donate_dialog_positivebutton_goog">Supporta Mumla</string>
-    <string name="donate_dialog_negativebutton_goog">Più tardi</string>
-    <string name="donate_purchase_pending_goog">La tua donazione è in sospeso e potrebbe essere pronta ad un riavvio successivo. Grazie!</string>
-    <string name="donate_thanks_goog">Grazie per il tuo supporto!</string>
-    <string name="donate_foss">Dona</string>
     <string name="app_news_items_v3_7_2">• Corrette potenziali interruzioni all\'avvio\n • Aggiunte alcune traduzioni, grazie a tutti i traduttori!\n</string>
     <string name="app_news_items_v3_7_3">• L\'angolo PTT è visibile su Android 12 e successivi, e su sfondo chiaro e scuro\n • Il pulsante Indietro ora chiede nuovamente conferma di disconnessione dal server su Android 16+\n</string>
 </resources>

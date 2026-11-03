@@ -44,17 +44,46 @@
             android:paddingRight="18dp"
             android:paddingTop="10dp" >
 
-            <TextView
-                android:id="@+id/server_row_name"
+            <!-- Mumla Funk: name in the primary text color and a label for walkie-talkie
+                 servers. Leaves room for the overflow button on the right. -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:fontFamily="sans-serif-light"
-                android:gravity="left|center_vertical"
-                android:lines="1"
-                android:text="@string/server_host"
-                android:textColor="?android:textColorSecondary"
-                android:textSize="19sp" />
+                android:layout_marginEnd="36dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/server_row_name"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="start|center_vertical"
+                    android:lines="1"
+                    android:text="@string/server_host"
+                    android:textColor="?android:textColorPrimary"
+                    android:textSize="19sp" />
+
+                <TextView
+                    android:id="@+id/server_row_funk"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_funk_badge"
+                    android:backgroundTint="?attr/colorSecondaryContainer"
+                    android:drawablePadding="4dp"
+                    android:gravity="center_vertical"
+                    android:paddingStart="8dp"
+                    android:paddingTop="2dp"
+                    android:paddingEnd="8dp"
+                    android:paddingBottom="2dp"
+                    android:text="@string/server_row_funk"
+                    android:textAppearance="?attr/textAppearanceLabelMedium"
+                    android:textColor="?attr/colorOnSecondaryContainer"
+                    android:visibility="gone" />
+            </LinearLayout>
 
             <RelativeLayout
                 android:id="@+id/server_row_info"
@@ -120,7 +149,7 @@
                     android:layout_height="match_parent"
                     android:layout_marginRight="5dp"
                     app:srcCompat="@drawable/ic_user_light"
-                    android:tint="?android:attr/textColorPrimary" />
+                    app:tint="?android:attr/textColorSecondary" />
 
                 <TextView
                     android:id="@+id/server_row_user"
@@ -140,7 +169,7 @@
                     android:layout_height="match_parent"
                     android:layout_marginRight="5dp"
                     app:srcCompat="@drawable/ic_server_light"
-                    android:tint="?android:attr/textColorPrimary" />
+                    app:tint="?android:attr/textColorSecondary" />
 
                 <TextView
                     android:id="@+id/server_row_address"
@@ -154,15 +183,18 @@
 
     <!-- We can't have a focusable element in a GridView item -->
 
+    <!-- Mumla Funk: 48 dp touch target and a label for screen readers. -->
     <ImageView
         android:id="@+id/server_row_more"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingRight="8dp"
-        android:paddingTop="4dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_alignTop="@id/server_card"
         android:layout_alignRight="@id/server_card"
-        app:srcCompat="@drawable/ic_card_overflow" />
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/server_row_more"
+        android:scaleType="center"
+        app:srcCompat="@drawable/ic_card_overflow"
+        app:tint="?android:attr/textColorSecondary" />
 
 </RelativeLayout>
 </androidx.cardview.widget.CardView>

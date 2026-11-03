@@ -10,11 +10,17 @@
 
     <color name="funk_accent">#FF5C6BC0</color>
     <color name="funk_accent_dark">#FF3949AB</color>
+    <!-- Text and outlines in the accent color on the dark popup card (7.7:1). -->
+    <color name="funk_accent_light">#FF9FA8DA</color>
+    <color name="funk_on_accent_light">#FF1A237E</color>
     <color name="funk_talk">#FFE53935</color>
     <color name="funk_talk_dark">#FFB71C1C</color>
     <color name="funk_idle">#FF3D424E</color>
     <color name="funk_idle_dark">#FF2A2E37</color>
     <color name="funk_live">#FF43A047</color>
+    <!-- "Live" green for text and icons on the app's day/night background; funk_live is too
+         light on white (3.1:1). The night variant is in values-night. -->
+    <color name="funk_live_text">#FF2E7D32</color>
     <color name="funk_warn">#FFFFB74D</color>
 
     <color name="funk_widget_background">#EB141619</color>

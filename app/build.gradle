@@ -33,8 +33,6 @@ repositories {
 
 def signingFile = file 'signing.gradle'
 if (signingFile.exists()) apply from: signingFile
-def signingBetaFile = file 'signing-beta.gradle'
-if (signingBetaFile.exists()) apply from: signingBetaFile
 
 allprojects {
     tasks.withType(JavaCompile) {
@@ -53,7 +51,7 @@ android {
     }
 
     base {
-        archivesName = "mumla"
+        archivesName = "mumla-funk"
     }
 
     // gradle8: Need to enable this when defaultConfig below contains some custom BuildConfig
@@ -62,7 +60,7 @@ android {
     }
 
     // Mumla Funk has its own version line (based on Mumla 3.7.3).
-    def funkVersion = "1.0.4"
+    def funkVersion = "1.0.5"
 
     defaultConfig {
         minSdkVersion 21
@@ -71,62 +69,31 @@ android {
         // Own application ID so that Mumla Funk can be installed next to the regular Mumla app.
         applicationId "de.filubu.funk"
         // code: XYYZZbb (bb for build)
-        versionCode 1000400
+        versionCode 1000500
         versionName funkVersion
 
         buildConfigField "long", "TIMESTAMP", System.currentTimeMillis() + "L"
         buildConfigField "String", "VERSIONTAG", "\"" + funkVersion + "\""
+        // Authority of the channel search provider, derived from the application ID so the app
+        // installs next to Mumla (see AndroidManifest.xml and res/xml/searchable.xml).
+        resValue "string", "search_authority", applicationId + ".channel.ChannelSearchProvider"
 
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
     }
 
-    flavorDimensions "release"
-    productFlavors {
-        goog {
-            dimension "release"
-            resValue "string", "search_authority", "de.filubu.funk.channel.ChannelSearchProvider"
-        }
-        foss {
-            dimension "release"
-            resValue "string", "search_authority", "de.filubu.funk.channel.ChannelSearchProvider"
-        }
-        // Mumla Funk: build for Google Play (./gradlew bundlePlayRelease). Same app ID as foss,
-        // without donation links and without the billing library.
-        play {
-            dimension "release"
-            resValue "string", "search_authority", "de.filubu.funk.channel.ChannelSearchProvider"
-        }
-        donation {
-            dimension "release"
-            applicationIdSuffix ".donation"
-            resValue "string", "search_authority", "de.filubu.funk.donation.channel.ChannelSearchProvider"
-        }
-        beta {
-            dimension "release"
-            applicationIdSuffix ".beta"
-            resValue "string", "search_authority", "de.filubu.funk.beta.channel.ChannelSearchProvider"
-        }
-    }
-
+    // Mumla Funk has a single build variant (no product flavors): the same app goes to GitHub
+    // (APK, ./gradlew assembleRelease) and to Google Play (app bundle, ./gradlew bundleRelease).
+    // No donation links, no billing library.
     buildTypes {
-        // signingConfig beta will override
         release {
             if (android.hasProperty("signingConfigs")) {
                 if (signingConfigs.hasProperty("release")) {
                     signingConfig = signingConfigs.release
                 }
-                if (signingConfigs.hasProperty("beta")) {
-                    signingConfig = signingConfigs.beta
-                }
             }
         }
         debug {
             versionNameSuffix "-debug"
-            if (android.hasProperty("signingConfigs")) {
-                if (signingConfigs.hasProperty("beta")) {
-                    signingConfig = signingConfigs.beta
-                }
-            }
         }
     }
     lint {
@@ -136,15 +103,6 @@ android {
         explainIssues = true
         ignoreWarnings = false
         quiet = false
-    }
-    // betas may be released every minute
-    // TODO? dynamic stuff, have to rebuild a lot
-    applicationVariants.all { variant ->
-        if (variant.flavorName == "beta") {
-            variant.outputs.each { output ->
-                output.versionCodeOverride = System.currentTimeSeconds() / 60
-            }
-        }
     }
 
 }
@@ -162,5 +120,4 @@ dependencies {
     implementation 'org.jsoup:jsoup:1.13.1'
     implementation 'info.guardianproject.netcipher:netcipher:2.1.0'
 
-    googImplementation 'com.android.billingclient:billing:7.1.1'
 }

@@ -33,9 +33,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.widget.ImageViewCompat;
 
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import se.lublin.humla.model.Server;
@@ -43,13 +41,13 @@ import se.lublin.mumla.R;
 import se.lublin.mumla.Settings;
 import se.lublin.mumla.app.DrawerAdapter;
 import se.lublin.mumla.app.MumlaActivity;
-import se.lublin.mumla.servers.ServerEditFragment;
 import se.lublin.mumla.service.IMumlaService;
 import se.lublin.mumla.util.HumlaServiceFragment;
 
 /**
- * Simplified walkie-talkie home screen of the app: server + status, one big hold-to-talk
- * button and the list of who is online. Works connected and disconnected.
+ * Walkie-talkie screen of the app, shown while connected to a server that is set up as
+ * walkie-talkie server: server + status, one big hold-to-talk button and the list of who is
+ * online. Other servers get Mumla's channel list instead (see MumlaActivity).
  */
 public class FunkFragment extends HumlaServiceFragment implements FunkState.Listener,
         PttButtonView.Listener {
@@ -87,7 +85,6 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
         mUsersHeader = view.findViewById(R.id.funk_users_header);
         mUsers = view.findViewById(R.id.funk_users);
 
-        view.findViewById(R.id.funk_server_card).setOnClickListener(v -> showServerPicker());
         mConnectToggle.setOnClickListener(v -> toggleConnection());
         view.findViewById(R.id.funk_channels).setOnClickListener(v ->
                 activity().showDrawerItem(DrawerAdapter.ITEM_SERVER));
@@ -105,9 +102,6 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
         FunkState.addListener(this);
         resolveServer(FunkState.current());
         render(FunkState.current());
-        if (FunkState.current().connection == FunkState.Connection.CONNECTED) {
-            BatteryOptimization.maybeAskOnce(requireActivity());
-        }
     }
 
     @Override
@@ -142,10 +136,6 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
             resolveServer(state);
         }
         render(state);
-        if (state.connection == FunkState.Connection.CONNECTED && isResumed()) {
-            // First connection: offer to let the phone sleep while nobody talks.
-            BatteryOptimization.maybeAskOnce(requireActivity());
-        }
     }
 
     private int attrColor(int attr) {
@@ -161,12 +151,12 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
         boolean on = state.connection != FunkState.Connection.DISCONNECTED;
         boolean connected = state.connection == FunkState.Connection.CONNECTED;
         String name = on && state.serverName != null ? state.serverName
-                : mServer != null ? FunkServers.displayName(mServer) : getString(R.string.funk_choose_server);
+                : mServer != null ? FunkServers.displayName(mServer) : getString(R.string.funk_no_server);
         mServerName.setText(name);
 
         mStatusIcon.setImageResource(connected ? R.drawable.ic_funk_tower : R.drawable.ic_funk_tower_off);
         ImageViewCompat.setImageTintList(mStatusIcon, connected
-                ? ContextCompat.getColorStateList(requireContext(), R.color.funk_live)
+                ? ContextCompat.getColorStateList(requireContext(), R.color.funk_live_text)
                 : ColorStateList.valueOf(attrColor(com.google.android.material.R.attr.colorOnSurfaceVariant)));
 
         switch (state.connection) {
@@ -213,7 +203,7 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
                 hint = talking.size() == 1
                         ? getString(R.string.funk_x_talking, talking.get(0).name)
                         : getString(R.string.funk_several_talking, talking.get(0).name, talking.size() - 1);
-                hintColor = ContextCompat.getColor(requireContext(), R.color.funk_live);
+                hintColor = ContextCompat.getColor(requireContext(), R.color.funk_live_text);
             }
         } else if (on) {
             mode = PttButtonView.Mode.CONNECTING;
@@ -271,10 +261,15 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
         IMumlaService service = getService();
         FunkState state = FunkState.current();
         if (state.connection != FunkState.Connection.DISCONNECTED && service != null) {
-            if (state.connection == FunkState.Connection.RECONNECTING) {
+            boolean reconnecting = state.connection == FunkState.Connection.RECONNECTING;
+            if (reconnecting) {
                 service.cancelReconnect();
             }
             service.disconnect();
+            if (reconnecting) {
+                // The connection is gone already, no "disconnected" event follows.
+                activity().showDrawerItem(DrawerAdapter.ITEM_FAVOURITES);
+            }
         } else if (mServer != null) {
             connect(mServer);
         }
@@ -283,47 +278,6 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
     private void connect(@NonNull Server server) {
         mFunkPrefs.setLastServerId(server.getId());
         activity().connectToServer(server);
-    }
-
-    private void showServerPicker() {
-        final List<Server> servers = FunkServers.loadAll(requireContext());
-        List<CharSequence> items = new ArrayList<>();
-        int checked = -1;
-        for (int i = 0; i < servers.size(); i++) {
-            items.add(FunkServers.displayName(servers.get(i)));
-            if (mServer != null && servers.get(i).getId() == mServer.getId()) {
-                checked = i;
-            }
-        }
-        items.add(getString(R.string.funk_add_server));
-        items.add(getString(R.string.funk_manage_servers));
-        new MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.funk_choose_server)
-                .setSingleChoiceItems(items.toArray(new CharSequence[0]), checked, (dialog, which) -> {
-                    dialog.dismiss();
-                    if (which < servers.size()) {
-                        selectServer(servers.get(which));
-                    } else if (which == servers.size()) {
-                        ServerEditFragment.createServerEditDialog(requireContext(), null,
-                                ServerEditFragment.Action.ADD_ACTION, false)
-                                .show(getParentFragmentManager(), "funk_add_server");
-                    } else {
-                        activity().showDrawerItem(DrawerAdapter.ITEM_FAVOURITES);
-                    }
-                })
-                .setNegativeButton(android.R.string.cancel, null)
-                .show();
-    }
-
-    private void selectServer(@NonNull Server server) {
-        FunkState state = FunkState.current();
-        mServer = server;
-        mFunkPrefs.setLastServerId(server.getId());
-        if (state.connection != FunkState.Connection.DISCONNECTED && state.serverId != server.getId()) {
-            // Connected elsewhere: the activity asks whether to switch.
-            connect(server);
-        }
-        render(state);
     }
 
     // ---------------------------------------------------------------- PTT button
@@ -350,7 +304,7 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
             if (mServer != null) {
                 connect(mServer);
             } else {
-                showServerPicker();
+                activity().showDrawerItem(DrawerAdapter.ITEM_FAVOURITES);
             }
         } else if (mode == PttButtonView.Mode.MUTED && getService() != null
                 && getService().isConnected()) {
