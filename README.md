@@ -38,16 +38,17 @@ normalen Mumble-Servern. Die App lässt sich parallel zu Mumla installieren
 
 ## Releases bauen
 
-Beim Push eines Tags `v*` erstellt der Workflow `.github/workflows/release.yml`
-den GitHub-Release. Liegt im getaggten Commit eine fertig signierte APK unter
-`release/`, wird diese veröffentlicht. Sonst baut der Workflow selbst und signiert mit
-dem Schlüssel aus den Repository-Secrets:
+Release auf GitHub anlegen (Tag `v1.2.3`). Der Workflow `.github/workflows/release.yml`
+läuft dabei automatisch mit und entscheidet:
 
-- `MUMLA_FUNK_KEYSTORE_BASE64`: der Keystore, base64-kodiert (`base64 -w0 mumla-funk-release.jks`)
-- `MUMLA_FUNK_KEYSTORE_PASSWORD`: das Keystore-Passwort (Alias `mumlafunk`)
+- Hängt am Release schon eine APK (von Hand hochgeladen), ist nichts zu tun.
+- Liegt im getaggten Commit eine fertig signierte APK unter `release/`, wird sie angehängt.
+- Sind die Repository-Secrets gesetzt, baut und signiert er die APK selbst und hängt sie an:
+  - `MUMLA_FUNK_KEYSTORE_BASE64`: der Keystore, base64-kodiert (`base64 -w0 mumla-funk-release.jks`)
+  - `MUMLA_FUNK_KEYSTORE_PASSWORD`: das Keystore-Passwort (Alias `mumlafunk`)
+- Sonst endet er mit einer Warnung, ohne Fehler.
 
-Der Workflow muss dafür auf dem Standard-Branch liegen. In einem Fork sind GitHub Actions
-anfangs deaktiviert und müssen einmal im Tab „Actions“ aktiviert werden.
+In einem Fork müssen GitHub Actions einmal im Tab „Actions“ aktiviert werden.
 
 Updates lassen sich nur installieren, wenn sie mit **demselben** Schlüssel signiert sind.
 Der Schlüssel gehört deshalb sicher aufbewahrt und **nie** ins Repository.

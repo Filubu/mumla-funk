@@ -1,9 +1,12 @@
 name: Release
 
-# Publishes a GitHub release when a tag "v*" is pushed (or manually for an existing tag).
-# - If the tagged commit contains pre-built, signed APKs in release/, those are published.
-# - Otherwise the APK is built here and signed with the keystore from the repository
-#   secrets MUMLA_FUNK_KEYSTORE_BASE64 and MUMLA_FUNK_KEYSTORE_PASSWORD (see README).
+# Runs when a tag "v*" is pushed (also when a release is created on github.com, which
+# creates the tag), or manually for an existing tag. Decides what to do:
+# - The release already has an APK attached (uploaded by hand): nothing to do.
+# - The tagged commit contains signed APKs in release/: publish those.
+# - The repository secrets MUMLA_FUNK_KEYSTORE_BASE64 and MUMLA_FUNK_KEYSTORE_PASSWORD
+#   are set: build the APK, sign it and attach it to the release.
+# - Otherwise: nothing can be signed; finish with a warning instead of failing.
 
 on:
   push:
@@ -22,38 +25,53 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TAG: ${{ github.event.inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ env.TAG }}
           submodules: recursive
 
-      - name: Look for pre-built APKs
-        id: prebuilt
+      - name: Decide what to do
+        id: plan
+        env:
+          KEYSTORE_BASE64: ${{ secrets.MUMLA_FUNK_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.MUMLA_FUNK_KEYSTORE_PASSWORD }}
         run: |
-          if ls release/*.apk >/dev/null 2>&1; then
-            echo "found=true" >> "$GITHUB_OUTPUT"
+          echo "title=Mumla Funk ${TAG#v}" >> "$GITHUB_OUTPUT"
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            if gh release view "$TAG" --json assets --jq '.assets[].name' | grep -q '\.apk$'; then
+              echo "::notice::Release $TAG already has an APK attached. Nothing to do."
+              echo "mode=done" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
           else
-            echo "found=false" >> "$GITHUB_OUTPUT"
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+          if ls release/*.apk > /dev/null 2>&1; then
+            echo "mode=prebuilt" >> "$GITHUB_OUTPUT"
+          elif [ -n "$KEYSTORE_BASE64" ] && [ -n "$KEYSTORE_PASSWORD" ]; then
+            echo "mode=build" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::No APK for $TAG: set the repository secrets MUMLA_FUNK_KEYSTORE_BASE64 and MUMLA_FUNK_KEYSTORE_PASSWORD (see README), or upload a signed APK to the release by hand."
+            echo "mode=skip" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Set up Java
-        if: steps.prebuilt.outputs.found != 'true'
-        uses: actions/setup-java@v4
+        if: steps.plan.outputs.mode == 'build'
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
 
       - name: Build and sign the APK
-        if: steps.prebuilt.outputs.found != 'true'
+        if: steps.plan.outputs.mode == 'build'
         env:
           KEYSTORE_BASE64: ${{ secrets.MUMLA_FUNK_KEYSTORE_BASE64 }}
           MUMLA_FUNK_KEYSTORE_PASSWORD: ${{ secrets.MUMLA_FUNK_KEYSTORE_PASSWORD }}
         run: |
-          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$MUMLA_FUNK_KEYSTORE_PASSWORD" ]; then
-            echo "::error::Secrets MUMLA_FUNK_KEYSTORE_BASE64 and MUMLA_FUNK_KEYSTORE_PASSWORD are missing (see README)."
-            exit 1
-          fi
           echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
           export MUMLA_FUNK_KEYSTORE="$RUNNER_TEMP/release.jks"
           cat > app/signing.gradle <<'GRADLE'
@@ -74,16 +92,19 @@ jobs:
           mkdir -p release
           cp app/build/outputs/apk/foss/release/mumla-foss-release.apk "release/mumla-funk-${TAG#v}.apk"
 
-      - name: Release notes
+      - name: Release notes for a new release
+        if: (steps.plan.outputs.mode == 'build' || steps.plan.outputs.mode == 'prebuilt') && steps.plan.outputs.exists != 'true'
         run: |
           if [ ! -f release/NOTES.md ]; then
             echo "Mumla Funk ${TAG}" > release/NOTES.md
           fi
 
       - name: Publish release
+        if: steps.plan.outputs.mode == 'build' || steps.plan.outputs.mode == 'prebuilt'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG }}
-          name: Mumla Funk ${{ env.TAG }}
-          body_path: release/NOTES.md
+          # Keep title and text of a release that was written on github.com.
+          name: ${{ steps.plan.outputs.exists != 'true' && steps.plan.outputs.title || '' }}
+          body_path: ${{ steps.plan.outputs.exists != 'true' && 'release/NOTES.md' || '' }}
           files: release/*.apk
