@@ -61,24 +61,21 @@ android {
         buildConfig = true
     }
 
-    def gitDescribe = providers.exec {
-        // Need --always because there are no tags in gitlab ci (right?)
-        commandLine "git", "describe", "--tags", "--match", "[0-9]*.[0-9]*.[0-9]*", "--always"
-    }.standardOutput.asText.get().trim()
+    // Mumla Funk has its own version line (based on Mumla 3.7.3).
+    def funkVersion = "1.0.0"
 
     defaultConfig {
         minSdkVersion 21
         targetSdk 36
 
-        applicationId "se.lublin.mumla"
-        // Remember: app_news_items_vX_Y_Z in src/main/res/values/strings.xml
-        // and NEWS_ITEMS in src/main/res/java/se/lublin/mumla/app/DialogUtils.java
-        //     code:XYYZZbb (bb for build)
-        versionCode 3070300
-        versionName gitDescribe
+        // Own application ID so that Mumla Funk can be installed next to the regular Mumla app.
+        applicationId "io.github.filubu.mumlafunk"
+        // code: XYYZZbb (bb for build)
+        versionCode 1000000
+        versionName funkVersion
 
         buildConfigField "long", "TIMESTAMP", System.currentTimeMillis() + "L"
-        buildConfigField "String", "VERSIONTAG", "\"" + gitDescribe.split("-")[0] + "\""
+        buildConfigField "String", "VERSIONTAG", "\"" + funkVersion + "\""
 
         testInstrumentationRunner "android.test.InstrumentationTestRunner"
     }
@@ -87,19 +84,21 @@ android {
     productFlavors {
         goog {
             dimension "release"
-            applicationId "se.lublin.mumla"
+            resValue "string", "search_authority", "io.github.filubu.mumlafunk.channel.ChannelSearchProvider"
         }
         foss {
             dimension "release"
-            applicationId "se.lublin.mumla"
+            resValue "string", "search_authority", "io.github.filubu.mumlafunk.channel.ChannelSearchProvider"
         }
         donation {
             dimension "release"
-            applicationId "se.lublin.mumla.donation"
+            applicationIdSuffix ".donation"
+            resValue "string", "search_authority", "io.github.filubu.mumlafunk.donation.channel.ChannelSearchProvider"
         }
         beta {
             dimension "release"
-            applicationId "se.lublin.mumla.beta"
+            applicationIdSuffix ".beta"
+            resValue "string", "search_authority", "io.github.filubu.mumlafunk.beta.channel.ChannelSearchProvider"
         }
     }
 

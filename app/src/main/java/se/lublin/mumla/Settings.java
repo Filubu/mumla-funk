@@ -176,10 +176,10 @@ public class Settings {
     }
 
     public String getInputMethod() {
-        String method = preferences.getString(PREF_INPUT_METHOD, ARRAY_INPUT_METHOD_VOICE);
+        // Mumla Funk is a walkie-talkie: push-to-talk is the default.
+        String method = preferences.getString(PREF_INPUT_METHOD, ARRAY_INPUT_METHOD_PTT);
         if(!ARRAY_INPUT_METHODS.contains(method)) {
-            // Set default method for users who used to use handset mode before removal.
-            method = ARRAY_INPUT_METHOD_VOICE;
+            method = ARRAY_INPUT_METHOD_PTT;
         }
         return method;
     }
