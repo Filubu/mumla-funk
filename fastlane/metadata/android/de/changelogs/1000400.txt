@@ -1,4 +1,1 @@
-* Neue Paket-ID de.filubu.funk: 1.0.4 wird als eigene App neben 1.0.3 installiert. Zertifikat in der alten Version exportieren, hier importieren, Server neu anlegen, danach die alte Version deinstallieren.
-* Erste Version für Google Play (ohne Spenden-Links).
-* Bevor die Bedienungshilfe für die Leiser-Taste eingeschaltet wird, erklärt die App, was sie damit tut und was nicht.
-* Link zur Datenschutzerklärung unter Einstellungen › Über.
+* Erste Version von Mumla Funk: Mumble als Walkie-Talkie. Halten zum Sprechen, loslassen beendet.
