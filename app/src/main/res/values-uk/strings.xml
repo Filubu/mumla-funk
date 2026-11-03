@@ -157,7 +157,6 @@
 \n
 \nПереконайтеся, що програма Orbot запущена.</string>
     <string name="default_">За замовчуванням</string>
-    <string name="donation_thanks">Дякуємо за пожертвування.</string>
     <string name="image_confirm_send">Надіслати це зображення?</string>
     <plurals name="search_channel_users">
         <item quantity="one">%d користувач</item>
@@ -208,7 +207,5 @@
     <string name="app_news">Що Нового</string>
     <string name="app_news_summary">Переглянути останні оновлення</string>
     <string name="app_news_footer_on_startup">Ці новини можна переглянути пізніше на сторінці Про Нас.</string>
-    <string name="donate_dialog_negativebutton_goog">Потім</string>
-    <string name="donate_thanks_goog">Дякую за вашу підтримку!</string>
     <string name="app_news_items_v3_7_1">• Невелмчкий реліз, переважно з оновленнями перекладу, дякую усім перекладачам!\n</string>
 </resources>

@@ -41,14 +41,24 @@ public class MumlaCertificateGenerateTask extends AsyncTask<Void, Void, Database
 
     private Context context;
     private AlertDialog loadingDialog;
+    /** Mumla Funk: no progress dialog (first start, the user does not need to wait for it). */
+    private final boolean quiet;
 
     public MumlaCertificateGenerateTask(Context context) {
+        this(context, false);
+    }
+
+    public MumlaCertificateGenerateTask(Context context, boolean quiet) {
         this.context = context;
+        this.quiet = quiet;
     }
 
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
+        if (quiet) {
+            return;
+        }
 
         loadingDialog = new MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.generateCertProgress)

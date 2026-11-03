@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mumla Funk: colors that differ in the dark theme of the app (not the always-dark popup). -->
+<resources>
+    <color name="funk_live_text">#FF66BB6A</color>
+</resources>

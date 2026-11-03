@@ -88,9 +88,9 @@ jobs:
           GRADLE
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;25.1.8937393" > /dev/null
           (cd libraries/humla/libs/humla-spongycastle && ../../gradlew jar)
-          ./gradlew assembleFossRelease
+          ./gradlew assembleRelease
           # Without the native codecs the app crashes when connecting (happened in 1.0.1/1.0.2).
-          APK=app/build/outputs/apk/foss/release/mumla-foss-release.apk
+          APK=app/build/outputs/apk/release/mumla-funk-release.apk
           for lib in libjnicelt7 libjnicelt11 libjniopus libjnispeex; do
             for abi in arm64-v8a armeabi-v7a; do
               if ! unzip -l "$APK" | grep -q "lib/$abi/$lib.so"; then

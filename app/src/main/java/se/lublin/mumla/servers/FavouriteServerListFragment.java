@@ -33,6 +33,7 @@ import android.widget.GridView;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 
 import java.util.List;
 
@@ -40,6 +41,8 @@ import se.lublin.humla.model.Server;
 import se.lublin.mumla.R;
 import se.lublin.mumla.db.DatabaseProvider;
 import se.lublin.mumla.db.PublicServer;
+import se.lublin.mumla.funk.FunkPrefs;
+import se.lublin.mumla.funk.widget.FunkWidgets;
 
 /**
  * Displays a list of servers, and allows the user to connect and edit them.
@@ -52,6 +55,8 @@ public class FavouriteServerListFragment extends Fragment implements OnItemClick
     private DatabaseProvider mDatabaseProvider;
     private GridView mServerGrid;
     private ServerAdapter<Server> mServerAdapter;
+    private View mHint;
+    private ExtendedFloatingActionButton mAddButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -78,6 +83,17 @@ public class FavouriteServerListFragment extends Fragment implements OnItemClick
         mServerGrid = (GridView) view.findViewById(R.id.server_list_grid);
         mServerGrid.setOnItemClickListener(this);
         mServerGrid.setEmptyView(view.findViewById(R.id.server_list_grid_empty));
+        // Mumla Funk: welcome screen while there is no server, and an obvious "add" button.
+        mHint = view.findViewById(R.id.server_list_hint);
+        mAddButton = view.findViewById(R.id.server_list_add);
+        mAddButton.setOnClickListener(v -> addServer());
+        view.findViewById(R.id.server_list_welcome_add).setOnClickListener(v -> addServer());
+        view.findViewById(R.id.server_list_welcome_public).setOnClickListener(v -> {
+            if (getActivity() instanceof se.lublin.mumla.app.MumlaActivity) {
+                ((se.lublin.mumla.app.MumlaActivity) getActivity())
+                        .showDrawerItem(se.lublin.mumla.app.DrawerAdapter.ITEM_PUBLIC);
+            }
+        });
 
         registerForContextMenu(mServerGrid);
         return view;
@@ -98,10 +114,7 @@ public class FavouriteServerListFragment extends Fragment implements OnItemClick
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
-        if (itemId == R.id.menu_add_server_item) {
-            addServer();
-            return true;
-        } else if (itemId == R.id.menu_quick_connect) {
+        if (itemId == R.id.menu_quick_connect) {
             ServerEditFragment.createServerEditDialog(getActivity(), null, ServerEditFragment.Action.CONNECT_ACTION, true)
                     .show(getFragmentManager(), "serverInfo");
             return true;
@@ -136,7 +149,10 @@ public class FavouriteServerListFragment extends Fragment implements OnItemClick
                 .setMessage(R.string.confirm_delete_server)
                 .setPositiveButton(R.string.delete, (dialog, which) -> {
                     mDatabaseProvider.getDatabase().removeServer(server);
+                    FunkPrefs.get(requireContext()).removeServer(server.getId());
                     mServerAdapter.remove(server);
+                    updateChrome();
+                    FunkWidgets.updateAll(requireContext());
                 })
                 .setNegativeButton(android.R.string.cancel, null)
                 .show();
@@ -146,6 +162,14 @@ public class FavouriteServerListFragment extends Fragment implements OnItemClick
         List<Server> servers = getServers();
         mServerAdapter = new FavouriteServerAdapter(getActivity(), servers, this);
         mServerGrid.setAdapter(mServerAdapter);
+        updateChrome();
+    }
+
+    /** Hint and add button only next to a list; the welcome screen has its own buttons. */
+    private void updateChrome() {
+        boolean empty = mServerAdapter == null || mServerAdapter.isEmpty();
+        mHint.setVisibility(empty ? View.GONE : View.VISIBLE);
+        mAddButton.setVisibility(empty ? View.GONE : View.VISIBLE);
     }
 
 

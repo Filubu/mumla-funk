@@ -72,9 +72,9 @@ import se.lublin.mumla.service.MumlaService;
 /**
  * The walkie-talkie popup: one big hold-to-talk button for one server.
  * <p>
- * Opened from the home screen widgets, by holding the power button (when Mumla Funk is the
- * default digital assistant, via {@code ACTION_ASSIST}) and by holding volume-down
- * ({@link FunkKeyService}). It can show over the lock screen.
+ * Opened from the home screen widgets and by holding the power button (when Mumla Funk is the
+ * default digital assistant, via {@code ACTION_ASSIST}). It can show over the lock screen.
+ * While it is open, volume-down is a push-to-talk key.
  */
 public class PttActivity extends AppCompatActivity implements FunkState.Listener,
         PttButtonView.Listener {
@@ -86,9 +86,9 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
     private static final int REQUEST_RECORD_AUDIO = 1;
     private static final int REQUEST_NOTIFICATIONS = 2;
     private static final long IDLE_CLOSE_MS = 30_000;
+    /** At most this many people are visible in the list above the button; more scroll. */
+    private static final int MAX_LIST_ROWS = 5;
     private static final long SWITCH_TIMEOUT_MS = 4_000;
-
-    private static volatile boolean sVisible;
 
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     private final Runnable mIdleClose = this::closeAnimated;
@@ -113,6 +113,8 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
     private String mError;
     private boolean mErrorNeedsApp;
     private boolean mKeyTalking;
+    /** The widget's server was deleted meanwhile. */
+    private boolean mServerMissing;
 
     private View mRoot;
     private View mCard;
@@ -123,11 +125,10 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
     private TextView mLabel;
     private TextView mHint;
     private MaterialButton mAction;
-
-    /** True while the popup is in the foreground. Used by {@link FunkKeyService}. */
-    public static boolean isVisible() {
-        return sVisible;
-    }
+    private View mUsersScroll;
+    private ViewGroup mUsers;
+    /** Rows of the list that fit on this screen (up to {@link #MAX_LIST_ROWS}). */
+    private int mListRows = MAX_LIST_ROWS;
 
     @NonNull
     public static Intent createIntent(Context context, long serverId, boolean autoConnect) {
@@ -211,6 +212,8 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
         mLabel = findViewById(R.id.ptt_label);
         mHint = findViewById(R.id.ptt_hint);
         mAction = findViewById(R.id.ptt_action);
+        mUsersScroll = findViewById(R.id.ptt_users_scroll);
+        mUsers = findViewById(R.id.ptt_users);
 
         mRoot.setOnClickListener(v -> closeAnimated());
         findViewById(R.id.ptt_close).setOnClickListener(v -> closeAnimated());
@@ -236,7 +239,10 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
         }
     }
 
-    /** Cap the card width on wide screens and shrink the button on short ones (landscape). */
+    /**
+     * Cap the card width on wide screens. On short screens (landscape, small phones) show fewer
+     * rows in the list and shrink the button, so that the card always fits.
+     */
     private void sizeCard() {
         DisplayMetrics dm = getResources().getDisplayMetrics();
         float density = dm.density;
@@ -247,8 +253,11 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
             lp.width = (int) (440 * density);
             mCard.setLayoutParams(lp);
         }
-        float size = Math.min(216, Math.min(widthDp - 96, heightDp - 290));
-        size = Math.max(132, size);
+        float rowDp = getResources().getDimension(R.dimen.funk_member_row_height) / density;
+        mListRows = heightDp >= 720 ? MAX_LIST_ROWS : heightDp >= 600 ? 4 : heightDp >= 480 ? 3 : 2;
+        float listDp = mListRows * rowDp + 8 + 12; // rows, padding, margin
+        float size = Math.min(216, Math.min(widthDp - 96, heightDp - 290 - listDp));
+        size = Math.max(120, size);
         ViewGroup.LayoutParams lp = mButton.getLayoutParams();
         lp.width = lp.height = (int) (size * density);
         mButton.setLayoutParams(lp);
@@ -268,9 +277,15 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
         mError = null;
         mErrorNeedsApp = false;
 
+        mServerMissing = false;
         if (requested < 0 && state.connection != FunkState.Connection.DISCONNECTED) {
-            // Power / volume key: talk on whatever we are connected to right now.
+            // Power button: talk on whatever we are connected to right now.
             mServer = state.serverId >= 0 ? FunkServers.resolve(this, state.serverId) : null;
+        } else if (requested >= 0
+                && FunkServers.find(FunkServers.loadAll(this), requested) == null) {
+            // A widget of a deleted server: never fall back to talking on another server.
+            mServer = null;
+            mServerMissing = true;
         } else {
             mServer = FunkServers.resolve(this, requested);
         }
@@ -292,13 +307,11 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
     @Override
     protected void onResume() {
         super.onResume();
-        sVisible = true;
         scheduleIdleClose();
     }
 
     @Override
     protected void onPause() {
-        sVisible = false;
         mHandler.removeCallbacks(mIdleClose);
         // Never keep transmitting once the popup is gone (screen off, home button, ...).
         if (mButton.isHolding() || mKeyTalking) {
@@ -435,8 +448,8 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
             mServerSub.setText(R.string.funk_connecting);
         } else if (mServer == null) {
             mode = PttButtonView.Mode.OFFLINE;
-            label = getString(R.string.funk_no_server);
-            hint = getString(R.string.funk_no_server_hint);
+            label = getString(mServerMissing ? R.string.funk_server_removed : R.string.funk_no_server);
+            hint = getString(mServerMissing ? R.string.funk_server_removed_hint : R.string.funk_no_server_hint);
             action = getString(R.string.funk_open_app);
             mServerSub.setText(R.string.funk_not_connected);
         } else {
@@ -456,6 +469,7 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
             }
         }
 
+        renderUsers(connected ? state.members : null);
         mButton.setMode(mode);
         mLabel.setText(label);
         mHint.setText(hint != null ? hint : "");
@@ -463,7 +477,8 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
         if (action != null) {
             mAction.setText(action);
             mAction.setVisibility(View.VISIBLE);
-            final boolean switchToPtt = action.equals(getString(R.string.funk_switch_to_ptt));
+            final boolean switchToPtt = connected && !state.selfMuted
+                    && !Settings.ARRAY_INPUT_METHOD_PTT.equals(mSettings.getInputMethod());
             mAction.setOnClickListener(v -> {
                 if (switchToPtt) {
                     mSettings.setInputMethod(Settings.ARRAY_INPUT_METHOD_PTT);
@@ -475,6 +490,24 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
         } else {
             mAction.setVisibility(View.GONE);
         }
+    }
+
+    /** The list above the button: everyone on the server, at most {@link #mListRows} visible. */
+    private void renderUsers(@Nullable List<FunkState.Member> members) {
+        if (members == null || members.isEmpty()) {
+            mUsersScroll.setVisibility(View.GONE);
+            return;
+        }
+        FunkMemberList.fill(mUsers, members);
+        int rows = Math.min(members.size(), mListRows);
+        int height = rows * getResources().getDimensionPixelSize(R.dimen.funk_member_row_height)
+                + mUsersScroll.getPaddingTop() + mUsersScroll.getPaddingBottom();
+        ViewGroup.LayoutParams lp = mUsersScroll.getLayoutParams();
+        if (lp.height != height) {
+            lp.height = height;
+            mUsersScroll.setLayoutParams(lp);
+        }
+        mUsersScroll.setVisibility(View.VISIBLE);
     }
 
     private void showError(@Nullable String message, boolean needsApp) {

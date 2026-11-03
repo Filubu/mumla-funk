@@ -17,7 +17,6 @@
     <string name="funk_several_talking">%1$s und %2$d weitere sprechen</string>
     <string name="funk_online_count">%1$d online</string>
     <string name="funk_channel_online">%1$s · %2$d online</string>
-    <string name="funk_switch_to">Zu %1$s wechseln</string>
     <string name="funk_open_app">In App öffnen</string>
     <string name="funk_close">Schließen</string>
     <string name="funk_no_server">Kein Server eingerichtet</string>
@@ -32,7 +31,6 @@
     <string name="funk_you">%1$s (du)</string>
     <string name="funk_choose_server">Server wählen</string>
     <string name="funk_add_server">Server hinzufügen</string>
-    <string name="funk_manage_servers">Server verwalten</string>
     <string name="funk_channels_chat">Kanäle &amp; Chat</string>
     <string name="funk_nobody_online">Sonst ist noch niemand da</string>
     <string name="funk_online_header">Online · %1$d</string>
@@ -50,13 +48,10 @@
     <string name="funk_widget_other_server">Aktiv: %1$s</string>
 
     <string name="pref_funk_header">Funk</string>
-    <string name="pref_funk_header_summary">Ein/Aus-Taste, Leiser-Taste, Funk-Fenster, Energiesparen</string>
+    <string name="pref_funk_header_summary">Ein/Aus-Taste, Funk-Fenster, Energiesparen</string>
     <string name="pref_funk_assistant_title">Ein/Aus-Taste halten öffnet Funk</string>
     <string name="pref_funk_assistant_on">Aktiv: Mumla Funk ist als digitaler Assistent festgelegt.</string>
     <string name="pref_funk_assistant_off">Antippen und Mumla Funk als Standard-App für den digitalen Assistenten wählen. Danach in den System-Gesten bei „Ein/Aus-Taste gedrückt halten“ den digitalen Assistenten einstellen.</string>
-    <string name="pref_funk_volume_title">Leiser-Taste 2 s halten öffnet Funk</string>
-    <string name="pref_funk_volume_on">Aktiv. Kurz drücken regelt weiterhin die Lautstärke.</string>
-    <string name="pref_funk_volume_off">Antippen und die Bedienungshilfe „Mumla Funk“ aktivieren. Funktioniert bei eingeschaltetem Bildschirm. Ist der Schalter ausgegraut: App-Info › ⋮ › Eingeschränkte Einstellungen zulassen.</string>
     <string name="pref_funk_volume_ptt_title">Leiser-Taste im Funk-Fenster = Sprechtaste</string>
     <string name="pref_funk_volume_ptt_summary">Solange das Funk-Fenster offen ist: halten zum Sprechen, loslassen beendet.</string>
     <string name="pref_funk_settings_unavailable">Die Systemeinstellung konnte auf diesem Gerät nicht geöffnet werden.</string>
@@ -73,23 +68,50 @@
     </string-array>
     <string name="pref_funk_battery_title">Schlafen erlauben (Akku-Optimierung)</string>
     <string name="pref_funk_battery_on">Erledigt: Mumla Funk ist von der Akku-Optimierung ausgenommen, das Handy darf schlafen, solange niemand spricht.</string>
-    <string name="pref_funk_battery_off">Antippen und erlauben. Sonst bleibt das Handy während der Verbindung wach, gespart wird dann nur beim Funkmodul.</string>
-    <string name="funk_battery_dialog_title">Akku sparen</string>
-    <string name="funk_battery_dialog_message">Solange niemand spricht, kann Mumla Funk dein Handy schlafen lassen. Durchsagen wecken es trotzdem sofort. Dafür muss Android Mumla Funk von der Akku-Optimierung ausnehmen. Bitte erlaube das im nächsten Fenster.</string>
-    <string name="funk_battery_dialog_allow">Erlauben</string>
-    <string name="funk_battery_dialog_later">Später</string>
+    <string name="pref_funk_battery_off">Antippen, in der Liste Mumla Funk suchen und „Nicht optimieren“ bzw. „Nicht eingeschränkt“ wählen. Sonst bleibt das Handy während der Verbindung wach, gespart wird dann nur beim Funkmodul.</string>
 
-    <string name="funk_accessibility_label">Mumla Funk Leiser-Taste</string>
-    <string name="funk_accessibility_description">Öffnet das Funk-Fenster von Mumla Funk, wenn du die Leiser-Taste 2 Sekunden gedrückt hältst. Kurzes Drücken regelt weiterhin wie gewohnt die Lautstärke. Der Dienst beachtet nur die Leiser-Taste und liest keine Bildschirminhalte.</string>
-    <string name="funk_accessibility_disclosure_title">Leiser-Taste als Abkürzung</string>
-    <string name="funk_accessibility_disclosure_message">Mumla Funk nutzt die Android-Bedienungshilfe nur für eine Sache: Wenn du die Leiser-Taste 2 Sekunden hältst, öffnet sich das Funk-Fenster, auch wenn die App nicht offen ist.\n\nDafür gibt Android die Drücke der Hardware-Tasten an den Dienst weiter. Mumla Funk wertet nur die Leiser-Taste aus. Der Dienst liest keine Bildschirminhalte und keine Eingaben und speichert, sendet oder teilt keine Daten.\n\nAls Nächstes öffnen sich die Android-Einstellungen. Dort „Mumla Funk Leiser-Taste“ einschalten. Abschalten kannst du den Dienst dort jederzeit.</string>
-    <string name="funk_accessibility_disclosure_accept">Zustimmen</string>
-    <string name="funk_accessibility_disclosure_decline">Ablehnen</string>
     <string name="privacy_policy">Datenschutzerklärung</string>
-    <string name="crash_dialog_title">Mumla Funk ist abgestürzt</string>
-    <string name="crash_dialog_message">Beim letzten Mal ist die App abgestürzt. Bitte diese Angaben kopieren und an die Person schicken, die die App betreut.</string>
-    <string name="crash_dialog_copy">Kopieren</string>
-    <string name="crash_dialog_share">Teilen</string>
-    <string name="crash_dialog_close">Schließen</string>
-    <string name="crash_dialog_copied">Kopiert</string>
+
+    <!-- Startbildschirm, Server einrichten und Zertifikat (1.0.5) -->
+    <string name="drawer_my_servers">Meine Server</string>
+    <string name="server_list_hint">Tippe auf einen Server, um dich zu verbinden. Über ⋮ bearbeiten oder löschen.</string>
+    <string name="server_row_funk">Funk</string>
+    <string name="server_row_more">Server-Optionen</string>
+    <string name="welcome_title">Willkommen bei Mumla Funk</string>
+    <string name="welcome_text">Mumla Funk verbindet sich mit jedem Mumble-Server. Füge zuerst deinen Server hinzu. Adresse und, falls nötig, Passwort bekommst du von der Person, die den Server betreibt.</string>
+    <string name="welcome_public_servers">Öffentliche Server ansehen</string>
+    <string name="welcome_funk_note">Funk-Server bekommen einen großen Sprechknopf, das Funk-Fenster und die Widgets. Andere Server zeigen die gewohnte Mumble-Ansicht mit Kanälen und Chat. Das legst du für jeden Server fest.</string>
+    <string name="server_edit_title_add">Server hinzufügen</string>
+    <string name="server_edit_title_edit">Server bearbeiten</string>
+    <string name="server_edit_save">Speichern</string>
+    <string name="server_edit_intro">Die Angaben bekommst du von der Person, die den Server betreibt.</string>
+    <string name="server_edit_host_placeholder">z. B. mumble.example.org</string>
+    <string name="server_edit_host_invalid">Nur die Adresse eingeben, z. B. mumble.example.org</string>
+    <string name="server_edit_username_helper">So sehen dich die anderen. Am besten ohne Leerzeichen.</string>
+    <string name="server_edit_username_missing">Bitte einen Namen eingeben.</string>
+    <string name="server_edit_password_hint">Passwort (optional)</string>
+    <string name="server_edit_password_helper">Nur nötig, wenn der Server ein Passwort hat.</string>
+    <string name="server_edit_name_hint">Name in der Liste (optional)</string>
+    <string name="server_edit_funk">Funk-Server</string>
+    <string name="server_edit_funk_summary">An: großer Sprechknopf, Funk-Fenster und Widgets. Aus: die gewohnte Mumble-Ansicht mit Kanälen und Chat.</string>
+    <string name="server_added">%1$s gespeichert</string>
+    <string name="funk_cert_title">Diesem Server vertrauen?</string>
+    <string name="funk_cert_message">%1$s weist sich mit einem eigenen Zertifikat aus, das Android nicht kennt. Bei privaten Mumble-Servern ist das normal. Vertraue ihm, wenn du die Adresse von der Person hast, die den Server betreibt. Die App merkt sich das Zertifikat und warnt, falls es sich ändert.</string>
+    <string name="funk_cert_trust">Vertrauen und verbinden</string>
+    <string name="funk_server_removed">Server gelöscht</string>
+    <string name="funk_server_removed_hint">Den Server dieses Widgets gibt es nicht mehr. Widget lange drücken, um einen anderen zu wählen.</string>
+
+    <!-- Display des Funk-Bildschirms und Liste im Funk-Fenster (1.0.5) -->
+    <string name="funk_release_to_stop">Loslassen beendet</string>
+    <string name="funk_now_self">Du sendest</string>
+    <string name="funk_now_free">Kanal frei</string>
+    <string name="funk_now_free_sub">Niemand spricht</string>
+    <string name="funk_now_last">Zuletzt: %1$s · %2$s</string>
+    <string name="funk_now_reconnecting">Verbindung verloren</string>
+    <string name="funk_ping_ms">%1$d ms</string>
+    <string name="funk_ping_idle">%1$d ms · Ruhe</string>
+    <string name="funk_ping_desc">Ping %1$d Millisekunden</string>
+    <string name="funk_ping_idle_desc">Ping %1$d Millisekunden, Energiesparmodus</string>
+    <string name="funk_member_talking">spricht</string>
+    <string name="funk_member_muted">stumm</string>
 </resources>

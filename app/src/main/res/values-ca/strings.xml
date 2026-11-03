@@ -155,7 +155,6 @@
         <item quantity="one">%d usuari</item>
         <item quantity="other">%d usuaris</item>
     </plurals>
-    <string name="donation_thanks">Gràcies per la donació.</string>
     <string name="default_">Predeterminat</string>
     <string name="orbot_not_installed">L\'apliació Orbot no està instal·lada. No s\'usa Tor.</string>
     <string name="grant_perm_draw_over_apps">Permeteu a l\'aplicació mostrar-se per sobre d\'altres aplicacions.</string>
@@ -207,11 +206,4 @@
     <string name="app_news_items_v3_7_1">• Llançament menor majoritàriament amb actualitzacions de traducció, gràcies a tots els traductors!\n</string>
     <string name="app_news_items_v3_7_2">• Corregeix la possible caiguda a l\'inici.\n • Afegeix algunes traduccions, gràcies a tots els traductors!\n</string>
     <string name="app_news_items_v3_7_3">• Fa visible la cantonada PTT a Android 12 i posterior, i sobre fons fosc i clar\n • Fa que el botó Torna demani desconnectar del servidor de nou a Android 16 +\n</string>
-    <string name="donate_dialog_title_goog">Gaudiu del Mumla?</string>
-    <string name="donate_dialog_message_goog">Gràcies per fer servir el Mumla! Si us plau, considereu fer una petita donació per ajudar a mantenir Mumla viu i eliminar aquest missatge.</string>
-    <string name="donate_dialog_positivebutton_goog">Suport Mumla</string>
-    <string name="donate_dialog_negativebutton_goog">Més tard</string>
-    <string name="donate_purchase_pending_goog">La vostra donació està pendent i pot estar a punt en un reinici posterior. Gràcies!</string>
-    <string name="donate_thanks_goog">Gràcies pel vostre suport!</string>
-    <string name="donate_foss">Donació</string>
 </resources>

@@ -15,7 +15,6 @@
 
 package se.lublin.mumla.funk;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -25,21 +24,21 @@ import android.os.Build;
 import android.os.PowerManager;
 import android.provider.Settings;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-
-import se.lublin.mumla.R;
-
 /**
  * Exemption from battery optimization. Only with it, the energy saving mode lets the phone sleep
  * between keep-alive pings: Android delivers the keep-alive alarms in Doze without throttling only
  * to exempt apps. Without it, the phone is kept awake while connected (as before), it just uses
  * the radio less.
+ * <p>
+ * The app does not ask for the exemption itself (that needs the permission
+ * REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, which Google Play restricts). It only opens the system
+ * list, where the user can exempt it.
  */
 public final class BatteryOptimization {
     private BatteryOptimization() {
     }
 
-    /** @return true if there is something to ask for (Android 6+). */
+    /** @return true if there is something to allow (Android 6+). */
     public static boolean isRelevant() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
     }
@@ -50,49 +49,24 @@ public final class BatteryOptimization {
         return pm != null && pm.isIgnoringBatteryOptimizations(context.getPackageName());
     }
 
-    /** Asks for the exemption (system dialog), or opens the list if that is not possible. */
-    @SuppressLint("BatteryLife") // Core feature: a walkie-talkie that has to stay reachable.
-    public static void request(Activity activity) {
-        if (!isRelevant()) return;
-        Intent ask = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
-                Uri.parse("package:" + activity.getPackageName()));
+    /**
+     * Opens the system list of battery optimization exemptions, or the app info as fallback.
+     *
+     * @return false if neither could be opened.
+     */
+    public static boolean openSettings(Activity activity) {
+        if (!isRelevant()) return false;
         Intent list = new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
-        for (Intent intent : isExempt(activity) ? new Intent[]{list} : new Intent[]{ask, list}) {
+        Intent appInfo = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.parse("package:" + activity.getPackageName()));
+        for (Intent intent : new Intent[]{list, appInfo}) {
             try {
                 activity.startActivity(intent);
-                return;
+                return true;
             } catch (ActivityNotFoundException | SecurityException e) {
                 // Try the next one.
             }
         }
-    }
-
-    /**
-     * Explains and asks once, if energy saving is on and the app is not exempt yet.
-     * Later on, the walkie-talkie settings offer it.
-     */
-    public static void maybeAskOnce(Activity activity) {
-        try {
-            askOnce(activity);
-        } catch (RuntimeException e) {
-            android.util.Log.e("BatteryOptimization", "could not ask for the exemption", e);
-        }
-    }
-
-    private static void askOnce(Activity activity) {
-        if (!isRelevant() || activity.isFinishing()) return;
-        FunkPrefs prefs = FunkPrefs.get(activity);
-        if (prefs.wasBatteryOptimizationAsked()
-                || !se.lublin.mumla.Settings.getInstance(activity).isEnergySavingEnabled()
-                || isExempt(activity)) {
-            return;
-        }
-        prefs.setBatteryOptimizationAsked();
-        new MaterialAlertDialogBuilder(activity)
-                .setTitle(R.string.funk_battery_dialog_title)
-                .setMessage(R.string.funk_battery_dialog_message)
-                .setPositiveButton(R.string.funk_battery_dialog_allow, (d, w) -> request(activity))
-                .setNegativeButton(R.string.funk_battery_dialog_later, null)
-                .show();
+        return false;
     }
 }

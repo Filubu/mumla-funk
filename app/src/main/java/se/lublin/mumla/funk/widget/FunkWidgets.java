@@ -63,6 +63,27 @@ public final class FunkWidgets {
         }
     }
 
+    /** Keeps the server name shown by widgets in sync after the server was edited. */
+    public static void onServerRenamed(@NonNull Context context, long serverId, @NonNull String name) {
+        AppWidgetManager manager = AppWidgetManager.getInstance(context);
+        if (manager == null) {
+            return;
+        }
+        FunkPrefs prefs = FunkPrefs.get(context);
+        boolean changed = false;
+        for (Class<?> provider : new Class<?>[]{FunkWidgetSmall.class, FunkWidgetLarge.class}) {
+            for (int id : manager.getAppWidgetIds(new ComponentName(context, provider))) {
+                if (prefs.isWidgetConfigured(id) && prefs.getWidgetServerId(id) == serverId) {
+                    prefs.setWidgetServer(id, serverId, name);
+                    changed = true;
+                }
+            }
+        }
+        if (changed) {
+            updateAll(context);
+        }
+    }
+
     static void update(@NonNull Context context, @NonNull AppWidgetManager manager, int appWidgetId,
                        boolean large) {
         if (large) {

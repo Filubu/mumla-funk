@@ -21,21 +21,26 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.materialswitch.MaterialSwitch;
+import com.google.android.material.textfield.TextInputLayout;
 
 import se.lublin.humla.model.Server;
 import se.lublin.mumla.R;
 import se.lublin.mumla.Settings;
+import se.lublin.mumla.funk.FunkPrefs;
 
 public class ServerEditFragment extends DialogFragment {
     private static final String ARGUMENT_SERVER = "server";
@@ -47,6 +52,10 @@ public class ServerEditFragment extends DialogFragment {
     private EditText mPortEdit;
     private EditText mUsernameEdit;
     private EditText mPasswordEdit;
+    private TextInputLayout mHostLayout;
+    private TextInputLayout mPortLayout;
+    private TextInputLayout mUsernameLayout;
+    private MaterialSwitch mFunkSwitch;
 
     private ServerEditListener mListener;
 
@@ -69,12 +78,12 @@ public class ServerEditFragment extends DialogFragment {
     }
 
     @Override
-    public void onAttach(Activity activity) {
+    public void onAttach(@NonNull Activity activity) {
         super.onAttach(activity);
         try {
             mListener = (ServerEditListener) activity;
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString() + " must implement ServerEditListener!");
+            throw new ClassCastException(activity + " must implement ServerEditListener!");
         }
     }
 
@@ -83,14 +92,11 @@ public class ServerEditFragment extends DialogFragment {
         super.onStart();
         // Override positive button to not automatically dismiss on press.
         // We can't accomplish this with AlertDialog.Builder.
-        ((AlertDialog)getDialog()).getButton(Dialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (validate()) {
-                    Server server = createServer();
-                    mListener.onServerEdited(getAction(), server);
-                    dismiss();
-                }
+        ((AlertDialog) requireDialog()).getButton(Dialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            if (validate()) {
+                Server server = createServer();
+                mListener.onServerEdited(getAction(), server, mFunkSwitch.isChecked());
+                dismiss();
             }
         });
     }
@@ -98,37 +104,47 @@ public class ServerEditFragment extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Settings settings = Settings.getInstance(getActivity());
+        Settings settings = Settings.getInstance(requireContext());
 
+        int title;
         String actionName;
         switch (getAction()) {
             case ADD_ACTION:
+                title = R.string.server_edit_title_add;
                 actionName = getString(R.string.add);
                 break;
             case EDIT_ACTION:
-                actionName = getString(android.R.string.ok);
+                title = R.string.server_edit_title_edit;
+                actionName = getString(R.string.server_edit_save);
                 break;
             case CONNECT_ACTION:
+                title = R.string.connectToServer;
                 actionName = getString(R.string.connect);
                 break;
             default:
                 throw new RuntimeException("Unknown action " + getAction());
         }
 
-        LayoutInflater inflater = LayoutInflater.from(getActivity());
-        View view = inflater.inflate(R.layout.dialog_server_edit, null, false);
+        View view = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_server_edit, null, false);
 
-        TextView titleLabel = view.findViewById(R.id.server_edit_name_title);
         mNameEdit = view.findViewById(R.id.server_edit_name);
         mHostEdit = view.findViewById(R.id.server_edit_host);
         mPortEdit = view.findViewById(R.id.server_edit_port);
         mUsernameEdit = view.findViewById(R.id.server_edit_username);
-        mUsernameEdit.setHint(settings.getDefaultUsername());
         mPasswordEdit = view.findViewById(R.id.server_edit_password);
+        mHostLayout = view.findViewById(R.id.server_edit_host_layout);
+        mPortLayout = view.findViewById(R.id.server_edit_port_layout);
+        mUsernameLayout = view.findViewById(R.id.server_edit_username_layout);
+        mFunkSwitch = view.findViewById(R.id.server_edit_funk);
+        clearErrorOnEdit(mHostEdit, mHostLayout);
+        clearErrorOnEdit(mPortEdit, mPortLayout);
+        clearErrorOnEdit(mUsernameEdit, mUsernameLayout);
 
         Server oldServer = getServer();
         if (oldServer != null) {
-            mNameEdit.setText(oldServer.getName());
+            // Server.getName() falls back to the host; only show a name that was really set.
+            String name = oldServer.getName();
+            mNameEdit.setText(name != null && !name.equals(oldServer.getHost()) ? name : "");
             mHostEdit.setText(oldServer.getHost());
             if (oldServer.getPort() != 0) {
                 mPortEdit.setText(String.valueOf(oldServer.getPort()));
@@ -136,26 +152,60 @@ public class ServerEditFragment extends DialogFragment {
             mUsernameEdit.setText(oldServer.getUsername());
             mPasswordEdit.setText(oldServer.getPassword());
         }
+        if (mUsernameEdit.getText().length() == 0) {
+            // Prefill a name the user chose in the settings; never the generic default.
+            String defaultUsername = settings.getDefaultUsername();
+            if (!Settings.DEFAULT_DEFAULT_USERNAME.equals(defaultUsername)) {
+                mUsernameEdit.setText(defaultUsername);
+            }
+        }
+
+        boolean funk = oldServer != null && oldServer.isSaved()
+                ? FunkPrefs.get(requireContext()).isFunkServer(oldServer.getId())
+                : FunkPrefs.DEFAULT_SERVER_FUNK;
+        mFunkSwitch.setChecked(funk);
+        view.findViewById(R.id.server_edit_funk_summary).setOnClickListener(v -> mFunkSwitch.toggle());
 
         if (shouldIgnoreTitle()) {
-            titleLabel.setVisibility(View.GONE);
-            mNameEdit.setVisibility(View.GONE);
+            // Quick connect: the server is not saved, so neither a name nor the walkie-talkie
+            // setting would be kept.
+            view.findViewById(R.id.server_edit_name_layout).setVisibility(View.GONE);
+            view.findViewById(R.id.server_edit_funk_row).setVisibility(View.GONE);
+            mFunkSwitch.setChecked(false);
         }
 
         return new MaterialAlertDialogBuilder(requireActivity())
+                .setTitle(title)
                 .setPositiveButton(actionName, null)
                 .setNegativeButton(android.R.string.cancel, null)
                 .setView(view)
                 .create();
     }
 
+    private static void clearErrorOnEdit(EditText edit, TextInputLayout layout) {
+        edit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                layout.setError(null);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+    }
+
     public Server createServer() {
-        String name = (mNameEdit).getText().toString().trim();
-        String host = (mHostEdit).getText().toString().trim();
+        String name = mNameEdit.getText().toString().trim();
+        String host = mHostEdit.getText().toString().trim();
 
         int port;
         try {
-            port = Integer.parseInt((mPortEdit).getText().toString());
+            port = Integer.parseInt(mPortEdit.getText().toString().trim());
         } catch (final NumberFormatException ex) {
             // Setting 0, meaning that port isn't configured. Consumers of
             // Server.getPort() will have to deal with that. Like displaying
@@ -163,11 +213,8 @@ public class ServerEditFragment extends DialogFragment {
             port = 0;
         }
 
-        String username = (mUsernameEdit).getText().toString().trim();
+        String username = mUsernameEdit.getText().toString().trim();
         String password = mPasswordEdit.getText().toString();
-
-        if (username.equals(""))
-            username = mUsernameEdit.getHint().toString();
 
         // Inherit database ID of provided server.
         long id;
@@ -186,38 +233,51 @@ public class ServerEditFragment extends DialogFragment {
      * @return true if the inputted values are valid, false otherwise.
      */
     public boolean validate() {
-        if (mHostEdit.getText().length() == 0) {
-            mHostEdit.setError(getString(R.string.invalid_host));
-            return false;
-        } else if (mPortEdit.getText().length() > 0) {
+        boolean valid = true;
+        String host = mHostEdit.getText().toString().trim();
+        if (host.isEmpty() || host.contains(" ") || host.contains("/")) {
+            // Typical mistakes: a full URL ("mumble://host/") or a typo with spaces.
+            mHostLayout.setError(getString(R.string.server_edit_host_invalid));
+            valid = false;
+        }
+        String portText = mPortEdit.getText().toString().trim();
+        if (!portText.isEmpty()) {
             try {
-                int port = Integer.parseInt(mPortEdit.getText().toString());
+                int port = Integer.parseInt(portText);
                 if (port < 1 || port > 65535) {
-                    mPortEdit.setError(getString(R.string.invalid_port_range));
-                    return false;
+                    mPortLayout.setError(getString(R.string.invalid_port_range));
+                    valid = false;
                 }
             } catch (NumberFormatException nfe) {
-                mPortEdit.setError(getString(R.string.invalid_port_range));
-                return false;
+                mPortLayout.setError(getString(R.string.invalid_port_range));
+                valid = false;
             }
         }
-        return true;
+        if (mUsernameEdit.getText().toString().trim().isEmpty()) {
+            mUsernameLayout.setError(getString(R.string.server_edit_username_missing));
+            valid = false;
+        }
+        return valid;
     }
 
+    @Nullable
     private Server getServer() {
-        return getArguments().getParcelable(ARGUMENT_SERVER);
+        return requireArguments().getParcelable(ARGUMENT_SERVER);
     }
 
     private Action getAction() {
-        return Action.values()[getArguments().getInt(ARGUMENT_ACTION)];
+        return Action.values()[requireArguments().getInt(ARGUMENT_ACTION)];
     }
 
     private boolean shouldIgnoreTitle() {
-        return getArguments().getBoolean(ARGUMENT_IGNORE_TITLE);
+        return requireArguments().getBoolean(ARGUMENT_IGNORE_TITLE);
     }
 
     public interface ServerEditListener {
-        void onServerEdited(Action action, Server server);
+        /**
+         * @param funk Mumla Funk: whether the server uses the walkie-talkie UI (saved servers).
+         */
+        void onServerEdited(Action action, Server server, boolean funk);
     }
 
     public enum Action {

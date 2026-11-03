@@ -6,7 +6,8 @@ und warum sie so gebaut sind. Für Überblick, Bauen und Releases siehe das [REA
 Mumla Funk besteht aus drei Schichten:
 
 1. **Humla** (`libraries/humla/`): das Mumble-Protokoll, also Verbindung, Audio und Codecs.
-   Unverändert aus Mumla übernommen, bis auf den [Ende-Flag-Fix](#ende-flag-terminator).
+   Aus Mumla übernommen, geändert sind der [Ende-Flag-Fix](#ende-flag-terminator), das
+   Energiesparen und zwei Abfragen für das Display (`isConnectionIdle()`, `getLatencyMillis()`).
 2. **Mumla** (`app/`, Pakete außer `funk`): Vordergrunddienst, Kanäle, Chat, Serverliste,
    Zertifikate und Einstellungen. Nahezu unverändert.
 3. **Funk** (`app/src/main/java/se/lublin/mumla/funk/`): die Walkie-Talkie-Bedienung. Sie
@@ -19,13 +20,11 @@ flowchart LR
     subgraph Eingänge
         Widget[Widgets<br>funk/widget]
         Power[Ein/Aus-Taste<br>ACTION_ASSIST]
-        Vol[Leiser-Taste 2 s<br>FunkKeyService]
     end
     Widget --> Popup
     Power --> Popup
-    Vol --> Popup
     Popup[PttActivity<br>Funk-Fenster] -- onTalkKeyDown/Up --> Service
-    Home[FunkFragment<br>Startbildschirm] -- onTalkKeyDown/Up --> Service
+    Home[FunkFragment<br>Funk-Bildschirm] -- onTalkKeyDown/Up --> Service
     Service[MumlaService<br>extends HumlaService] <--> Humla[Humla<br>Protokoll + Audio] <--> Server[(Mumble-Server)]
     Service -- Ereignisse, gebündelt --> State[FunkState.publish]
     State --> Popup
@@ -37,30 +36,34 @@ flowchart LR
 
 | Datei | Aufgabe |
 |---|---|
-| `funk/FunkState.java` | Unveränderlicher Schnappschuss: Verbindung, Server, eigener Kanal, alle Teilnehmer, wer spricht, ob man stumm ist. Statischer „aktueller Zustand“ plus Listener. |
-| `funk/PttActivity.java` | Funk-Fenster: großer Sprechknopf für einen Server, Verbindungsaufbau, Fehleranzeige, Leiser-Taste als Sprechtaste. |
+| `funk/FunkState.java` | Unveränderlicher Schnappschuss: Verbindung, Server, eigener Kanal, alle Teilnehmer, wer spricht, ob man stumm ist. Statischer „aktueller Zustand“ plus Listener. Merkt sich, wer zuletzt gesprochen hat. |
+| `funk/PttActivity.java` | Funk-Fenster: Teilnehmerliste, großer Sprechknopf für einen Server, Verbindungsaufbau, Fehleranzeige, Leiser-Taste als Sprechtaste. |
+| `funk/FunkMemberList.java`, `res/layout/funk_member_row.xml` | Teilnehmerzeilen für das Display und die Liste im Funk-Fenster (beide dunkel), Zeilen werden wiederverwendet. |
 | `funk/PttButtonView.java` | Der runde Knopf als eigene View: Zustände OFFLINE, CONNECTING, READY, TALKING, MUTED; Puls-Animation, Haptik, Touch-Logik (halten oder tippen). |
-| `funk/FunkFragment.java` | Startbildschirm in der App: Serverwahl, Status, Sprechknopf, Teilnehmerliste. |
-| `funk/FunkKeyService.java` | Bedienungshilfe, die nur die Leiser-Taste beobachtet: 2 s halten öffnet das Funk-Fenster. |
-| `funk/FunkPrefs.java` | Einstellungen der Funk-Funktionen: zuletzt genutzter Server, Server je Widget, Leiser-Taste im Fenster. |
+| `funk/FunkFragment.java`, `res/layout/fragment_funk.xml`, `funk_display.xml`, `funk_controls.xml`, `layout-land/` | Funk-Bildschirm in der App, solange man mit einem Funk-Server verbunden ist, siehe [Funk-Bildschirm](#funk-bildschirm-funkfragment). |
+| `funk/FunkPrefs.java` | Einstellungen der Funk-Funktionen: Funk-Server ja/nein je Server, zuletzt genutzter Server, Server je Widget, Leiser-Taste im Fenster. |
+| `funk/BatteryOptimization.java` | Status der Akku-Ausnahme und Link in die Systemliste (ohne eigene Berechtigung). |
 | `funk/FunkServers.java` | Gespeicherte Server laden, Standard-Server auflösen, Anzeigenamen. |
 | `funk/widget/FunkWidgets.java` | Baut die `RemoteViews` beider Widgets aus `FunkState`. |
 | `funk/widget/FunkWidgetSmall.java`, `FunkWidgetLarge.java`, `FunkWidgetProvider.java` | Die zwei `AppWidgetProvider`. |
 | `funk/widget/FunkWidgetConfigActivity.java` | Serverauswahl beim Platzieren eines Widgets (auch nachträglich über „Widget anpassen“). |
-| `preference/FunkSettingsFragment.java`, `res/xml/settings_funk.xml` | Einstellungen › Funk: Status und Links für Ein/Aus-Taste und Leiser-Taste. |
+| `preference/FunkSettingsFragment.java`, `res/xml/settings_funk.xml` | Einstellungen › Funk: Ein/Aus-Taste, Leiser-Taste im Fenster, Energiesparen, Akku-Ausnahme. |
 | `res/values*/strings_funk.xml`, `colors_funk.xml` | Texte (Englisch, Deutsch) und Farben der Funk-Oberfläche. |
 
 Geänderte Mumla-Dateien:
 
 | Datei | Änderung |
 |---|---|
-| `service/MumlaService.java` | Veröffentlicht `FunkState` und aktualisiert die Widgets bei Ereignissen. |
-| `app/MumlaActivity.java` | Funk-Bildschirm als Start und nach dem Verbinden. Merkt sich den zuletzt genutzten Server. Nimmt `EXTRA_CONNECT_SERVER_ID` aus dem Funk-Fenster an. |
-| `app/DrawerAdapter.java` | Menüeintrag „Funk“. |
+| `service/MumlaService.java` | Veröffentlicht `FunkState` und aktualisiert die Widgets bei Ereignissen. Der TALK-Broadcast ist entfernt (siehe [Sicherheit](#sicherheit)). |
+| `app/MumlaActivity.java` | Serverliste als Start. Nach dem Verbinden Funk-Bildschirm oder Kanalliste, je nach Server. Merkt sich den zuletzt genutzten Server. Nimmt `EXTRA_CONNECT_SERVER_ID` aus dem Funk-Fenster an. Erzeugt beim ersten Start still ein Zertifikat. |
+| `app/DrawerAdapter.java` | Menüeintrag „Funk“ unter dem verbundenen Server, „Meine Server“. |
+| `servers/ServerEditFragment.java`, `res/layout/dialog_server_edit.xml` | Formular mit Beispielen, Hinweisen, Prüfung der Felder und dem Schalter „Funk-Server“. |
+| `servers/FavouriteServerListFragment.java`, `res/layout/fragment_server_list.xml` | Willkommen-Seite ohne Server, Hinweis und Knopf „Server hinzufügen“, Funk-Kennzeichen je Server. |
+| `res/values*/themes.xml`, `colors.xml` | Kontraste im dunklen Design (siehe [Farben](#farben-und-kontrast)). |
 | `Settings.java`, `res/xml/settings_audio.xml` | Push-to-Talk als Standard. |
 | `preference/MumlaPreferenceFragment.java` | Interne Einstellungs-Links fest an das eigene Paket gebunden (siehe [Eigene App-ID](#eigene-app-id)). |
 | `channel/ChannelFragment.java`, `service/MumlaHotCorner.java`, `service/MumlaOverlay.java` | Senden endet auch bei abgebrochener Berührung (`ACTION_CANCEL`). |
-| `AndroidManifest.xml` | Funk-Fenster, Widgets, Widget-Einrichtung und Bedienungshilfe. |
+| `AndroidManifest.xml` | Funk-Fenster, Widgets und Widget-Einrichtung. Dienst und interne Activities nicht exportiert. |
 
 ## Zustand: FunkState
 
@@ -84,12 +87,32 @@ Die Oberflächen fragen nie den Service nach dem Zustand, sie zeigen nur `FunkSt
 Widgets brauchen dafür keinen Datenbankzugriff: Den Servernamen eines Widgets speichert
 `FunkPrefs` beim Einrichten.
 
+## Funk-Server oder normaler Server
+
+Für jeden gespeicherten Server steht in `FunkPrefs` unter `funk_server_mode_<id>`, ob er ein
+Funk-Server ist. Ohne Eintrag gilt „ja“, so bleiben Server aus 1.0.4 und älter Funk-Server.
+Gesetzt wird der Wert über den Schalter im Server-Formular, beim Löschen eines Servers wird er
+entfernt. In der Serverdatenbank von Mumla ändert sich nichts, es gibt keine Migration.
+
+`MumlaActivity.showConnectedScreen()` entscheidet nach dem Verbinden:
+
+- Funk-Server: `FunkFragment` (Funk-Bildschirm).
+- Sonst, auch bei nicht gespeicherten Servern (öffentliche Server, „Schnell verbinden“,
+  `mumble://`-Links): `ChannelFragment` (Mumla).
+- Mit Mumlas Einstellung „Angepinnte Kanäle beim Start“ wie bisher die angepinnten Kanäle.
+
+Der Funk-Bildschirm ist über das Menü auch bei normalen Servern erreichbar. Funk-Fenster und
+Widgets funktionieren mit jedem gespeicherten Server, das Kennzeichen steuert nur die Ansicht
+in der App. Wird die Verbindung getrennt, zeigt die App wieder die Serverliste. Während einer
+Neuverbindung bleibt der Funk-Bildschirm stehen und zeigt „Verbindung verloren, verbinde neu“,
+statt eines Dialogs.
+
 ## Sprechen
 
 Alle Sprechwege rufen `IMumlaService.onTalkKeyDown()` und `onTalkKeyUp()` auf. Das sind
 dieselben Methoden wie bei Mumlas Sprechtaste:
 
-- Touch auf `PttButtonView` (Funk-Fenster und Startbildschirm),
+- Touch auf `PttButtonView` (Funk-Fenster und Funk-Bildschirm),
 - Leiser-Taste im offenen Funk-Fenster,
 - die in den Einstellungen gewählte PTT-Taste.
 
@@ -107,13 +130,42 @@ Sicherungen gegen hängendes Senden:
 Solange der Finger drückt, zeigt der Knopf sofort „Sendet“, ohne auf die Rückmeldung des
 Servers zu warten. Im Umschaltmodus gilt das nicht.
 
+## Funk-Bildschirm (FunkFragment)
+
+Aufgebaut wie ein modernes Funkgerät, ohne eines nachzubilden: ein Gehäuse
+(`colorSurfaceContainerHigh`, Ecken 32 dp) mit einem Display oben und der Bedienung unten.
+
+- **Display** (`funk_display.xml`): immer dunkel wie Funk-Fenster und Widgets, auch im hellen
+  Design. Kein Pixel- oder LCD-Look, sondern normale Schrift auf einer dunklen Fläche mit
+  leichtem Verlauf. Inhalt von oben:
+  - Funkmast, Server, Kanal und Teilnehmerzahl, rechts der Ping mit Signal-Symbol (grün bis
+    120 ms, gelb bis 300 ms, sonst rot). Er kommt aus `IHumlaService.getLatencyMillis()` und
+    wird alle 2 s neu angezeigt. Im Ruhezustand steht „· Ruhe“ dahinter, der Wert kann dann
+    Minuten alt sein (`isConnectionIdle()`).
+  - Eine große Zeile wie die Anrufer-Anzeige eines Funkgeräts: „Max spricht“ (grün), „Du
+    sendest“ (rot), „Mikrofon stumm“ (gelb), sonst „Kanal frei“ mit „Zuletzt: Max · 14:32“.
+    Wer zuletzt gesprochen hat, merkt sich `FunkState` je Server, solange die App läuft.
+  - Alle Teilnehmer (`FunkMemberList`). Die Liste scrollt innerhalb des Displays, so bleibt
+    die Sprechtaste immer an derselben Stelle.
+- **Lautsprecher-Gitter** als Trennung (`funk_grille.xml`, nur Deko).
+- **Bedienung** (`funk_controls.xml`): „Trennen“ und „Kanäle & Chat“, darunter die große
+  Sprechtaste und ihre Beschriftung. Die Tastengröße folgt der Bildschirmhöhe (132 bis 240 dp),
+  das Display behält mindestens 168 dp.
+- **Querformat** (`layout-land/fragment_funk.xml`): Display links, Bedienung rechts.
+
 ## Funk-Fenster (PttActivity)
 
 | Bereit | Sendet | Nicht verbunden |
 |:---:|:---:|:---:|
 | <img src="images/popup-bereit.png" width="180" alt="Bereit"> | <img src="images/popup-sendet.png" width="180" alt="Sendet"> | <img src="images/popup-offline.png" width="180" alt="Nicht verbunden"> |
 
+- **Teilnehmerliste**: über dem Knopf, mit denselben Zeilen wie das Display. Sichtbar sind
+  höchstens 5 Zeilen, auf kurzen Bildschirmen 4, 3 oder 2. Bei mehr Teilnehmern scrollt die
+  Liste, ein Ausblenden am Rand und ein dauerhaft sichtbarer Scrollbalken zeigen das an. Der
+  Platz für die volle Liste wird beim Bemessen des Knopfs abgezogen, damit die Karte passt.
 - **Darstellung**: transparentes Theme `Theme.Mumla.FunkPopup` mit einer dunklen Karte unten.
+  Text-Knöpfe nutzen dort `funk_accent_light`, da `funk_accent` auf der dunklen Karte zu wenig
+  Kontrast hat.
   Ein Tipp daneben schließt das Fenster. Nach 30 s ohne Bedienung schließt es sich von selbst,
   aber nie während des Sendens.
 - **Fenster-Eigenschaften**:
@@ -121,7 +173,9 @@ Servers zu warten. Im Umschaltmodus gilt das nicht.
     holt nicht die ganze App nach vorn und taucht nicht in „Zuletzt verwendet“ auf.
   - `showWhenLocked` und `turnScreenOn`: Es erscheint auch über dem Sperrbildschirm.
 - **Welcher Server**: In dieser Reihenfolge gilt
-  1. die Server-ID aus dem Intent (`EXTRA_SERVER_ID`, z. B. von einem Widget),
+  1. die Server-ID aus dem Intent (`EXTRA_SERVER_ID`, z. B. von einem Widget). Gibt es den
+     Server nicht mehr, zeigt das Fenster „Server gelöscht“ und weicht nicht auf einen anderen
+     Server aus,
   2. die aktuelle Verbindung,
   3. der zuletzt genutzte Server,
   4. der erste gespeicherte Server.
@@ -151,35 +205,20 @@ Ein/Aus-Taste deshalb nicht möglich, sie öffnet nur das Fenster.
 
 Ob die Rolle aktiv ist, prüft `FunkSettingsFragment` per `RoleManager.isRoleHeld(ROLE_ASSISTANT)`.
 
-### Leiser-Taste (FunkKeyService)
+### Leiser-Taste
 
-Im Hintergrund kommen Hardware-Tasten nur bei einer Bedienungshilfe mit
-`flagRequestFilterKeyEvents` an. `FunkKeyService.onKeyEvent()` arbeitet so:
-
-- Andere Tasten als Leiser lässt der Dienst durch.
-- Ist das Funk-Fenster sichtbar (`PttActivity.isVisible()`), lässt er die Taste ebenfalls
-  durch. Dort ist sie die Sprechtaste.
-- Beim Drücken der Leiser-Taste hält er das Ereignis zurück und startet einen 2-s-Timer
-  (`HOLD_MS`). Läuft der Timer ab, öffnet sich das Funk-Fenster.
-- Wird früher losgelassen, war es ein kurzer Druck. Der Dienst löst ihn nachträglich als
-  normale Lautstärkeänderung aus (`adjustSuggestedStreamVolume`). Die Lautstärke-Anzeige
-  erscheint dadurch erst beim Loslassen.
-
-Der Dienst liest keine Bildschirminhalte (`canRetrieveWindowContent="false"`).
-
-Grenzen:
-
-- Bei ausgeschaltetem Bildschirm leitet Android Lautstärketasten direkt an die
-  Medienwiedergabe weiter. Der Dienst sieht sie dann nicht.
-- Bei Apps, die nicht aus einem Store installiert wurden, sperrt Android 13+ Bedienungshilfen,
-  bis man in der App-Info „Eingeschränkte Einstellungen zulassen“ wählt.
+Nur im offenen Funk-Fenster ist die Leiser-Taste eine Sprechtaste (`PttActivity.onKeyDown`).
+Bis 1.0.4 öffnete sie über eine Bedienungshilfe (`FunkKeyService`) das Fenster auch aus dem
+Hintergrund. Die Bedienungshilfe ist entfernt, da Google Play dafür eine eigene Erklärung mit
+Video verlangt und sie das größte Ablehnungsrisiko war.
 
 ## Widgets
 
 - **Nur Tippen**: Widgets bestehen aus `RemoteViews`. Sie kennen nur Klicks (`PendingIntent`),
   kein Halten und Loslassen. Darum öffnen beide Widgets das Funk-Fenster.
 - **Server je Widget**: Beim Platzieren fragt `FunkWidgetConfigActivity` nach dem Server.
-  Gespeichert wird er in `FunkPrefs` unter `funk_widget_server_<id>` samt Namen.
+  Gespeichert wird er in `FunkPrefs` unter `funk_widget_server_<id>` samt Namen. Wird der
+  Server umbenannt, aktualisiert `FunkWidgets.onServerRenamed()` den Namen.
   `widgetFeatures="reconfigurable"` erlaubt das spätere Ändern.
 - **Aktualisierung**: Die Widgets haben keinen Timer (`updatePeriodMillis="0"`). Die Daten
   schiebt `MumlaService` bei jeder Zustandsänderung.
@@ -243,18 +282,48 @@ Clients weiterhin an.
 Damit Mumla Funk neben Mumla installierbar ist:
 
 - **Application-ID** `de.filubu.funk`, abgeleitet von der Domain `filubu.de`. Bis 1.0.3
-  war es `io.github.filubu.mumlafunk`. Die Flavors `donation` und `beta` bekommen Suffixe.
+  war es `io.github.filubu.mumlafunk`. Build-Varianten (Flavors) gibt es seit 1.0.5 nicht mehr.
 - **Java-Pakete** bleiben `se.lublin.mumla`. Das erleichtert das Übernehmen von
   Mumla-Updates.
 - **Such-Provider**: Seine Authority wird aus der Application-ID gebildet
-  (`${applicationId}.channel.ChannelSearchProvider`, in `searchable.xml` über die per Flavor
-  gesetzte Ressource `search_authority`). Eine feste Authority würde die Installation neben
+  (`${applicationId}.channel.ChannelSearchProvider`, in `searchable.xml` über die in
+  `app/build.gradle` gesetzte Ressource `search_authority`). Eine feste Authority würde die Installation neben
   Mumla mit `INSTALL_FAILED_CONFLICTING_PROVIDER` scheitern lassen.
 - **Einstellungs-Links**: Die Zertifikat-Einstellungen öffnen eigene Activities über implizite
   Intents `se.lublin.mumla.app.*`. `MumlaPreferenceFragment` setzt dafür das eigene Paket,
   sonst könnte Android Mumlas Activities öffnen.
 - **Version** wird in `app/build.gradle` gepflegt (`funkVersion`, `versionCode`), nicht mehr
   über `git describe`.
+
+## Sicherheit
+
+- `MumlaService` ist nicht exportiert. In Mumla konnte jede App auf dem Gerät den Dienst mit
+  `ACTION_CONNECT` und eigenen Extras starten, also eine Verbindung zu einem fremden Server
+  aufbauen, samt Sprachaktivierung.
+- Humla meldet in seinem Bibliotheks-Manifest den eigenen `HumlaService` exportiert an, mit den
+  Aktionen `ACTION_CONNECT` und `ACTION_DISCONNECT`. Die App entfernt diesen Eintrag
+  (`tools:node="remove"` im App-Manifest), sie nutzt nur `MumlaService`.
+- Der Broadcast `se.lublin.mumla.action.TALK` ist entfernt. Er war exportiert, jede App konnte
+  damit während einer Verbindung das Senden einschalten.
+- Die Empfänger der Benachrichtigungs-Knöpfe sind auf allen Android-Versionen nicht exportiert
+  (`ContextCompat.registerReceiver` mit `RECEIVER_NOT_EXPORTED`), nicht erst ab Android 14.
+- Die Zertifikat-Activities sind nicht exportiert. Die Einstellungen öffnen sie mit dem eigenen
+  Paket, siehe [Eigene App-ID](#eigene-app-id).
+
+## Farben und Kontrast
+
+Material 3 nutzt `colorPrimary` für Text-Knöpfe, Schalter, Überschriften und gefüllte Knöpfe,
+aber über `colorPrimaryDark` auch für Drawer, Statusleiste (DrawerLayout) und App-Leiste. Im
+dunklen Design war `colorPrimary` ein fast schwarzes Blau (`#001b2b`), alles damit Gezeichnete
+war auf dem dunklen Hintergrund kaum zu sehen (etwa 1,1:1). Seit 1.0.5:
+
+- `colorPrimaryDark` ist die App-Leisten-Farbe (hell `#3949ab`, dunkel `#001b2b`). Sie färbt
+  App-Leiste, Statusleiste, Drawer, Kopf des Drawers, Kanal-Tabs und den PTT-Balken von Mumla.
+- `colorPrimary` ist im dunklen Design ein helles Indigo (`#b9c3ff`, 10,9:1), dazu passende
+  Container-Farben statt der lila Material-Standardwerte.
+- Grüner Text („Max spricht“) und das grüne Status-Symbol nutzen `funk_live_text`:
+  `#2E7D32` auf hellem Grund (4,8:1), `#66BB6A` im dunklen Design.
+- Deaktivierte Einträge im Drawer haben 55 % statt 33 % Deckkraft.
 
 ## Ideen und offene Punkte
 
