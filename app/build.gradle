@@ -62,7 +62,7 @@ android {
     }
 
     // Mumla Funk has its own version line (based on Mumla 3.7.3).
-    def funkVersion = "1.0.2"
+    def funkVersion = "1.0.3"
 
     defaultConfig {
         minSdkVersion 21
@@ -71,7 +71,7 @@ android {
         // Own application ID so that Mumla Funk can be installed next to the regular Mumla app.
         applicationId "io.github.filubu.mumlafunk"
         // code: XYYZZbb (bb for build)
-        versionCode 1000200
+        versionCode 1000300
         versionName funkVersion
 
         buildConfigField "long", "TIMESTAMP", System.currentTimeMillis() + "L"

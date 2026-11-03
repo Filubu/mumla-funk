@@ -1,0 +1,1 @@
+* Fixed the crash when connecting: the audio codecs were missing from the 1.0.1 and 1.0.2 APKs.
