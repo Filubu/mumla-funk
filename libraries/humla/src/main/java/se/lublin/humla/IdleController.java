@@ -94,6 +94,10 @@ public class IdleController {
     private final PendingIntent mReconnectIntent;
 
     private boolean mEnabled = true;
+    /** An unexpected error happened: energy saving stays off (see {@link #fail}). */
+    private boolean mBroken;
+    /** False if the alarm receiver could not be registered. */
+    private final boolean mAlarmsUsable;
     private int mKeepAliveSeconds = DEFAULT_KEEPALIVE_SECONDS;
     /** The server dropped us while idle, twice: use {@link #SAFE_KEEPALIVE_SECONDS}. */
     private boolean mKeepAliveFallback;
@@ -120,7 +124,7 @@ public class IdleController {
     private final Runnable mIdleCheck = new Runnable() {
         @Override
         public void run() {
-            if (mState != ACTIVE || !mEnabled) return;
+            if (mState != ACTIVE || !mEnabled || mBroken) return;
             if (mHost.isTalkActivity()) {
                 scheduleIdleCheck();
                 return;
@@ -182,10 +186,39 @@ public class IdleController {
         IntentFilter filter = new IntentFilter();
         filter.addAction(mActionKeepAlive);
         filter.addAction(mActionReconnect);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            context.registerReceiver(mAlarmReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
-        } else {
-            context.registerReceiver(mAlarmReceiver, filter);
+        boolean registered = false;
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                context.registerReceiver(mAlarmReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+            } else {
+                context.registerReceiver(mAlarmReceiver, filter);
+            }
+            registered = true;
+        } catch (RuntimeException e) {
+            Log.e(TAG, "cannot receive alarms, the phone will be kept awake while connected", e);
+        }
+        mAlarmsUsable = registered;
+    }
+
+    /**
+     * Something in here failed unexpectedly. Energy saving is not worth a crash of the
+     * walkie-talkie: fall back to the old behaviour (always active) for this service.
+     */
+    private void fail(String where, RuntimeException e) {
+        Log.e(TAG, "energy saving disabled after an error in " + where, e);
+        mBroken = true;
+        mEnabled = false;
+        try {
+            mHandler.removeCallbacks(mIdleCheck);
+            mHandler.removeCallbacks(mKeepAliveTick);
+            mHandler.removeCallbacks(mPongCheck);
+            if (mConnection != null) {
+                mConnection.setIdle(false);
+                mState = ACTIVE;
+                mActiveLock.acquire();
+            }
+        } catch (RuntimeException e2) {
+            Log.e(TAG, "fallback failed as well", e2);
         }
     }
 
@@ -194,7 +227,7 @@ public class IdleController {
         stop();
         cancelReconnect();
         try {
-            mContext.unregisterReceiver(mAlarmReceiver);
+            if (mAlarmsUsable) mContext.unregisterReceiver(mAlarmReceiver);
         } catch (IllegalArgumentException e) {
             Log.w(TAG, "alarm receiver was not registered");
         }
@@ -203,14 +236,18 @@ public class IdleController {
 
     /** Off: always active while connected, exactly as without energy saving. */
     public void setEnabled(boolean enabled) {
-        if (mEnabled == enabled) return;
-        mEnabled = enabled;
-        if (mState == STOPPED) return;
-        if (enabled) {
-            scheduleIdleCheck();
-        } else {
-            goActive();
-            mHandler.removeCallbacks(mIdleCheck);
+        try {
+            if (mBroken || mEnabled == enabled) return;
+            mEnabled = enabled;
+            if (mState == STOPPED) return;
+            if (enabled) {
+                scheduleIdleCheck();
+            } else {
+                goActive();
+                mHandler.removeCallbacks(mIdleCheck);
+            }
+        } catch (RuntimeException e) {
+            fail("setEnabled", e);
         }
     }
 
@@ -220,12 +257,16 @@ public class IdleController {
 
     /** Interval of the keep-alive pings while idle. The server's timeout must be longer. */
     public void setKeepAliveSeconds(int seconds) {
-        seconds = Math.max(SAFE_KEEPALIVE_SECONDS, seconds);
-        if (mKeepAliveSeconds == seconds) return;
-        mKeepAliveSeconds = seconds;
-        resetKeepAliveFallback();
-        if (isIdle()) {
-            scheduleNextKeepAlive(); // Replaces the pending one.
+        try {
+            seconds = Math.max(SAFE_KEEPALIVE_SECONDS, seconds);
+            if (mKeepAliveSeconds == seconds) return;
+            mKeepAliveSeconds = seconds;
+            resetKeepAliveFallback();
+            if (isIdle()) {
+                scheduleNextKeepAlive(); // Replaces the pending one.
+            }
+        } catch (RuntimeException e) {
+            fail("setKeepAliveSeconds", e);
         }
     }
 
@@ -252,9 +293,13 @@ public class IdleController {
 
     /** The connection is synchronized with the server. Starts out active. */
     public void start(HumlaConnection connection) {
-        mConnection = connection;
-        mState = STOPPED; // so goActive() does not touch the (new, not idle) connection
-        goActive();
+        try {
+            mConnection = connection;
+            mState = STOPPED; // so goActive() does not touch the (new, not idle) connection
+            goActive();
+        } catch (RuntimeException e) {
+            fail("start", e);
+        }
     }
 
     /**
@@ -295,17 +340,25 @@ public class IdleController {
         mHandler.removeCallbacks(mIdleCheck);
         mHandler.removeCallbacks(mKeepAliveTick);
         mHandler.removeCallbacks(mPongCheck);
-        mAlarmManager.cancel(mKeepAliveIntent);
+        try {
+            mAlarmManager.cancel(mKeepAliveIntent);
+        } catch (RuntimeException e) {
+            Log.e(TAG, "cancel alarm failed", e);
+        }
         if (mActiveLock.isHeld()) mActiveLock.release();
     }
 
     /** Someone started or stopped talking (we or others): be active, and stay a while. */
     public void onActivity() {
-        if (mState == STOPPED) return;
-        if (mState != ACTIVE) {
-            goActive();
-        } else {
-            scheduleIdleCheck();
+        try {
+            if (mState == STOPPED) return;
+            if (mState != ACTIVE) {
+                goActive();
+            } else {
+                scheduleIdleCheck();
+            }
+        } catch (RuntimeException e) {
+            fail("onActivity", e);
         }
     }
 
@@ -315,15 +368,24 @@ public class IdleController {
         long now = SystemClock.elapsedRealtime();
         if (now - mLastRxWake < RX_WAKE_REFRESH_MS) return;
         mLastRxWake = now;
-        mShortLock.acquire(RX_WAKE_MS);
+        try {
+            mShortLock.acquire(RX_WAKE_MS);
+        } catch (RuntimeException e) {
+            Log.e(TAG, "wake lock failed", e);
+        }
     }
 
     /** Schedules a reconnect attempt that also happens while the phone sleeps. */
     public void scheduleReconnect(long delayMs) {
         cancelReconnect();
-        if (canSleepDeeply()) {
-            setExactAlarm(SystemClock.elapsedRealtime() + delayMs, mReconnectIntent);
-        } else {
+        boolean alarmSet = false;
+        try {
+            alarmSet = canSleepDeeply()
+                    && setExactAlarm(SystemClock.elapsedRealtime() + delayMs, mReconnectIntent);
+        } catch (RuntimeException e) {
+            Log.e(TAG, "reconnect alarm failed", e);
+        }
+        if (!alarmSet) {
             mShortLock.acquire(delayMs + CONNECT_WAKE_MS);
             mHandler.postDelayed(mReconnectTick, delayMs);
         }
@@ -331,7 +393,11 @@ public class IdleController {
 
     public void cancelReconnect() {
         mHandler.removeCallbacks(mReconnectTick);
-        mAlarmManager.cancel(mReconnectIntent);
+        try {
+            mAlarmManager.cancel(mReconnectIntent);
+        } catch (RuntimeException e) {
+            Log.e(TAG, "cancel alarm failed", e);
+        }
     }
 
     private boolean isIdle() {
@@ -345,7 +411,11 @@ public class IdleController {
         mActiveLock.acquire();
         mHandler.removeCallbacks(mKeepAliveTick);
         mHandler.removeCallbacks(mPongCheck);
-        mAlarmManager.cancel(mKeepAliveIntent);
+        try {
+            mAlarmManager.cancel(mKeepAliveIntent);
+        } catch (RuntimeException e) {
+            Log.e(TAG, "cancel alarm failed", e);
+        }
         if ((old == IDLE_LIGHT || old == IDLE_DEEP) && mConnection != null) {
             mConnection.setIdle(false);
             Log.i(TAG, "active");
@@ -356,16 +426,20 @@ public class IdleController {
     }
 
     private void goIdle() {
-        if (mConnection == null) return;
-        boolean deep = canSleepDeeply();
-        mState = deep ? IDLE_DEEP : IDLE_LIGHT;
-        mFirstKeepAliveTime = 0;
-        mConnection.setIdle(true);
-        scheduleNextKeepAlive();
-        Log.i(TAG, (deep ? "idle (phone may sleep)" : "idle (phone kept awake)")
-                + ", keep-alive every " + getEffectiveKeepAliveSeconds() + " s");
-        if (deep) {
-            mActiveLock.release();
+        try {
+            if (mConnection == null) return;
+            boolean deep = canSleepDeeply();
+            mState = deep ? IDLE_DEEP : IDLE_LIGHT;
+            mFirstKeepAliveTime = 0;
+            mConnection.setIdle(true);
+            scheduleNextKeepAlive();
+            Log.i(TAG, (deep ? "idle (phone may sleep)" : "idle (phone kept awake)")
+                    + ", keep-alive every " + getEffectiveKeepAliveSeconds() + " s");
+            if (deep) {
+                mActiveLock.release();
+            }
+        } catch (RuntimeException e) {
+            fail("goIdle", e);
         }
     }
 
@@ -375,19 +449,23 @@ public class IdleController {
     }
 
     private void keepAlive() {
-        HumlaConnection connection = mConnection;
-        if (!isIdle() || connection == null) return;
-        if (mState == IDLE_DEEP) {
-            // Shortened again as soon as the answer arrives, see onDataArriving().
-            mShortLock.acquire(PONG_TIMEOUT_MS + 2_000);
+        try {
+            HumlaConnection connection = mConnection;
+            if (!isIdle() || connection == null) return;
+            if (mState == IDLE_DEEP) {
+                // Shortened again as soon as the answer arrives, see onDataArriving().
+                mShortLock.acquire(PONG_TIMEOUT_MS + 2_000);
+            }
+            if (mFirstKeepAliveTime == 0) {
+                mFirstKeepAliveTime = SystemClock.elapsedRealtime();
+            }
+            connection.sendPing();
+            mHandler.removeCallbacks(mPongCheck);
+            mHandler.postDelayed(mPongCheck, PONG_TIMEOUT_MS);
+            scheduleNextKeepAlive();
+        } catch (RuntimeException e) {
+            fail("keepAlive", e);
         }
-        if (mFirstKeepAliveTime == 0) {
-            mFirstKeepAliveTime = SystemClock.elapsedRealtime();
-        }
-        connection.sendPing();
-        mHandler.removeCallbacks(mPongCheck);
-        mHandler.postDelayed(mPongCheck, PONG_TIMEOUT_MS);
-        scheduleNextKeepAlive();
     }
 
     private void scheduleNextKeepAlive() {
@@ -428,6 +506,9 @@ public class IdleController {
      * optimization. That exemption also allows exact alarms (Android 12+).
      */
     public boolean canSleepDeeply() {
+        if (!mAlarmsUsable) {
+            return false;
+        }
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             return true; // No Doze.
         }

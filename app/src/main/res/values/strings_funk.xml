@@ -88,4 +88,10 @@
 
     <string name="funk_accessibility_label">Mumla Funk volume key</string>
     <string name="funk_accessibility_description">Opens the Mumla Funk walkie-talkie popup when you hold the volume-down key for 2 seconds. A short press keeps changing the volume as usual. The service only looks at the volume-down key; it does not read screen content.</string>
+    <string name="crash_dialog_title">Mumla Funk crashed</string>
+    <string name="crash_dialog_message">Last time, the app crashed. Please copy these details and send them to whoever maintains the app.</string>
+    <string name="crash_dialog_copy">Copy</string>
+    <string name="crash_dialog_share">Share</string>
+    <string name="crash_dialog_close">Close</string>
+    <string name="crash_dialog_copied">Copied</string>
 </resources>

@@ -1,0 +1,2 @@
+* Absturz beim Verbinden abgesichert: Fehler in der Energiespar-Steuerung, beim Mikrofon-Abschalten oder im Akku-Dialog führen nicht mehr zum Absturz, die App arbeitet dann wie früher weiter.
+* Absturzbericht: Nach einem Absturz zeigt die App beim nächsten Start die Fehlerdetails zum Kopieren an.

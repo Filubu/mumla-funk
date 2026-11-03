@@ -122,7 +122,11 @@ public class HumlaTCP extends HumlaNetworkThread {
                 if (mListener != null) {
                     // Directly on this thread: the phone may be asleep and must be kept awake
                     // before the message is handed over to the main thread.
-                    mListener.onTCPMessageArrived();
+                    try {
+                        mListener.onTCPMessageArrived();
+                    } catch (RuntimeException e) {
+                        Log.e(TAG, "onTCPMessageArrived failed", e);
+                    }
                     executeOnMainThread(new Runnable() {
                         @Override
                         public void run() {
@@ -153,7 +157,11 @@ public class HumlaTCP extends HumlaNetworkThread {
             if (mListener != null) {
                 // E.g. the server closed the connection while the phone sleeps: keep it awake
                 // until the main thread has handled that (and scheduled a reconnect).
-                mListener.onTCPConnectionClosing();
+                try {
+                    mListener.onTCPConnectionClosing();
+                } catch (RuntimeException e) {
+                    Log.e(TAG, "onTCPConnectionClosing failed", e);
+                }
             }
             try {
                 if (mDataInput != null) mDataInput.close();

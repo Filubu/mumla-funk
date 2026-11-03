@@ -1,0 +1,2 @@
+* Crash on connect guarded: errors in energy saving, in releasing the microphone or in the battery dialog no longer crash the app, it falls back to the previous behaviour.
+* Crash report: after a crash, the app shows the details on the next start, ready to copy.

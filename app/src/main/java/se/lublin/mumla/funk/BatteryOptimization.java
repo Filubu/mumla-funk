@@ -72,6 +72,14 @@ public final class BatteryOptimization {
      * Later on, the walkie-talkie settings offer it.
      */
     public static void maybeAskOnce(Activity activity) {
+        try {
+            askOnce(activity);
+        } catch (RuntimeException e) {
+            android.util.Log.e("BatteryOptimization", "could not ask for the exemption", e);
+        }
+    }
+
+    private static void askOnce(Activity activity) {
         if (!isRelevant() || activity.isFinishing()) return;
         FunkPrefs prefs = FunkPrefs.get(activity);
         if (prefs.wasBatteryOptimizationAsked()

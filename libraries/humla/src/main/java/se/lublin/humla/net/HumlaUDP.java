@@ -120,7 +120,11 @@ public class HumlaUDP implements Runnable {
 
                     if (mListener != null) {
                         if (buffer != null) {
-                            mListener.onUDPDataArrived();
+                            try {
+                                mListener.onUDPDataArrived();
+                            } catch (RuntimeException e) {
+                                Log.e(TAG, "onUDPDataArrived failed", e);
+                            }
                             mCallbackHandler.post(new Runnable() {
                                 @Override
                                 public void run() {

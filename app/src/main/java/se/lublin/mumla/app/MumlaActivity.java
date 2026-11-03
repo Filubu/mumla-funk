@@ -439,6 +439,8 @@ public class MumlaActivity extends AppCompatActivity implements ListView.OnItemC
         super.onResume();
         Intent connectIntent = new Intent(this, MumlaService.class);
         bindService(connectIntent, mConnection, 0);
+        // Mumla Funk: details of the last crash, to copy without a computer.
+        se.lublin.mumla.util.CrashReporter.showIfCrashed(this);
     }
 
     @Override

@@ -81,4 +81,10 @@
 
     <string name="funk_accessibility_label">Mumla Funk Leiser-Taste</string>
     <string name="funk_accessibility_description">Öffnet das Funk-Fenster von Mumla Funk, wenn du die Leiser-Taste 2 Sekunden gedrückt hältst. Kurzes Drücken regelt weiterhin wie gewohnt die Lautstärke. Der Dienst beachtet nur die Leiser-Taste und liest keine Bildschirminhalte.</string>
+    <string name="crash_dialog_title">Mumla Funk ist abgestürzt</string>
+    <string name="crash_dialog_message">Beim letzten Mal ist die App abgestürzt. Bitte diese Angaben kopieren und an die Person schicken, die die App betreut.</string>
+    <string name="crash_dialog_copy">Kopieren</string>
+    <string name="crash_dialog_share">Teilen</string>
+    <string name="crash_dialog_close">Schließen</string>
+    <string name="crash_dialog_copied">Kopiert</string>
 </resources>
