@@ -6,7 +6,8 @@ und warum sie so gebaut sind. Für Überblick, Bauen und Releases siehe das [REA
 Mumla Funk besteht aus drei Schichten:
 
 1. **Humla** (`libraries/humla/`): das Mumble-Protokoll, also Verbindung, Audio und Codecs.
-   Unverändert aus Mumla übernommen, bis auf den [Ende-Flag-Fix](#ende-flag-terminator).
+   Aus Mumla übernommen, geändert sind der [Ende-Flag-Fix](#ende-flag-terminator), das
+   Energiesparen und zwei Abfragen für das Display (`isConnectionIdle()`, `getLatencyMillis()`).
 2. **Mumla** (`app/`, Pakete außer `funk`): Vordergrunddienst, Kanäle, Chat, Serverliste,
    Zertifikate und Einstellungen. Nahezu unverändert.
 3. **Funk** (`app/src/main/java/se/lublin/mumla/funk/`): die Walkie-Talkie-Bedienung. Sie
@@ -35,10 +36,11 @@ flowchart LR
 
 | Datei | Aufgabe |
 |---|---|
-| `funk/FunkState.java` | Unveränderlicher Schnappschuss: Verbindung, Server, eigener Kanal, alle Teilnehmer, wer spricht, ob man stumm ist. Statischer „aktueller Zustand“ plus Listener. |
-| `funk/PttActivity.java` | Funk-Fenster: großer Sprechknopf für einen Server, Verbindungsaufbau, Fehleranzeige, Leiser-Taste als Sprechtaste. |
+| `funk/FunkState.java` | Unveränderlicher Schnappschuss: Verbindung, Server, eigener Kanal, alle Teilnehmer, wer spricht, ob man stumm ist. Statischer „aktueller Zustand“ plus Listener. Merkt sich, wer zuletzt gesprochen hat. |
+| `funk/PttActivity.java` | Funk-Fenster: Teilnehmerliste, großer Sprechknopf für einen Server, Verbindungsaufbau, Fehleranzeige, Leiser-Taste als Sprechtaste. |
+| `funk/FunkMemberList.java`, `res/layout/funk_member_row.xml` | Teilnehmerzeilen für das Display und die Liste im Funk-Fenster (beide dunkel), Zeilen werden wiederverwendet. |
 | `funk/PttButtonView.java` | Der runde Knopf als eigene View: Zustände OFFLINE, CONNECTING, READY, TALKING, MUTED; Puls-Animation, Haptik, Touch-Logik (halten oder tippen). |
-| `funk/FunkFragment.java` | Funk-Bildschirm in der App, solange man mit einem Funk-Server verbunden ist: Server, Status, Sprechknopf, Teilnehmerliste. |
+| `funk/FunkFragment.java`, `res/layout/fragment_funk.xml`, `funk_display.xml`, `funk_controls.xml`, `layout-land/` | Funk-Bildschirm in der App, solange man mit einem Funk-Server verbunden ist, siehe [Funk-Bildschirm](#funk-bildschirm-funkfragment). |
 | `funk/FunkPrefs.java` | Einstellungen der Funk-Funktionen: Funk-Server ja/nein je Server, zuletzt genutzter Server, Server je Widget, Leiser-Taste im Fenster. |
 | `funk/BatteryOptimization.java` | Status der Akku-Ausnahme und Link in die Systemliste (ohne eigene Berechtigung). |
 | `funk/FunkServers.java` | Gespeicherte Server laden, Standard-Server auflösen, Anzeigenamen. |
@@ -128,12 +130,39 @@ Sicherungen gegen hängendes Senden:
 Solange der Finger drückt, zeigt der Knopf sofort „Sendet“, ohne auf die Rückmeldung des
 Servers zu warten. Im Umschaltmodus gilt das nicht.
 
+## Funk-Bildschirm (FunkFragment)
+
+Aufgebaut wie ein modernes Funkgerät, ohne eines nachzubilden: ein Gehäuse
+(`colorSurfaceContainerHigh`, Ecken 32 dp) mit einem Display oben und der Bedienung unten.
+
+- **Display** (`funk_display.xml`): immer dunkel wie Funk-Fenster und Widgets, auch im hellen
+  Design. Kein Pixel- oder LCD-Look, sondern normale Schrift auf einer dunklen Fläche mit
+  leichtem Verlauf. Inhalt von oben:
+  - Funkmast, Server, Kanal und Teilnehmerzahl, rechts der Ping mit Signal-Symbol (grün bis
+    120 ms, gelb bis 300 ms, sonst rot). Er kommt aus `IHumlaService.getLatencyMillis()` und
+    wird alle 2 s neu angezeigt. Im Ruhezustand steht „· Ruhe“ dahinter, der Wert kann dann
+    Minuten alt sein (`isConnectionIdle()`).
+  - Eine große Zeile wie die Anrufer-Anzeige eines Funkgeräts: „Max spricht“ (grün), „Du
+    sendest“ (rot), „Mikrofon stumm“ (gelb), sonst „Kanal frei“ mit „Zuletzt: Max · 14:32“.
+    Wer zuletzt gesprochen hat, merkt sich `FunkState` je Server, solange die App läuft.
+  - Alle Teilnehmer (`FunkMemberList`). Die Liste scrollt innerhalb des Displays, so bleibt
+    die Sprechtaste immer an derselben Stelle.
+- **Lautsprecher-Gitter** als Trennung (`funk_grille.xml`, nur Deko).
+- **Bedienung** (`funk_controls.xml`): „Trennen“ und „Kanäle & Chat“, darunter die große
+  Sprechtaste und ihre Beschriftung. Die Tastengröße folgt der Bildschirmhöhe (132 bis 240 dp),
+  das Display behält mindestens 168 dp.
+- **Querformat** (`layout-land/fragment_funk.xml`): Display links, Bedienung rechts.
+
 ## Funk-Fenster (PttActivity)
 
 | Bereit | Sendet | Nicht verbunden |
 |:---:|:---:|:---:|
 | <img src="images/popup-bereit.png" width="180" alt="Bereit"> | <img src="images/popup-sendet.png" width="180" alt="Sendet"> | <img src="images/popup-offline.png" width="180" alt="Nicht verbunden"> |
 
+- **Teilnehmerliste**: über dem Knopf, mit denselben Zeilen wie das Display. Sichtbar sind
+  höchstens 5 Zeilen, auf kurzen Bildschirmen 4, 3 oder 2. Bei mehr Teilnehmern scrollt die
+  Liste, ein Ausblenden am Rand und ein dauerhaft sichtbarer Scrollbalken zeigen das an. Der
+  Platz für die volle Liste wird beim Bemessen des Knopfs abgezogen, damit die Karte passt.
 - **Darstellung**: transparentes Theme `Theme.Mumla.FunkPopup` mit einer dunklen Karte unten.
   Text-Knöpfe nutzen dort `funk_accent_light`, da `funk_accent` auf der dunklen Karte zu wenig
   Kontrast hat.

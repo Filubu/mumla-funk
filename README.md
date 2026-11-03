@@ -37,7 +37,8 @@ behält das komplette Mumla und setzt eine Funk-Bedienung obendrauf.
   Funk-Bildschirm, sonst Mumlas Kanalliste mit Chat. Öffentliche Server und „Schnell verbinden“
   nutzen immer die normale Ansicht.
 - **Funk-Fenster**: ein großer Knopf, gedrückt halten zum Sprechen, loslassen beendet.
-  Es zeigt Server, Verbindung und wer gerade spricht. Ist man nicht verbunden, verbindet ein
+  Es zeigt Server, Verbindung, wer gerade spricht und darüber eine kleine Liste aller
+  Teilnehmer (bis zu 5 Zeilen, bei mehr scrollbar). Ist man nicht verbunden, verbindet ein
   Tipp auf den Knopf. Solange das Fenster offen ist, ist die Leiser-Taste die Sprechtaste.
   Es erscheint über jeder App und auch über dem Sperrbildschirm.
 - **Ein/Aus-Taste gedrückt halten** öffnet das Funk-Fenster (Mumla Funk als digitaler Assistent).
@@ -49,7 +50,10 @@ behält das komplette Mumla und setzt eine Funk-Bedienung obendrauf.
 - **Startbildschirm**: die Serverliste. Ohne Server erklärt eine Willkommen-Seite den Einstieg
   und bietet „Server hinzufügen“ und die öffentlichen Server an. Das Server-Formular zeigt
   Beispiele und Hinweise zu jedem Feld.
-- **Funk-Bildschirm**: Server, Status, Sprechtaste und Teilnehmerliste.
+- **Funk-Bildschirm**: wie ein modernes Funkgerät. Oben ein dunkles Display mit Server, Kanal,
+  Ping, wer gerade spricht („Max spricht“, „Du sendest“, „Kanal frei“), wer zuletzt gesprochen
+  hat und allen Teilnehmern (scrollt im Display). Unten, gut mit dem Daumen erreichbar, die
+  große Sprechtaste, darüber „Trennen“ und „Kanäle & Chat“.
 - **Zuverlässiges Sende-Ende**: Beim Loslassen wird immer das Ende-Flag (Terminator) gesendet,
   wie beim Desktop-Client.
 - **Energiesparen**: Mikrofon nur beim Senden, Ruhezustand wenn niemand spricht, das Handy

@@ -1,49 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- One person in the display of the walkie-talkie screen and in the popup list (both dark). -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="@dimen/funk_member_row_height"
+    android:focusable="true"
     android:gravity="center_vertical"
-    android:minHeight="44dp"
     android:orientation="horizontal"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp">
+    android:paddingStart="10dp"
+    android:paddingEnd="10dp">
 
     <ImageView
-        android:id="@+id/row_dot"
-        android:layout_width="10dp"
-        android:layout_height="10dp"
+        android:id="@+id/member_dot"
+        android:layout_width="8dp"
+        android:layout_height="8dp"
         android:importantForAccessibility="no"
         android:src="@drawable/funk_dot_idle" />
 
     <TextView
-        android:id="@+id/row_name"
+        android:id="@+id/member_name"
+        android:importantForAccessibility="no"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="14dp"
+        android:layout_marginStart="12dp"
         android:layout_weight="1"
         android:ellipsize="end"
         android:singleLine="true"
-        android:textAppearance="?attr/textAppearanceBodyLarge" />
+        android:textColor="@color/funk_on_surface"
+        android:textSize="15sp" />
 
     <TextView
-        android:id="@+id/row_channel"
+        android:id="@+id/member_channel"
+        android:importantForAccessibility="no"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:ellipsize="end"
-        android:maxWidth="140dp"
+        android:maxWidth="120dp"
         android:singleLine="true"
-        android:textAppearance="?attr/textAppearanceBodySmall"
-        android:textColor="?attr/colorOnSurfaceVariant" />
+        android:textColor="@color/funk_on_surface_muted"
+        android:textSize="12sp" />
 
     <ImageView
-        android:id="@+id/row_muted"
-        android:layout_width="18dp"
-        android:layout_height="18dp"
+        android:id="@+id/member_muted"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
         android:layout_marginStart="8dp"
         android:importantForAccessibility="no"
         android:src="@drawable/ic_funk_mic_off"
         android:visibility="gone"
-        app:tint="?attr/colorOnSurfaceVariant" />
+        app:tint="@color/funk_on_surface_muted" />
 </LinearLayout>

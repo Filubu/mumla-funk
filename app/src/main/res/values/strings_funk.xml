@@ -107,4 +107,18 @@
     <string name="funk_cert_trust">Trust and connect</string>
     <string name="funk_server_removed">Server deleted</string>
     <string name="funk_server_removed_hint">The server of this widget no longer exists. Long-press the widget to choose another one.</string>
+
+    <!-- Walkie-talkie screen display and popup list (1.0.5) -->
+    <string name="funk_release_to_stop">Release to stop</string>
+    <string name="funk_now_self">You are transmitting</string>
+    <string name="funk_now_free">Channel clear</string>
+    <string name="funk_now_free_sub">Nobody is talking</string>
+    <string name="funk_now_last">Last: %1$s · %2$s</string>
+    <string name="funk_now_reconnecting">Connection lost</string>
+    <string name="funk_ping_ms">%1$d ms</string>
+    <string name="funk_ping_idle">%1$d ms · idle</string>
+    <string name="funk_ping_desc">Ping %1$d milliseconds</string>
+    <string name="funk_ping_idle_desc">Ping %1$d milliseconds, energy saving mode</string>
+    <string name="funk_member_talking">talking</string>
+    <string name="funk_member_muted">muted</string>
 </resources>

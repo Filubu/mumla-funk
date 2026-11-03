@@ -73,6 +73,13 @@ public final class FunkState {
     private static volatile FunkState sCurrent = DISCONNECTED;
     private static final List<Listener> sListeners = new CopyOnWriteArrayList<>();
 
+    /** Who talked last on the current server (not us), for the display; null if nobody yet. */
+    @Nullable
+    private static String sLastTalker;
+    private static long sLastTalkAt;
+    @Nullable
+    private static String sLastTalkServer;
+
     public final Connection connection;
     /** Saved server id, or -1 (not connected, or an unsaved server). */
     public final long serverId;
@@ -113,10 +120,39 @@ public final class FunkState {
 
     @MainThread
     public static void publish(@NonNull FunkState state) {
+        rememberLastTalker(state);
         sCurrent = state;
         for (Listener listener : sListeners) {
             listener.onFunkStateChanged(state);
         }
+    }
+
+    private static void rememberLastTalker(@NonNull FunkState state) {
+        String server = state.connection == Connection.DISCONNECTED ? null
+                : state.serverId + "/" + state.serverName;
+        if (server == null || !server.equals(sLastTalkServer)) {
+            sLastTalker = null;
+            sLastTalkAt = 0;
+            sLastTalkServer = server;
+        }
+        if (state.connection == Connection.CONNECTED) {
+            List<Member> talking = state.talkingOthers();
+            if (!talking.isEmpty()) {
+                sLastTalker = talking.get(0).name;
+                sLastTalkAt = System.currentTimeMillis();
+            }
+        }
+    }
+
+    /** Name of whoever talked last on this server (not us), or null. Main thread. */
+    @Nullable
+    public static String lastTalker() {
+        return sLastTalker;
+    }
+
+    /** {@link System#currentTimeMillis()} of {@link #lastTalker()}'s transmission. */
+    public static long lastTalkAt() {
+        return sLastTalkAt;
     }
 
     /** True if connected, connecting or reconnecting to the given saved server. */

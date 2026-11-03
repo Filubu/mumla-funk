@@ -25,4 +25,6 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
+    <!-- Mumla Funk: one row in the display and the popup list. -->
+    <dimen name="funk_member_row_height">36dp</dimen>
 </resources>

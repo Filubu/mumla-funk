@@ -86,6 +86,8 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
     private static final int REQUEST_RECORD_AUDIO = 1;
     private static final int REQUEST_NOTIFICATIONS = 2;
     private static final long IDLE_CLOSE_MS = 30_000;
+    /** At most this many people are visible in the list above the button; more scroll. */
+    private static final int MAX_LIST_ROWS = 5;
     private static final long SWITCH_TIMEOUT_MS = 4_000;
 
     private final Handler mHandler = new Handler(Looper.getMainLooper());
@@ -123,6 +125,10 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
     private TextView mLabel;
     private TextView mHint;
     private MaterialButton mAction;
+    private View mUsersScroll;
+    private ViewGroup mUsers;
+    /** Rows of the list that fit on this screen (up to {@link #MAX_LIST_ROWS}). */
+    private int mListRows = MAX_LIST_ROWS;
 
     @NonNull
     public static Intent createIntent(Context context, long serverId, boolean autoConnect) {
@@ -206,6 +212,8 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
         mLabel = findViewById(R.id.ptt_label);
         mHint = findViewById(R.id.ptt_hint);
         mAction = findViewById(R.id.ptt_action);
+        mUsersScroll = findViewById(R.id.ptt_users_scroll);
+        mUsers = findViewById(R.id.ptt_users);
 
         mRoot.setOnClickListener(v -> closeAnimated());
         findViewById(R.id.ptt_close).setOnClickListener(v -> closeAnimated());
@@ -231,7 +239,10 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
         }
     }
 
-    /** Cap the card width on wide screens and shrink the button on short ones (landscape). */
+    /**
+     * Cap the card width on wide screens. On short screens (landscape, small phones) show fewer
+     * rows in the list and shrink the button, so that the card always fits.
+     */
     private void sizeCard() {
         DisplayMetrics dm = getResources().getDisplayMetrics();
         float density = dm.density;
@@ -242,8 +253,11 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
             lp.width = (int) (440 * density);
             mCard.setLayoutParams(lp);
         }
-        float size = Math.min(216, Math.min(widthDp - 96, heightDp - 290));
-        size = Math.max(132, size);
+        float rowDp = getResources().getDimension(R.dimen.funk_member_row_height) / density;
+        mListRows = heightDp >= 720 ? MAX_LIST_ROWS : heightDp >= 600 ? 4 : heightDp >= 480 ? 3 : 2;
+        float listDp = mListRows * rowDp + 8 + 12; // rows, padding, margin
+        float size = Math.min(216, Math.min(widthDp - 96, heightDp - 290 - listDp));
+        size = Math.max(120, size);
         ViewGroup.LayoutParams lp = mButton.getLayoutParams();
         lp.width = lp.height = (int) (size * density);
         mButton.setLayoutParams(lp);
@@ -455,6 +469,7 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
             }
         }
 
+        renderUsers(connected ? state.members : null);
         mButton.setMode(mode);
         mLabel.setText(label);
         mHint.setText(hint != null ? hint : "");
@@ -475,6 +490,24 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
         } else {
             mAction.setVisibility(View.GONE);
         }
+    }
+
+    /** The list above the button: everyone on the server, at most {@link #mListRows} visible. */
+    private void renderUsers(@Nullable List<FunkState.Member> members) {
+        if (members == null || members.isEmpty()) {
+            mUsersScroll.setVisibility(View.GONE);
+            return;
+        }
+        FunkMemberList.fill(mUsers, members);
+        int rows = Math.min(members.size(), mListRows);
+        int height = rows * getResources().getDimensionPixelSize(R.dimen.funk_member_row_height)
+                + mUsersScroll.getPaddingTop() + mUsersScroll.getPaddingBottom();
+        ViewGroup.LayoutParams lp = mUsersScroll.getLayoutParams();
+        if (lp.height != height) {
+            lp.height = height;
+            mUsersScroll.setLayoutParams(lp);
+        }
+        mUsersScroll.setVisibility(View.VISIBLE);
     }
 
     private void showError(@Nullable String message, boolean needsApp) {

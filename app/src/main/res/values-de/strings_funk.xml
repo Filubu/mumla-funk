@@ -100,4 +100,18 @@
     <string name="funk_cert_trust">Vertrauen und verbinden</string>
     <string name="funk_server_removed">Server gelöscht</string>
     <string name="funk_server_removed_hint">Den Server dieses Widgets gibt es nicht mehr. Widget lange drücken, um einen anderen zu wählen.</string>
+
+    <!-- Display des Funk-Bildschirms und Liste im Funk-Fenster (1.0.5) -->
+    <string name="funk_release_to_stop">Loslassen beendet</string>
+    <string name="funk_now_self">Du sendest</string>
+    <string name="funk_now_free">Kanal frei</string>
+    <string name="funk_now_free_sub">Niemand spricht</string>
+    <string name="funk_now_last">Zuletzt: %1$s · %2$s</string>
+    <string name="funk_now_reconnecting">Verbindung verloren</string>
+    <string name="funk_ping_ms">%1$d ms</string>
+    <string name="funk_ping_idle">%1$d ms · Ruhe</string>
+    <string name="funk_ping_desc">Ping %1$d Millisekunden</string>
+    <string name="funk_ping_idle_desc">Ping %1$d Millisekunden, Energiesparmodus</string>
+    <string name="funk_member_talking">spricht</string>
+    <string name="funk_member_muted">stumm</string>
 </resources>

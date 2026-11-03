@@ -69,6 +69,18 @@ public interface IHumlaService {
     boolean isReconnecting();
 
     /**
+     * Mumla Funk: true while the connection is in energy saving idle mode (voice over TCP, only
+     * occasional keep-alive pings, so the latency values may be minutes old).
+     */
+    boolean isConnectionIdle();
+
+    /**
+     * Mumla Funk: the latest round trip time to the server in milliseconds, preferring UDP (the
+     * voice path) when it has answered. -1 if not connected or not measured yet.
+     */
+    long getLatencyMillis();
+
+    /**
      * Cancels any future reconnection attempts. Does nothing if reconnection is not in progress.
      */
     void cancelReconnect();
