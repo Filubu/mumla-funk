@@ -1,0 +1,2 @@
+* First Mumla Funk release: push-to-talk popup, power and volume key shortcuts, two widgets, simple home screen.
+* The end-of-transmission flag is now always sent when the talk button is released.
