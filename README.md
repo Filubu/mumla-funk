@@ -205,8 +205,10 @@ Die APK liegt danach in `app/build/outputs/apk/foss/debug/`. Bei einem Klon ohne
 
 Build-Varianten (Flavors) aus Mumla:
 
-- `foss`: empfohlen, ohne Google-Bibliotheken.
-- `goog`: mit Play-Billing für Spenden.
+- `foss`: empfohlen, ohne Google-Bibliotheken. Daraus entsteht die APK auf GitHub.
+- `play`: für Google Play (`./gradlew bundlePlayRelease`), wie `foss`, aber ohne Spenden-Link,
+  da Google Play nur Zahlungen über Play-Billing erlaubt.
+- `goog`: aus Mumla, mit Play-Billing für Spenden an Mumla. Wird für Mumla Funk nicht genutzt.
 - `donation` und `beta`: bekommen eine eigene Application-ID mit Suffix.
 
 ### Releases
@@ -222,6 +224,10 @@ Ein Release wird auf GitHub mit einem Tag `vX.Y.Z` angelegt. Der Workflow
 - Sonst endet er mit einer Warnung, ohne Fehler.
 
 In einem Fork müssen GitHub Actions einmal im Tab „Actions“ aktiviert werden.
+
+Für Google Play baut der Workflow `.github/workflows/play.yml` mit denselben Secrets ein
+signiertes App Bundle. Alles zum Play Store, vom Konto bis zum internen Test, steht in
+[play/README.md](play/README.md).
 
 Version und Versionscode stehen in `app/build.gradle` (`funkVersion`, `versionCode`).
 

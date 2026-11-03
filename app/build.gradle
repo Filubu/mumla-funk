@@ -62,7 +62,7 @@ android {
     }
 
     // Mumla Funk has its own version line (based on Mumla 3.7.3).
-    def funkVersion = "1.0.3"
+    def funkVersion = "1.0.4"
 
     defaultConfig {
         minSdkVersion 21
@@ -71,7 +71,7 @@ android {
         // Own application ID so that Mumla Funk can be installed next to the regular Mumla app.
         applicationId "io.github.filubu.mumlafunk"
         // code: XYYZZbb (bb for build)
-        versionCode 1000300
+        versionCode 1000400
         versionName funkVersion
 
         buildConfigField "long", "TIMESTAMP", System.currentTimeMillis() + "L"
@@ -87,6 +87,12 @@ android {
             resValue "string", "search_authority", "io.github.filubu.mumlafunk.channel.ChannelSearchProvider"
         }
         foss {
+            dimension "release"
+            resValue "string", "search_authority", "io.github.filubu.mumlafunk.channel.ChannelSearchProvider"
+        }
+        // Mumla Funk: build for Google Play (./gradlew bundlePlayRelease). Same app ID as foss,
+        // without donation links and without the billing library.
+        play {
             dimension "release"
             resValue "string", "search_authority", "io.github.filubu.mumlafunk.channel.ChannelSearchProvider"
         }

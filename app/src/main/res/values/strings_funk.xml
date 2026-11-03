@@ -88,6 +88,11 @@
 
     <string name="funk_accessibility_label">Mumla Funk volume key</string>
     <string name="funk_accessibility_description">Opens the Mumla Funk walkie-talkie popup when you hold the volume-down key for 2 seconds. A short press keeps changing the volume as usual. The service only looks at the volume-down key; it does not read screen content.</string>
+    <string name="funk_accessibility_disclosure_title">Volume key shortcut</string>
+    <string name="funk_accessibility_disclosure_message">Mumla Funk uses the Android accessibility service for one thing only: when you hold the volume-down key for 2 seconds, the walkie-talkie popup opens, even when the app is not open.\n\nFor this, Android passes the presses of the hardware keys to the service. Mumla Funk only evaluates the volume-down key. It does not read screen content or what you type, and it does not store, send or share any data.\n\nNext, the Android settings open. Switch on \u201cMumla Funk volume key\u201d there. You can switch it off there at any time.</string>
+    <string name="funk_accessibility_disclosure_accept">Agree</string>
+    <string name="funk_accessibility_disclosure_decline">Decline</string>
+    <string name="privacy_policy">Privacy policy</string>
     <string name="crash_dialog_title">Mumla Funk crashed</string>
     <string name="crash_dialog_message">Last time, the app crashed. Please copy these details and send them to whoever maintains the app.</string>
     <string name="crash_dialog_copy">Copy</string>

@@ -1,0 +1,142 @@
+name: Google Play
+
+# Builds the Google Play version (flavor "play") as a signed app bundle (.aab):
+# - when a tag "v*" is pushed, or
+# - manually (Actions › Google Play › Run workflow) for a tag or branch.
+#
+# The bundle is attached to the workflow run (section "Artifacts"). Upload it by hand in the
+# Play Console. The very first upload of a new app has to be done by hand anyway.
+#
+# Optional: with the secret PLAY_SERVICE_ACCOUNT_JSON (see play/README.md), the bundle is also
+# uploaded to the internal test track: always for a pushed tag, for a manual run only if
+# "upload" is ticked.
+#
+# Signs with the same keystore as the GitHub release (secrets MUMLA_FUNK_KEYSTORE_BASE64 and
+# MUMLA_FUNK_KEYSTORE_PASSWORD, alias mumlafunk). In the Play Console it is the upload key.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Tag or branch to build, e.g. v1.0.4'
+        required: true
+        default: 'master'
+      upload:
+        description: 'Upload to the internal test track (needs PLAY_SERVICE_ACCOUNT_JSON)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    env:
+      REF: ${{ github.event.inputs.ref || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.REF }}
+          submodules: recursive
+
+      - name: Decide what to do
+        id: plan
+        env:
+          KEYSTORE_BASE64: ${{ secrets.MUMLA_FUNK_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.MUMLA_FUNK_KEYSTORE_PASSWORD }}
+          PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          UPLOAD_INPUT: ${{ github.event.inputs.upload }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ]; then
+            echo "::warning::Cannot sign the bundle: set the repository secrets MUMLA_FUNK_KEYSTORE_BASE64 and MUMLA_FUNK_KEYSTORE_PASSWORD (see README)."
+            echo "build=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "build=true" >> "$GITHUB_OUTPUT"
+          if [ -n "$PLAY_JSON" ] && { [ "$GITHUB_EVENT_NAME" = "push" ] || [ "$UPLOAD_INPUT" = "true" ]; }; then
+            echo "upload=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "upload=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Java
+        if: steps.plan.outputs.build == 'true'
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Build and sign the app bundle
+        if: steps.plan.outputs.build == 'true'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.MUMLA_FUNK_KEYSTORE_BASE64 }}
+          MUMLA_FUNK_KEYSTORE_PASSWORD: ${{ secrets.MUMLA_FUNK_KEYSTORE_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          export MUMLA_FUNK_KEYSTORE="$RUNNER_TEMP/release.jks"
+          cat > app/signing.gradle <<'GRADLE'
+          android {
+              signingConfigs {
+                  release {
+                      storeFile file(System.getenv("MUMLA_FUNK_KEYSTORE"))
+                      storePassword System.getenv("MUMLA_FUNK_KEYSTORE_PASSWORD")
+                      keyAlias "mumlafunk"
+                      keyPassword System.getenv("MUMLA_FUNK_KEYSTORE_PASSWORD")
+                  }
+              }
+          }
+          GRADLE
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;25.1.8937393" > /dev/null
+          (cd libraries/humla/libs/humla-spongycastle && ../../gradlew jar)
+          ./gradlew bundlePlayRelease
+          AAB=app/build/outputs/bundle/playRelease/mumla-play-release.aab
+          # Without the native codecs the app crashes when connecting (happened in 1.0.1/1.0.2).
+          for lib in libjnicelt7 libjnicelt11 libjniopus libjnispeex; do
+            for abi in arm64-v8a armeabi-v7a x86_64; do
+              if ! unzip -l "$AAB" | grep -q "base/lib/$abi/$lib.so"; then
+                echo "::error::$lib.so for $abi is missing in the bundle."
+                exit 1
+              fi
+            done
+          done
+          # Google Play rejects 64-bit native code that is not aligned for 16 KB memory pages.
+          for so in libraries/humla/src/main/libs/arm64-v8a/*.so libraries/humla/src/main/libs/x86_64/*.so; do
+            if readelf -lW "$so" | awk '$1 == "LOAD" && $NF != "0x4000" && $NF != "0x10000" { bad = 1 } END { exit !bad }'; then
+              echo "::error::$so is not aligned for 16 KB pages."
+              exit 1
+            fi
+          done
+          VERSION=$(sed -n 's/.*def funkVersion = "\(.*\)".*/\1/p' app/build.gradle)
+          CODE=$(sed -n 's/.*versionCode \([0-9]*\).*/\1/p' app/build.gradle | head -1)
+          mkdir -p play-out/whatsnew
+          cp "$AAB" "play-out/mumla-funk-$VERSION-play.aab"
+          # Release notes for the Play Console from the changelogs (max. 500 characters each).
+          for pair in de:de-DE en-US:en-US; do
+            src="fastlane/metadata/android/${pair%%:*}/changelogs/$CODE.txt"
+            if [ -f "$src" ]; then
+              head -c 500 "$src" > "play-out/whatsnew/whatsnew-${pair##*:}"
+            fi
+          done
+          echo "Built Mumla Funk $VERSION (version code $CODE)"
+
+      - name: Attach the bundle to this run
+        if: steps.plan.outputs.build == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mumla-funk-play
+          path: play-out/
+          if-no-files-found: error
+
+      - name: Upload to the internal test track
+        if: steps.plan.outputs.upload == 'true'
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: io.github.filubu.mumlafunk
+          releaseFiles: play-out/*.aab
+          track: internal
+          status: completed
+          whatsNewDirectory: play-out/whatsnew

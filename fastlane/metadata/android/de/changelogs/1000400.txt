@@ -1,0 +1,3 @@
+* Erste Version für Google Play (ohne Spenden-Links).
+* Bevor die Bedienungshilfe für die Leiser-Taste eingeschaltet wird, erklärt die App, was sie damit tut und was nicht.
+* Link zur Datenschutzerklärung unter Einstellungen › Über.

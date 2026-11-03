@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mumla Funk: flavor for Google Play. Like foss, but without donation links (Play only
+     allows payments through Play billing) and without the billing library. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <provider
+            android:name="se.lublin.mumla.channel.ChannelSearchProvider"
+            android:authorities="${applicationId}.channel.ChannelSearchProvider"
+            android:exported="false" />
+    </application>
+
+</manifest>
