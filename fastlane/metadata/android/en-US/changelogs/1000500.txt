@@ -1,3 +1,4 @@
+* Fixed a crash when reconnecting automatically in the background
 * New start screen with help for getting started
 * Per server: walkie-talkie server with a big talk button, or the usual Mumble view
 * Server setup with examples and clear hints

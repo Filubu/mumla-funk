@@ -211,9 +211,16 @@ public class MumlaService extends HumlaService implements
             }
 
             final String tor = mSettings.isTorEnabled() ? " (Tor)" : "";
-            mNotification = MumlaConnectionNotification.create(MumlaService.this,
-                    getString(R.string.mumlaConnecting) + tor,
-                    MumlaService.this);
+            if (mNotification != null) {
+                // Kept in the foreground while reconnecting: starting a microphone foreground
+                // service again from the background is not allowed (Android 14+).
+                mNotification.setCustomContentText(getString(R.string.mumlaConnecting) + tor);
+                mNotification.setActionsShown(false);
+            } else {
+                mNotification = MumlaConnectionNotification.create(MumlaService.this,
+                        getString(R.string.mumlaConnecting) + tor,
+                        MumlaService.this);
+            }
             mNotification.show();
 
             mErrorShown = false;
@@ -232,8 +239,15 @@ public class MumlaService extends HumlaService implements
         @Override
         public void onDisconnected(HumlaException e) {
             if (mNotification != null) {
-                mNotification.hide();
-                mNotification = null;
+                if (e != null && isReconnecting()) {
+                    // Stay in the foreground until reconnected (see onConnecting).
+                    mNotification.setCustomContentText(getString(R.string.funk_reconnecting));
+                    mNotification.setActionsShown(false);
+                    mNotification.show();
+                } else {
+                    mNotification.hide();
+                    mNotification = null;
+                }
             }
             if (e != null && !mSuppressNotifications) {
                 mReconnectNotification =
@@ -651,6 +665,11 @@ public class MumlaService extends HumlaService implements
             mReconnectNotification = null;
         }
         super.cancelReconnect();
+        // No reconnect any more: leave the foreground (kept while reconnecting).
+        if (mNotification != null && !isConnectionEstablished()) {
+            mNotification.hide();
+            mNotification = null;
+        }
     }
 
     @Override

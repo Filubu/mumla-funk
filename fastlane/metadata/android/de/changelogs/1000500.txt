@@ -1,3 +1,4 @@
+* Absturz beim automatischen Neuverbinden im Hintergrund behoben
 * Neuer Startbildschirm mit Hilfe für den Einstieg
 * Pro Server wählbar: Funk-Server mit großem Sprechknopf oder normale Mumble-Ansicht
 * Server einrichten mit Beispielen und klaren Hinweisen

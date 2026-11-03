@@ -31,6 +31,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
@@ -44,6 +45,7 @@ import se.lublin.mumla.app.MumlaActivity;
  * Created by andrew on 08/08/14.
  */
 public class MumlaConnectionNotification {
+    private static final String TAG = "MumlaConnectionNotif";
     private static final int NOTIFICATION_ID = 1;
     private static final String BROADCAST_MUTE = "b_mute";
     private static final String BROADCAST_DEAFEN = "b_deafen";
@@ -53,6 +55,8 @@ public class MumlaConnectionNotification {
     private OnActionListener mListener;
     private String mCustomContentText;
     private boolean mActionsShown;
+    /** The service is in the foreground with this notification. */
+    private boolean mForeground;
 
     private BroadcastReceiver mNotificationReceiver = new BroadcastReceiver() {
         @Override
@@ -126,6 +130,12 @@ public class MumlaConnectionNotification {
             e.printStackTrace();
         }
         mService.stopForeground(true);
+        mForeground = false;
+        NotificationManager manager =
+                (NotificationManager) mService.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (manager != null) {
+            manager.cancel(NOTIFICATION_ID); // In case it was only a normal notification.
+        }
     }
 
     /**
@@ -183,10 +193,33 @@ public class MumlaConnectionNotification {
         builder.setContentIntent(pendingIntent);
 
         Notification notification = builder.build();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            mService.startForeground(NOTIFICATION_ID, notification, FOREGROUND_SERVICE_TYPE_MICROPHONE);
-        } else {
-            mService.startForeground(NOTIFICATION_ID, notification);
+        if (mForeground) {
+            // Only update it. Calling startForeground() again re-checks whether the app may start
+            // a microphone foreground service, which Android 14+ refuses while in the background
+            // (e.g. on a status change or an automatic reconnect), and that crashed the app.
+            NotificationManager manager =
+                    (NotificationManager) mService.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (manager != null) {
+                manager.notify(NOTIFICATION_ID, notification);
+            }
+            return notification;
+        }
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                mService.startForeground(NOTIFICATION_ID, notification, FOREGROUND_SERVICE_TYPE_MICROPHONE);
+            } else {
+                mService.startForeground(NOTIFICATION_ID, notification);
+            }
+            mForeground = true;
+        } catch (SecurityException | IllegalStateException e) {
+            // Not allowed right now (in the background). Do not crash: show the status anyway; the
+            // next update from the foreground tries again.
+            Log.w(TAG, "could not start the foreground service", e);
+            NotificationManager manager =
+                    (NotificationManager) mService.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (manager != null) {
+                manager.notify(NOTIFICATION_ID, notification);
+            }
         }
         return notification;
     }
