@@ -1,0 +1,1 @@
+* Fixed a crash when reconnecting automatically in the background.
