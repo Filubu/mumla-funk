@@ -174,10 +174,14 @@ public class AudioInput implements Runnable {
      * Must only be called on the record thread (from {@link AudioInputListener}).
      */
     public void pauseCapture() {
-        if (mAudioRecord != null
-                && mAudioRecord.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING) {
-            mAudioRecord.stop();
-            Log.v(TAG, "capture paused, microphone released");
+        try {
+            if (mAudioRecord != null
+                    && mAudioRecord.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING) {
+                mAudioRecord.stop();
+                Log.v(TAG, "capture paused, microphone released");
+            }
+        } catch (RuntimeException e) {
+            Log.e(TAG, "could not pause capture, keeping the microphone open", e);
         }
     }
 
@@ -186,10 +190,14 @@ public class AudioInput implements Runnable {
      * Must only be called on the record thread (from {@link AudioInputListener}).
      */
     public void resumeCapture() {
-        if (mRecording && mAudioRecord != null
-                && mAudioRecord.getRecordingState() != AudioRecord.RECORDSTATE_RECORDING) {
-            mAudioRecord.startRecording();
-            Log.v(TAG, "capture resumed");
+        try {
+            if (mRecording && mAudioRecord != null
+                    && mAudioRecord.getRecordingState() != AudioRecord.RECORDSTATE_RECORDING) {
+                mAudioRecord.startRecording();
+                Log.v(TAG, "capture resumed");
+            }
+        } catch (RuntimeException e) {
+            Log.e(TAG, "could not resume capture", e);
         }
     }
 
