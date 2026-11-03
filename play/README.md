@@ -118,16 +118,10 @@ Signiert wird es nur mit `app/signing.gradle`, siehe Haupt-README.
 
    ```text
    <de-DE>
-   * Neue Paket-ID de.filubu.funk: 1.0.4 wird als eigene App neben 1.0.3 installiert. Zertifikat in der alten Version exportieren, hier importieren, Server neu anlegen, danach die alte Version deinstallieren.
-   * Erste Version für Google Play (ohne Spenden-Links).
-   * Bevor die Bedienungshilfe für die Leiser-Taste eingeschaltet wird, erklärt die App, was sie damit tut und was nicht.
-   * Link zur Datenschutzerklärung unter Einstellungen › Über.
+   * Erste Version von Mumla Funk: Mumble als Walkie-Talkie. Halten zum Sprechen, loslassen beendet.
    </de-DE>
    <en-US>
-   * New package ID de.filubu.funk: 1.0.4 installs as a separate app next to 1.0.3. Export the certificate in the old version, import it here, add the servers again, then uninstall the old version.
-   * First version for Google Play (without donation links).
-   * Before you switch on the accessibility service for the volume-down key, the app explains what it does with it and what it does not.
-   * Link to the privacy policy under Settings › About.
+   * First version of Mumla Funk: Mumble as a walkie-talkie. Hold to talk, release to stop.
    </en-US>
    ```
 
