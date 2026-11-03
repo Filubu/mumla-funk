@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="drawer_funk">Funk</string>
+
+    <string name="funk_hold_to_talk">Halten zum Sprechen</string>
+    <string name="funk_transmitting">Sendet …</string>
+    <string name="funk_tap_to_connect">Tippen zum Verbinden</string>
+    <string name="funk_connecting">Verbinde …</string>
+    <string name="funk_not_connected">Nicht verbunden</string>
+    <string name="funk_connected">Verbunden</string>
+    <string name="funk_connect_short">Verbinden</string>
+    <string name="funk_disconnect_short">Trennen</string>
+    <string name="funk_reconnecting">Verbindung verloren, verbinde neu …</string>
+    <string name="funk_muted">Mikrofon stumm</string>
+    <string name="funk_tap_to_unmute">Tippen zum Aktivieren</string>
+    <string name="funk_x_talking">%1$s spricht</string>
+    <string name="funk_several_talking">%1$s und %2$d weitere sprechen</string>
+    <string name="funk_online_count">%1$d online</string>
+    <string name="funk_channel_online">%1$s · %2$d online</string>
+    <string name="funk_switch_to">Zu %1$s wechseln</string>
+    <string name="funk_open_app">In App öffnen</string>
+    <string name="funk_close">Schließen</string>
+    <string name="funk_no_server">Kein Server eingerichtet</string>
+    <string name="funk_no_server_hint">Lege zuerst in der App einen Server an.</string>
+    <string name="funk_volume_hint">oder Leiser-Taste halten</string>
+    <string name="funk_not_ptt_mode">Eingabemodus ist nicht Push-to-Talk</string>
+    <string name="funk_switch_to_ptt">Push-to-Talk verwenden</string>
+    <string name="funk_error_cert">Das Server-Zertifikat muss einmal in der App bestätigt werden.</string>
+    <string name="funk_error_password">Falsches Passwort. Bitte in der App prüfen.</string>
+    <string name="funk_error_mic_permission">Die Mikrofon-Berechtigung wird benötigt.</string>
+    <string name="funk_error_tor">Tor ist aktiviert, aber Orbot ist nicht installiert.</string>
+    <string name="funk_you">%1$s (du)</string>
+    <string name="funk_choose_server">Server wählen</string>
+    <string name="funk_add_server">Server hinzufügen</string>
+    <string name="funk_manage_servers">Server verwalten</string>
+    <string name="funk_channels_chat">Kanäle &amp; Chat</string>
+    <string name="funk_nobody_online">Sonst ist noch niemand da</string>
+    <string name="funk_online_header">Online · %1$d</string>
+    <string name="funk_connected_channel">Verbunden · %1$s</string>
+    <string name="funk_more_users">+%1$d weitere</string>
+    <string name="funk_ptt_button_desc">Sprechtaste</string>
+
+    <string name="funk_widget_small_label">Funk</string>
+    <string name="funk_widget_small_desc">Antippen öffnet das Funk-Fenster</string>
+    <string name="funk_widget_large_label">Funk mit Teilnehmern</string>
+    <string name="funk_widget_large_desc">Zeigt, wer online ist, und öffnet das Funk-Fenster</string>
+    <string name="funk_widget_config_title">Mit welchem Server soll dieses Widget funken?</string>
+    <string name="funk_widget_talk">Sprechen</string>
+    <string name="funk_widget_connect">Verbinden</string>
+    <string name="funk_widget_other_server">Aktiv: %1$s</string>
+
+    <string name="pref_funk_header">Funk</string>
+    <string name="pref_funk_header_summary">Ein/Aus-Taste, Leiser-Taste, Funk-Fenster</string>
+    <string name="pref_funk_assistant_title">Ein/Aus-Taste halten öffnet Funk</string>
+    <string name="pref_funk_assistant_on">Aktiv: Mumla Funk ist als digitaler Assistent festgelegt.</string>
+    <string name="pref_funk_assistant_off">Antippen und Mumla Funk als Standard-App für den digitalen Assistenten wählen. Danach in den System-Gesten bei „Ein/Aus-Taste gedrückt halten“ den digitalen Assistenten einstellen.</string>
+    <string name="pref_funk_volume_title">Leiser-Taste 2 s halten öffnet Funk</string>
+    <string name="pref_funk_volume_on">Aktiv. Kurz drücken regelt weiterhin die Lautstärke.</string>
+    <string name="pref_funk_volume_off">Antippen und die Bedienungshilfe „Mumla Funk“ aktivieren. Funktioniert bei eingeschaltetem Bildschirm. Ist der Schalter ausgegraut: App-Info › ⋮ › Eingeschränkte Einstellungen zulassen.</string>
+    <string name="pref_funk_volume_ptt_title">Leiser-Taste im Funk-Fenster = Sprechtaste</string>
+    <string name="pref_funk_volume_ptt_summary">Solange das Funk-Fenster offen ist: halten zum Sprechen, loslassen beendet.</string>
+    <string name="pref_funk_settings_unavailable">Die Systemeinstellung konnte auf diesem Gerät nicht geöffnet werden.</string>
+
+    <string name="funk_accessibility_label">Mumla Funk Leiser-Taste</string>
+    <string name="funk_accessibility_description">Öffnet das Funk-Fenster von Mumla Funk, wenn du die Leiser-Taste 2 Sekunden gedrückt hältst. Kurzes Drücken regelt weiterhin wie gewohnt die Lautstärke. Der Dienst beachtet nur die Leiser-Taste und liest keine Bildschirminhalte.</string>
+</resources>

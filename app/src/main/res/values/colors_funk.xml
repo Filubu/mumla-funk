@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mumla Funk: colors for the walkie-talkie popup, main screen and widgets. -->
+<resources>
+    <color name="funk_scrim">#99000000</color>
+    <color name="funk_surface">#FF16181D</color>
+    <color name="funk_surface_raised">#FF23262D</color>
+    <color name="funk_on_surface">#FFF2F3F5</color>
+    <color name="funk_on_surface_muted">#FF9AA0AC</color>
+    <color name="funk_divider">#1FFFFFFF</color>
+
+    <color name="funk_accent">#FF5C6BC0</color>
+    <color name="funk_accent_dark">#FF3949AB</color>
+    <color name="funk_talk">#FFE53935</color>
+    <color name="funk_talk_dark">#FFB71C1C</color>
+    <color name="funk_idle">#FF3D424E</color>
+    <color name="funk_idle_dark">#FF2A2E37</color>
+    <color name="funk_live">#FF43A047</color>
+    <color name="funk_warn">#FFFFB74D</color>
+
+    <color name="funk_widget_background">#EB141619</color>
+</resources>

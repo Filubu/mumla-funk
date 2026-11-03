@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mumla Funk (walkie-talkie mode) strings. German translation in values-de/strings_funk.xml. -->
+<resources>
+    <string name="drawer_funk">Walkie-talkie</string>
+
+    <string name="funk_hold_to_talk">Hold to talk</string>
+    <string name="funk_transmitting">Transmitting…</string>
+    <string name="funk_tap_to_connect">Tap to connect</string>
+    <string name="funk_connecting">Connecting…</string>
+    <string name="funk_not_connected">Not connected</string>
+    <string name="funk_connected">Connected</string>
+    <string name="funk_connect_short">Connect</string>
+    <string name="funk_disconnect_short">Disconnect</string>
+    <string name="funk_reconnecting">Connection lost, reconnecting…</string>
+    <string name="funk_muted">Microphone muted</string>
+    <string name="funk_tap_to_unmute">Tap to unmute</string>
+    <string name="funk_x_talking">%1$s is talking</string>
+    <string name="funk_several_talking">%1$s and %2$d more are talking</string>
+    <string name="funk_online_count">%1$d online</string>
+    <string name="funk_channel_online">%1$s · %2$d online</string>
+    <string name="funk_switch_to">Switch to %1$s</string>
+    <string name="funk_open_app">Open app</string>
+    <string name="funk_close">Close</string>
+    <string name="funk_no_server">No server set up</string>
+    <string name="funk_no_server_hint">Add a server in the app first.</string>
+    <string name="funk_volume_hint">or hold the volume-down key</string>
+    <string name="funk_not_ptt_mode">Input mode is not push-to-talk</string>
+    <string name="funk_switch_to_ptt">Use push-to-talk</string>
+    <string name="funk_error_cert">The server certificate has to be confirmed in the app once.</string>
+    <string name="funk_error_password">Wrong password. Please check it in the app.</string>
+    <string name="funk_error_mic_permission">Microphone permission is required.</string>
+    <string name="funk_error_tor">Tor is enabled but Orbot is not installed.</string>
+    <string name="funk_you">%1$s (you)</string>
+    <string name="funk_choose_server">Choose server</string>
+    <string name="funk_add_server">Add server</string>
+    <string name="funk_manage_servers">Manage servers</string>
+    <string name="funk_channels_chat">Channels &amp; chat</string>
+    <string name="funk_nobody_online">Nobody else is here yet</string>
+    <string name="funk_online_header">Online · %1$d</string>
+    <string name="funk_connected_channel">Connected · %1$s</string>
+    <string name="funk_more_users">+%1$d more</string>
+    <string name="funk_ptt_button_desc">Push-to-talk button</string>
+
+    <string name="funk_widget_small_label">Walkie-talkie</string>
+    <string name="funk_widget_small_desc">Tap to open the push-to-talk window</string>
+    <string name="funk_widget_large_label">Walkie-talkie with users</string>
+    <string name="funk_widget_large_desc">Shows who is online and opens the push-to-talk window</string>
+    <string name="funk_widget_config_title">Which server should this widget use?</string>
+    <string name="funk_widget_talk">Talk</string>
+    <string name="funk_widget_connect">Connect</string>
+    <string name="funk_widget_other_server">Active: %1$s</string>
+
+    <string name="pref_funk_header">Walkie-talkie</string>
+    <string name="pref_funk_header_summary">Power button, volume key, popup</string>
+    <string name="pref_funk_assistant_title">Hold power button to open the walkie-talkie</string>
+    <string name="pref_funk_assistant_on">Active: Mumla Funk is your digital assistant app.</string>
+    <string name="pref_funk_assistant_off">Tap and choose Mumla Funk as default digital assistant app. Then make sure \"Press and hold power button\" is set to \"Digital assistant\" in the system gesture settings.</string>
+    <string name="pref_funk_volume_title">Hold volume-down for 2 s to open the walkie-talkie</string>
+    <string name="pref_funk_volume_on">Active. A short press still changes the volume.</string>
+    <string name="pref_funk_volume_off">Tap and enable the \"Mumla Funk\" accessibility service. Works while the screen is on. If the switch is greyed out: App info › ⋮ › Allow restricted settings.</string>
+    <string name="pref_funk_volume_ptt_title">Volume-down is the talk key in the popup</string>
+    <string name="pref_funk_volume_ptt_summary">While the walkie-talkie popup is open: hold to talk, release to stop.</string>
+    <string name="pref_funk_settings_unavailable">Could not open the system settings on this device.</string>
+
+    <string name="funk_accessibility_label">Mumla Funk volume key</string>
+    <string name="funk_accessibility_description">Opens the Mumla Funk walkie-talkie popup when you hold the volume-down key for 2 seconds. A short press keeps changing the volume as usual. The service only looks at the volume-down key; it does not read screen content.</string>
+</resources>
