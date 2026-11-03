@@ -32,7 +32,6 @@
     <string name="orbot_tor_failed">Kunde inte ansluta till en lokal Tor-proxy på port %d (SOCKS).
 \n
 \nVänligen försäkra dig om att Orbot-appen körs.</string>
-    <string name="donation_thanks">Tack för donationen.</string>
     <string name="image_confirm_send">Skicka den här bilden?</string>
     <string name="drawer_favorites">Favoriter</string>
     <string name="drawer_header_servers">Servrar</string>
@@ -203,12 +202,5 @@
     </plurals>
     <string name="app_news">Nyheter</string>
     <string name="app_news_summary">Visa de senaste uppdateringarna</string>
-    <string name="donate_foss">Donera</string>
-    <string name="donate_dialog_title_goog">Gillar du Mumla?</string>
-    <string name="donate_dialog_message_goog">Tack för att du använder Mumla! En liten donation kan hjälpa till att hålla Mumla levande — och tar bort detta meddelande.</string>
-    <string name="donate_dialog_positivebutton_goog">Stöd Mumla</string>
-    <string name="donate_dialog_negativebutton_goog">Senare</string>
-    <string name="donate_purchase_pending_goog">Din donation behandlas och kan vara klar vid en senare omstart. Tack!</string>
-    <string name="donate_thanks_goog">Tack för ditt stöd!</string>
     <string name="app_news_footer_on_startup">Dessa nyheter kan ses igen på Om sidan.</string>
 </resources>

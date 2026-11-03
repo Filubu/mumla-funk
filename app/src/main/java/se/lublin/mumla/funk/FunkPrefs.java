@@ -33,8 +33,11 @@ public final class FunkPrefs {
     public static final String PREF_VOLUME_PTT_IN_POPUP = "funk_volume_ptt_in_popup";
     public static final boolean DEFAULT_VOLUME_PTT_IN_POPUP = true;
     private static final String PREF_NOTIFICATIONS_ASKED = "funk_notifications_asked";
-    private static final String PREF_BATTERY_OPTIMIZATION_ASKED = "funk_battery_optimization_asked";
     private static final String PREF_WIDGET_SERVER = "funk_widget_server_";
+    /** Per saved server: show the walkie-talkie UI (true) or Mumla's channel list (false). */
+    private static final String PREF_SERVER_FUNK = "funk_server_mode_";
+    /** Servers saved before 1.0.5 had no setting; they were all used with the walkie-talkie UI. */
+    public static final boolean DEFAULT_SERVER_FUNK = true;
     private static final String PREF_WIDGET_SERVER_NAME = "funk_widget_server_name_";
 
     private final SharedPreferences mPrefs;
@@ -69,12 +72,24 @@ public final class FunkPrefs {
         mPrefs.edit().putBoolean(PREF_NOTIFICATIONS_ASKED, true).apply();
     }
 
-    public boolean wasBatteryOptimizationAsked() {
-        return mPrefs.getBoolean(PREF_BATTERY_OPTIMIZATION_ASKED, false);
+    /** Whether the saved server uses the walkie-talkie UI. Unsaved servers (id -1) never do. */
+    public boolean isFunkServer(long serverId) {
+        return serverId >= 0 && mPrefs.getBoolean(PREF_SERVER_FUNK + serverId, DEFAULT_SERVER_FUNK);
     }
 
-    public void setBatteryOptimizationAsked() {
-        mPrefs.edit().putBoolean(PREF_BATTERY_OPTIMIZATION_ASKED, true).apply();
+    public void setFunkServer(long serverId, boolean funk) {
+        if (serverId >= 0) {
+            mPrefs.edit().putBoolean(PREF_SERVER_FUNK + serverId, funk).apply();
+        }
+    }
+
+    /** Forget everything about a deleted server. */
+    public void removeServer(long serverId) {
+        SharedPreferences.Editor editor = mPrefs.edit().remove(PREF_SERVER_FUNK + serverId);
+        if (getLastServerId() == serverId) {
+            editor.remove(PREF_LAST_SERVER);
+        }
+        editor.apply();
     }
 
     public long getWidgetServerId(int appWidgetId) {

@@ -164,7 +164,6 @@
     <string name="certificate_import_success">Certificado %s importado.</string>
     <string name="no_certificate">No hay certificado</string>
     <string name="chat_message_tts_short_link">(Enlace a %1$s)</string>
-    <string name="donation_thanks">Gracias por su donación.</string>
     <string name="orbot_tor_failed">No se pudo conectar al proxy local de Tor en el puerto %d (SOCKS). \n \nPor favor, asegúrese de que la aplicación Orbot se esté ejecutando.</string>
     <string name="orbot_not_installed">La aplicación Orbot no está instalada. No se está usando Tor.</string>
     <string name="grant_perm_draw_over_apps">Por favor, de permiso para mostrar por encima de otras aplicaciones.</string>
@@ -195,11 +194,4 @@
     <string name="app_news_items_v3_7_1">• Versión menor, principalmente con actualizaciones de traducciones. ¡Gracias a todos los traductores!\n</string>
     <string name="app_news_items_v3_7_2">• Se corrigió posible fallo al iniciar.\n • Se añadieron algunas traducciones, ¡gracias a todos los traductores!\n</string>
     <string name="app_news_items_v3_7_3">"• Se hizo visible la esquina activa de PTT en Android 12 y posteriores, tanto con fondo oscuro como claro\n  • El botón Atrás vuelve a preguntar si se desea desconectar del servidor en Android 16 y posteriores\n"</string>
-    <string name="donate_dialog_title_goog">¿Disfrutas de Mumla?</string>
-    <string name="donate_dialog_message_goog">¡Gracias por usar Mumla! Considera hacer una pequeña donación para ayudar a mantener vivo a Mumla, y para eliminar este mensaje.</string>
-    <string name="donate_dialog_positivebutton_goog">Apoya a Mumla</string>
-    <string name="donate_dialog_negativebutton_goog">Más tarde</string>
-    <string name="donate_purchase_pending_goog">Tu donación está pendiente y podría estar lista en un próximo reinicio. ¡Gracias!</string>
-    <string name="donate_thanks_goog">¡Gracias por tu apoyo!</string>
-    <string name="donate_foss">Donar</string>
 </resources>

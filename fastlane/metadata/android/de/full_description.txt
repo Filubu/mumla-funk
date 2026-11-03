@@ -1,11 +1,15 @@
-Mumla Funk macht Mumble zum Walkie-Talkie. Die App verbindet sich mit normalen Mumble-Servern und ist für Gruppen gedacht, die einen Mumble-Server als Funknetz nutzen: Jeder spricht per Push-to-Talk, schnell und ohne Hinschauen.
+Mumla Funk macht Mumble zum Walkie-Talkie. Die App verbindet sich mit jedem Mumble-Server, eigenem oder öffentlichem. Für jeden Server legst du fest, ob er ein Funk-Server ist: Dann gibt es einen großen Sprechknopf, das Funk-Fenster und Widgets. Sonst zeigt die App die gewohnte Mumble-Ansicht mit Kanälen und Chat.
 
-* Funk-Fenster: ein großer Knopf, halten zum Sprechen, loslassen beendet. Zeigt Server, Verbindung und wer gerade spricht. Solange es offen ist, ist die Leiser-Taste die Sprechtaste. Funktioniert auch über dem Sperrbildschirm.
-* Ein/Aus-Taste gedrückt halten öffnet das Funk-Fenster (Mumla Funk als digitalen Assistenten festlegen).
-* Leiser-Taste 2 Sekunden halten öffnet das Funk-Fenster; kurz drücken regelt weiterhin die Lautstärke.
-* Zwei Homescreen-Widgets, jeweils an einen Server gebunden: ein kleiner Sprechknopf und ein großes Widget mit allen Teilnehmern. Ein durchgestrichener Funkmast zeigt, wenn keine Verbindung besteht.
-* Einfacher Startbildschirm mit Server, Status, Sprechtaste und Teilnehmerliste.
-* Zuverlässiges Sende-Ende: Beim Loslassen wird immer das Ende-Flag gesendet, wie beim Desktop-Client von Mumble.
-* Alles aus Mumla bleibt erreichbar: Kanäle, Chat, Zertifikate, Zugriffstoken, Tor.
+Voraussetzung ist ein Mumble-Server. Mumla Funk betreibt selbst keine Server.
 
-Mumla Funk ist ein Fork von Mumla und lässt sich parallel dazu installieren. Freie Software unter GPLv3: https://github.com/Filubu/mumla-funk
+Funktionen:
+• Funk-Fenster: ein großer Knopf, halten zum Sprechen, loslassen beendet. Es zeigt Server, Verbindung und wer gerade spricht und erscheint auch über dem Sperrbildschirm. Solange es offen ist, ist die Leiser-Taste die Sprechtaste.
+• Ein/Aus-Taste gedrückt halten öffnet das Funk-Fenster, wenn Mumla Funk als digitaler Assistent festgelegt ist.
+• Zwei Homescreen-Widgets, jeweils an einen Server gebunden: ein kleiner Sprechknopf und ein großes Widget mit allen Teilnehmern.
+• Zuverlässiges Sende-Ende: Beim Loslassen kommt das Ende der Durchsage sofort an, wie beim Desktop-Client von Mumble.
+• Energiesparen: Mikrofon nur beim Senden, Ruhezustand, solange niemand spricht.
+• Kanäle, Chat, Zertifikate, Zugriffstoken und Tor bleiben über das Menü erreichbar.
+
+Datenschutz: keine Werbung, kein Tracking, kein Konto, keine Datensammlung. Sprache, Chat und Benutzername gehen nur an die Mumble-Server, die du selbst einträgst.
+
+Mumla Funk ist ein inoffizieller Fork von Mumla und lässt sich parallel dazu installieren. Die App ist nicht mit Mumla oder dem Mumble-Projekt verbunden. Freie Software unter der GNU GPL v3, Quellcode: https://github.com/Filubu/mumla-funk

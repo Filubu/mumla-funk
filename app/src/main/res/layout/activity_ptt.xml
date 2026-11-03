@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Mumla Funk push-to-talk popup: a single floating card over a dimmed background. -->
+<!-- Mumla Funk push-to-talk popup: a single floating card over a dimmed background, with the
+     server, a short list of who is online and the big talk button. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -92,6 +93,33 @@
                 android:src="@drawable/ic_funk_close"
                 app:tint="@color/funk_on_surface_muted" />
         </LinearLayout>
+
+        <!-- Who is on the server. Shows up to 5 rows (fewer on short screens), scrolls if
+             there are more; the height is set in PttActivity. -->
+        <ScrollView
+            android:id="@+id/ptt_users_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_funk_list"
+            android:fadeScrollbars="false"
+            android:fadingEdgeLength="20dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:requiresFadingEdge="vertical"
+            android:scrollbarStyle="insideOverlay"
+            android:scrollbars="vertical"
+            android:visibility="gone"
+            tools:layout_height="188dp"
+            tools:visibility="visible">
+
+            <LinearLayout
+                android:id="@+id/ptt_users"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </ScrollView>
 
         <se.lublin.mumla.funk.PttButtonView
             android:id="@+id/ptt_button"

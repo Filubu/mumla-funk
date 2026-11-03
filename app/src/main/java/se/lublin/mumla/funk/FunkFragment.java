@@ -19,7 +19,10 @@ package se.lublin.mumla.funk;
 
 import android.content.res.ColorStateList;
 import android.os.Bundle;
-import android.util.TypedValue;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.format.DateFormat;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,15 +30,15 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.ImageViewCompat;
 
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import se.lublin.humla.model.Server;
@@ -43,16 +46,30 @@ import se.lublin.mumla.R;
 import se.lublin.mumla.Settings;
 import se.lublin.mumla.app.DrawerAdapter;
 import se.lublin.mumla.app.MumlaActivity;
-import se.lublin.mumla.servers.ServerEditFragment;
 import se.lublin.mumla.service.IMumlaService;
 import se.lublin.mumla.util.HumlaServiceFragment;
 
 /**
- * Simplified walkie-talkie home screen of the app: server + status, one big hold-to-talk
- * button and the list of who is online. Works connected and disconnected.
+ * Walkie-talkie screen of the app, shown while connected to a server that is set up as
+ * walkie-talkie server. It looks like a modern handset: a dark display on top (server, ping, who
+ * is talking right now, who talked last, who is online) and the big hold-to-talk button at the
+ * bottom, within thumb reach. Other servers get Mumla's channel list instead (see MumlaActivity).
  */
 public class FunkFragment extends HumlaServiceFragment implements FunkState.Listener,
         PttButtonView.Listener {
+    /** The ping is measured every 5 s while active; refreshing the display more often is enough. */
+    private static final long PING_REFRESH_MS = 2_000;
+    private static final long PING_GOOD_MS = 120;
+    private static final long PING_OK_MS = 300;
+
+    private final Handler mHandler = new Handler(Looper.getMainLooper());
+    private final Runnable mPingRefresh = new Runnable() {
+        @Override
+        public void run() {
+            renderPing(FunkState.current());
+            mHandler.postDelayed(this, PING_REFRESH_MS);
+        }
+    };
 
     private Settings mSettings;
     private FunkPrefs mFunkPrefs;
@@ -62,13 +79,20 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
     private ImageView mStatusIcon;
     private TextView mServerName;
     private TextView mServerStatus;
-    private MaterialButton mConnectToggle;
-    private PttButtonView mPtt;
-    private TextView mLabel;
-    private TextView mHint;
+    private View mPing;
+    private ImageView mPingIcon;
+    private TextView mPingText;
+    private TextView mNow;
+    private TextView mNowSub;
     private View mUsersSection;
     private TextView mUsersHeader;
     private LinearLayout mUsers;
+    private View mUsersEmpty;
+    private MaterialButton mConnectToggle;
+    private View mChannels;
+    private PttButtonView mPtt;
+    private TextView mLabel;
+    private TextView mHint;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -79,20 +103,39 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
         mStatusIcon = view.findViewById(R.id.funk_status_icon);
         mServerName = view.findViewById(R.id.funk_server_name);
         mServerStatus = view.findViewById(R.id.funk_server_status);
-        mConnectToggle = view.findViewById(R.id.funk_connect_toggle);
-        mPtt = view.findViewById(R.id.funk_ptt);
-        mLabel = view.findViewById(R.id.funk_label);
-        mHint = view.findViewById(R.id.funk_hint);
+        mPing = view.findViewById(R.id.funk_ping);
+        mPingIcon = view.findViewById(R.id.funk_ping_icon);
+        mPingText = view.findViewById(R.id.funk_ping_text);
+        mNow = view.findViewById(R.id.funk_now);
+        mNowSub = view.findViewById(R.id.funk_now_sub);
         mUsersSection = view.findViewById(R.id.funk_users_section);
         mUsersHeader = view.findViewById(R.id.funk_users_header);
         mUsers = view.findViewById(R.id.funk_users);
+        mUsersEmpty = view.findViewById(R.id.funk_users_empty);
+        mConnectToggle = view.findViewById(R.id.funk_connect_toggle);
+        mChannels = view.findViewById(R.id.funk_channels);
+        mPtt = view.findViewById(R.id.funk_ptt);
+        mLabel = view.findViewById(R.id.funk_label);
+        mHint = view.findViewById(R.id.funk_hint);
 
-        view.findViewById(R.id.funk_server_card).setOnClickListener(v -> showServerPicker());
         mConnectToggle.setOnClickListener(v -> toggleConnection());
-        view.findViewById(R.id.funk_channels).setOnClickListener(v ->
-                activity().showDrawerItem(DrawerAdapter.ITEM_SERVER));
+        mChannels.setOnClickListener(v -> activity().showDrawerItem(DrawerAdapter.ITEM_SERVER));
         mPtt.setListener(this);
+        sizeButton();
         return view;
+    }
+
+    /** As big as possible, but the display keeps room for a few names (and landscape works). */
+    private void sizeButton() {
+        DisplayMetrics dm = getResources().getDisplayMetrics();
+        float widthDp = dm.widthPixels / dm.density;
+        float heightDp = dm.heightPixels / dm.density;
+        boolean landscape = widthDp > heightDp;
+        float size = landscape ? heightDp - 230 : Math.min(widthDp - 120, heightDp * 0.32f);
+        size = Math.max(132, Math.min(240, size));
+        ViewGroup.LayoutParams lp = mPtt.getLayoutParams();
+        lp.width = lp.height = (int) (size * dm.density);
+        mPtt.setLayoutParams(lp);
     }
 
     private MumlaActivity activity() {
@@ -105,14 +148,13 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
         FunkState.addListener(this);
         resolveServer(FunkState.current());
         render(FunkState.current());
-        if (FunkState.current().connection == FunkState.Connection.CONNECTED) {
-            BatteryOptimization.maybeAskOnce(requireActivity());
-        }
+        mHandler.post(mPingRefresh);
     }
 
     @Override
     public void onPause() {
         FunkState.removeListener(this);
+        mHandler.removeCallbacks(mPingRefresh);
         if (mPtt.isHolding()) {
             onPttUp();
         }
@@ -142,16 +184,10 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
             resolveServer(state);
         }
         render(state);
-        if (state.connection == FunkState.Connection.CONNECTED && isResumed()) {
-            // First connection: offer to let the phone sleep while nobody talks.
-            BatteryOptimization.maybeAskOnce(requireActivity());
-        }
     }
 
-    private int attrColor(int attr) {
-        TypedValue tv = new TypedValue();
-        requireContext().getTheme().resolveAttribute(attr, tv, true);
-        return tv.data;
+    private int color(@ColorRes int res) {
+        return ContextCompat.getColor(requireContext(), res);
     }
 
     private void render(@NonNull FunkState state) {
@@ -160,20 +196,20 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
         }
         boolean on = state.connection != FunkState.Connection.DISCONNECTED;
         boolean connected = state.connection == FunkState.Connection.CONNECTED;
+
+        // Display: server and channel
         String name = on && state.serverName != null ? state.serverName
-                : mServer != null ? FunkServers.displayName(mServer) : getString(R.string.funk_choose_server);
+                : mServer != null ? FunkServers.displayName(mServer) : getString(R.string.funk_no_server);
         mServerName.setText(name);
-
         mStatusIcon.setImageResource(connected ? R.drawable.ic_funk_tower : R.drawable.ic_funk_tower_off);
-        ImageViewCompat.setImageTintList(mStatusIcon, connected
-                ? ContextCompat.getColorStateList(requireContext(), R.color.funk_live)
-                : ColorStateList.valueOf(attrColor(com.google.android.material.R.attr.colorOnSurfaceVariant)));
-
+        ImageViewCompat.setImageTintList(mStatusIcon, ColorStateList.valueOf(
+                color(connected ? R.color.funk_live : R.color.funk_on_surface_muted)));
         switch (state.connection) {
             case CONNECTED:
+                int online = state.members.size();
                 mServerStatus.setText(state.channelName != null
-                        ? getString(R.string.funk_connected_channel, state.channelName)
-                        : getString(R.string.funk_connected));
+                        ? getString(R.string.funk_channel_online, state.channelName, online)
+                        : getString(R.string.funk_online_count, online));
                 break;
             case CONNECTING:
                 mServerStatus.setText(R.string.funk_connecting);
@@ -184,16 +220,34 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
             default:
                 mServerStatus.setText(R.string.funk_not_connected);
         }
+        renderPing(state);
+        renderNow(state);
+
+        // Display: who is online
+        mUsersSection.setVisibility(connected ? View.VISIBLE : View.INVISIBLE);
+        if (connected) {
+            mUsersHeader.setText(getString(R.string.funk_online_header, state.members.size()));
+            FunkMemberList.fill(mUsers, state.members);
+            boolean alone = true;
+            for (FunkState.Member m : state.members) {
+                if (!m.self) {
+                    alone = false;
+                    break;
+                }
+            }
+            mUsersEmpty.setVisibility(alone ? View.VISIBLE : View.GONE);
+        }
+
+        // Controls
         mConnectToggle.setText(on ? R.string.funk_disconnect_short : R.string.funk_connect_short);
         mConnectToggle.setEnabled(on || mServer != null);
+        mChannels.setEnabled(connected);
 
         String label;
         String hint = "";
-        int hintColor = attrColor(com.google.android.material.R.attr.colorOnSurfaceVariant);
         PttButtonView.Mode mode;
         if (connected) {
             boolean ptt = Settings.ARRAY_INPUT_METHOD_PTT.equals(mSettings.getInputMethod());
-            boolean optimistic = mPtt.isHolding() && !mSettings.isPushToTalkToggle();
             if (state.selfMuted) {
                 mode = PttButtonView.Mode.MUTED;
                 label = getString(R.string.funk_muted);
@@ -201,19 +255,13 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
             } else if (!ptt) {
                 mode = PttButtonView.Mode.READY;
                 label = getString(R.string.funk_not_ptt_mode);
-            } else if (state.selfTalking || optimistic) {
+            } else if (isTransmitting(state)) {
                 mode = PttButtonView.Mode.TALKING;
                 label = getString(R.string.funk_transmitting);
+                hint = getString(R.string.funk_release_to_stop);
             } else {
                 mode = PttButtonView.Mode.READY;
                 label = getString(R.string.funk_hold_to_talk);
-            }
-            List<FunkState.Member> talking = state.talkingOthers();
-            if (!talking.isEmpty() && !state.selfMuted) {
-                hint = talking.size() == 1
-                        ? getString(R.string.funk_x_talking, talking.get(0).name)
-                        : getString(R.string.funk_several_talking, talking.get(0).name, talking.size() - 1);
-                hintColor = ContextCompat.getColor(requireContext(), R.color.funk_live);
             }
         } else if (on) {
             mode = PttButtonView.Mode.CONNECTING;
@@ -230,51 +278,101 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
         mPtt.setMode(mode);
         mLabel.setText(label);
         mHint.setText(hint);
-        mHint.setTextColor(hintColor);
-
-        mUsersSection.setVisibility(connected ? View.VISIBLE : View.GONE);
-        if (connected) {
-            renderUsers(state);
-        }
     }
 
-    private void renderUsers(FunkState state) {
-        mUsersHeader.setText(getString(R.string.funk_online_header, state.members.size()));
-        mUsers.removeAllViews();
-        LayoutInflater inflater = LayoutInflater.from(requireContext());
-        int others = 0;
-        for (FunkState.Member m : state.members) {
-            if (!m.self) {
-                others++;
+    private boolean isTransmitting(@NonNull FunkState state) {
+        // While the finger is down, show "transmitting" right away (not in toggle mode).
+        return state.selfTalking || (mPtt.isHolding() && !mSettings.isPushToTalkToggle());
+    }
+
+    /** The big line of the display: who is talking right now, like a radio's caller ID. */
+    private void renderNow(@NonNull FunkState state) {
+        String now;
+        String sub = "";
+        int nowColor = color(R.color.funk_on_surface);
+        if (state.connection == FunkState.Connection.CONNECTED) {
+            List<FunkState.Member> talking = state.talkingOthers();
+            if (isTransmitting(state) && !state.selfMuted) {
+                now = getString(R.string.funk_now_self);
+                nowColor = color(R.color.funk_bad);
+                if (!talking.isEmpty()) {
+                    sub = getString(R.string.funk_x_talking, talking.get(0).name);
+                }
+            } else if (!talking.isEmpty()) {
+                now = talking.size() == 1
+                        ? getString(R.string.funk_x_talking, talking.get(0).name)
+                        : getString(R.string.funk_several_talking, talking.get(0).name, talking.size() - 1);
+                nowColor = color(R.color.funk_live);
+            } else if (state.selfMuted) {
+                now = getString(R.string.funk_muted);
+                nowColor = color(R.color.funk_warn);
+                sub = lastTalkerLine();
+            } else {
+                now = getString(R.string.funk_now_free);
+                sub = lastTalkerLine();
+                if (sub.isEmpty()) {
+                    sub = getString(R.string.funk_now_free_sub);
+                }
             }
-            View row = inflater.inflate(R.layout.funk_user_row, mUsers, false);
-            ((ImageView) row.findViewById(R.id.row_dot)).setImageResource(m.talking
-                    ? R.drawable.funk_dot_talk : m.sameChannel ? R.drawable.funk_dot_live : R.drawable.funk_dot_idle);
-            ((TextView) row.findViewById(R.id.row_name)).setText(
-                    m.self ? getString(R.string.funk_you, m.name) : m.name);
-            ((TextView) row.findViewById(R.id.row_channel)).setText(
-                    m.sameChannel || m.channel == null ? "" : m.channel);
-            row.findViewById(R.id.row_muted).setVisibility(m.muted ? View.VISIBLE : View.GONE);
-            mUsers.addView(row);
+        } else if (state.connection == FunkState.Connection.CONNECTING) {
+            now = getString(R.string.funk_connecting);
+            nowColor = color(R.color.funk_on_surface_muted);
+        } else if (state.connection == FunkState.Connection.RECONNECTING) {
+            now = getString(R.string.funk_now_reconnecting);
+            nowColor = color(R.color.funk_warn);
+            sub = getString(R.string.funk_reconnecting);
+        } else {
+            now = getString(R.string.funk_not_connected);
+            nowColor = color(R.color.funk_on_surface_muted);
         }
-        if (others == 0) {
-            TextView empty = new TextView(requireContext());
-            int pad = (int) (16 * getResources().getDisplayMetrics().density);
-            empty.setPadding(pad, pad / 2, pad, pad / 2);
-            empty.setText(R.string.funk_nobody_online);
-            empty.setTextColor(attrColor(com.google.android.material.R.attr.colorOnSurfaceVariant));
-            mUsers.addView(empty);
+        mNow.setText(now);
+        mNow.setTextColor(nowColor);
+        mNowSub.setText(sub);
+    }
+
+    private String lastTalkerLine() {
+        String last = FunkState.lastTalker();
+        if (last == null) {
+            return "";
         }
+        String time = DateFormat.getTimeFormat(requireContext()).format(new Date(FunkState.lastTalkAt()));
+        return getString(R.string.funk_now_last, last, time);
+    }
+
+    /** Round trip time to the server, colored by quality. In idle mode it is minutes old. */
+    private void renderPing(@NonNull FunkState state) {
+        if (mPing == null) {
+            return;
+        }
+        IMumlaService service = getService();
+        long ms = state.connection == FunkState.Connection.CONNECTED && service != null
+                ? service.getLatencyMillis() : -1;
+        if (ms < 0) {
+            mPing.setVisibility(View.GONE);
+            return;
+        }
+        mPing.setVisibility(View.VISIBLE);
+        boolean idle = service.isConnectionIdle();
+        int quality = ms <= PING_GOOD_MS ? R.color.funk_live
+                : ms <= PING_OK_MS ? R.color.funk_warn : R.color.funk_bad;
+        ImageViewCompat.setImageTintList(mPingIcon, ColorStateList.valueOf(color(quality)));
+        mPingText.setText(idle ? getString(R.string.funk_ping_idle, ms) : getString(R.string.funk_ping_ms, ms));
+        mPing.setContentDescription(getString(idle ? R.string.funk_ping_idle_desc : R.string.funk_ping_desc, ms));
     }
 
     private void toggleConnection() {
         IMumlaService service = getService();
         FunkState state = FunkState.current();
         if (state.connection != FunkState.Connection.DISCONNECTED && service != null) {
-            if (state.connection == FunkState.Connection.RECONNECTING) {
+            boolean reconnecting = state.connection == FunkState.Connection.RECONNECTING;
+            if (reconnecting) {
                 service.cancelReconnect();
             }
             service.disconnect();
+            if (reconnecting) {
+                // The connection is gone already, no "disconnected" event follows.
+                activity().showDrawerItem(DrawerAdapter.ITEM_FAVOURITES);
+            }
         } else if (mServer != null) {
             connect(mServer);
         }
@@ -283,47 +381,6 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
     private void connect(@NonNull Server server) {
         mFunkPrefs.setLastServerId(server.getId());
         activity().connectToServer(server);
-    }
-
-    private void showServerPicker() {
-        final List<Server> servers = FunkServers.loadAll(requireContext());
-        List<CharSequence> items = new ArrayList<>();
-        int checked = -1;
-        for (int i = 0; i < servers.size(); i++) {
-            items.add(FunkServers.displayName(servers.get(i)));
-            if (mServer != null && servers.get(i).getId() == mServer.getId()) {
-                checked = i;
-            }
-        }
-        items.add(getString(R.string.funk_add_server));
-        items.add(getString(R.string.funk_manage_servers));
-        new MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.funk_choose_server)
-                .setSingleChoiceItems(items.toArray(new CharSequence[0]), checked, (dialog, which) -> {
-                    dialog.dismiss();
-                    if (which < servers.size()) {
-                        selectServer(servers.get(which));
-                    } else if (which == servers.size()) {
-                        ServerEditFragment.createServerEditDialog(requireContext(), null,
-                                ServerEditFragment.Action.ADD_ACTION, false)
-                                .show(getParentFragmentManager(), "funk_add_server");
-                    } else {
-                        activity().showDrawerItem(DrawerAdapter.ITEM_FAVOURITES);
-                    }
-                })
-                .setNegativeButton(android.R.string.cancel, null)
-                .show();
-    }
-
-    private void selectServer(@NonNull Server server) {
-        FunkState state = FunkState.current();
-        mServer = server;
-        mFunkPrefs.setLastServerId(server.getId());
-        if (state.connection != FunkState.Connection.DISCONNECTED && state.serverId != server.getId()) {
-            // Connected elsewhere: the activity asks whether to switch.
-            connect(server);
-        }
-        render(state);
     }
 
     // ---------------------------------------------------------------- PTT button
@@ -350,7 +407,7 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
             if (mServer != null) {
                 connect(mServer);
             } else {
-                showServerPicker();
+                activity().showDrawerItem(DrawerAdapter.ITEM_FAVOURITES);
             }
         } else if (mode == PttButtonView.Mode.MUTED && getService() != null
                 && getService().isConnected()) {

@@ -19,11 +19,14 @@ package se.lublin.mumla.servers;
 
 import android.content.Context;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 
 import java.util.List;
 
 import se.lublin.humla.model.Server;
 import se.lublin.mumla.R;
+import se.lublin.mumla.funk.FunkPrefs;
 
 /**
  * Created by andrew on 11/05/14.
@@ -35,6 +38,18 @@ public class FavouriteServerAdapter extends ServerAdapter<Server> {
     public FavouriteServerAdapter(Context context, List<Server> servers, FavouriteServerAdapterMenuListener listener) {
         super(context, R.layout.server_list_row, servers);
         mListener = listener;
+    }
+
+    @Override
+    public View getView(int position, View v, ViewGroup parent) {
+        View view = super.getView(position, v, parent);
+        // Mumla Funk: label servers that open the walkie-talkie screen.
+        View funk = view.findViewById(R.id.server_row_funk);
+        if (funk != null) {
+            boolean isFunk = FunkPrefs.get(getContext()).isFunkServer(getItem(position).getId());
+            funk.setVisibility(isFunk ? View.VISIBLE : View.GONE);
+        }
+        return view;
     }
 
     @Override

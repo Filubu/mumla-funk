@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Mumla Funk: hardware key shortcuts for the walkie-talkie popup, and energy saving. -->
+<!-- Mumla Funk: shortcuts for the walkie-talkie popup, and energy saving. -->
 <androidx.preference.PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
     <Preference
         app:key="funk_assistant"
         app:iconSpaceReserved="false"
         app:title="@string/pref_funk_assistant_title" />
-    <Preference
-        app:key="funk_volume_service"
-        app:iconSpaceReserved="false"
-        app:title="@string/pref_funk_volume_title" />
     <SwitchPreferenceCompat
         app:defaultValue="true"
         app:iconSpaceReserved="false"

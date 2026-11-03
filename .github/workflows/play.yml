@@ -1,6 +1,7 @@
 name: Google Play
 
-# Builds the Google Play version (flavor "play") as a signed app bundle (.aab):
+# Builds the Google Play version as a signed app bundle (.aab). Since 1.0.5 it is the same app
+# as the GitHub APK (there are no build flavors any more):
 # - when a tag "v*" is pushed, or
 # - manually (Actions › Google Play › Run workflow) for a tag or branch.
 #
@@ -20,7 +21,7 @@ on:
   workflow_dispatch:
     inputs:
       ref:
-        description: 'Tag or branch to build, e.g. v1.0.4'
+        description: 'Tag or branch to build, e.g. v1.0.5'
         required: true
         default: 'master'
       upload:
@@ -91,8 +92,8 @@ jobs:
           GRADLE
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;25.1.8937393" > /dev/null
           (cd libraries/humla/libs/humla-spongycastle && ../../gradlew jar)
-          ./gradlew bundlePlayRelease
-          AAB=app/build/outputs/bundle/playRelease/mumla-play-release.aab
+          ./gradlew bundleRelease
+          AAB=app/build/outputs/bundle/release/mumla-funk-release.aab
           # Without the native codecs the app crashes when connecting (happened in 1.0.1/1.0.2).
           for lib in libjnicelt7 libjnicelt11 libjniopus libjnispeex; do
             for abi in arm64-v8a armeabi-v7a x86_64; do
@@ -112,7 +113,7 @@ jobs:
           VERSION=$(sed -n 's/.*def funkVersion = "\(.*\)".*/\1/p' app/build.gradle)
           CODE=$(sed -n 's/.*versionCode \([0-9]*\).*/\1/p' app/build.gradle | head -1)
           mkdir -p play-out/whatsnew
-          cp "$AAB" "play-out/mumla-funk-$VERSION-play.aab"
+          cp "$AAB" "play-out/mumla-funk-$VERSION.aab"
           # Release notes for the Play Console from the changelogs (max. 500 characters each).
           for pair in de:de-DE en-US:en-US; do
             src="fastlane/metadata/android/${pair%%:*}/changelogs/$CODE.txt"

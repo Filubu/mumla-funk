@@ -166,7 +166,6 @@
     <string name="change_requires_reconnect">Stellen Sie die Verbindung wieder her, um neue Einstellungen zu verwenden.</string>
     <string name="chat_message_tts_short_link">(Link zu %1$s)</string>
     <string name="error_writing_to_storage">Konnte nicht auf externen Speicher schreiben.</string>
-    <string name="donation_thanks">Danke für die Spende.</string>
     <string name="orbot_tor_failed">Konnte mit lokalem Tor-Proxy auf SOCKS-Port %d nicht verbinden.
 \n
 \nBitte stelle sicher, dass die Orbot-app läuft.</string>

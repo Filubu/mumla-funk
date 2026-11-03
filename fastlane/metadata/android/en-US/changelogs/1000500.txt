@@ -1,0 +1,6 @@
+* New start screen with help for getting started
+* Per server: walkie-talkie server with a big talk button, or the usual Mumble view
+* Server setup with examples and clear hints
+* Better readable in the dark theme
+* Removed: hold volume-down for 2 s (accessibility service), crash report, donation links
+* Other apps can no longer start a connection or a transmission

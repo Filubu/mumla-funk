@@ -815,6 +815,29 @@ public class HumlaService extends Service implements IHumlaService, IHumlaSessio
     }
 
     @Override
+    public boolean isConnectionIdle() {
+        HumlaConnection connection = mConnection;
+        return connection != null && connection.isConnected() && connection.isIdle();
+    }
+
+    @Override
+    public long getLatencyMillis() {
+        HumlaConnection connection = mConnection;
+        if (connection == null || !connection.isConnected()) {
+            return -1;
+        }
+        try {
+            // Both are in microseconds; UDP stays 0 until a UDP ping came back.
+            long udp = connection.getUDPLatency();
+            long tcp = connection.getTCPLatency();
+            long micros = udp > 0 && !connection.isIdle() ? udp : tcp;
+            return micros > 0 ? Math.round(micros / 1000.0) : -1;
+        } catch (NotConnectedException e) {
+            return -1;
+        }
+    }
+
+    @Override
     public long getTCPLatency() {
         try {
             return getConnection().getTCPLatency();

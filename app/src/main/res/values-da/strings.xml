@@ -67,7 +67,6 @@
         <item quantity="other">%d nye beskeder</item>
     </plurals>
     <string name="default_">Standard</string>
-    <string name="donation_thanks">Tak for donationen.</string>
     <plurals name="search_channel_users">
         <item quantity="one">%d bruger</item>
         <item quantity="other">%d brugere</item>

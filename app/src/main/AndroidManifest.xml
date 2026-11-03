@@ -30,9 +30,6 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <!-- Mumla Funk energy saving: the phone may only sleep between keep-alive pings if the app
-         is exempt from battery optimization (keep-alive alarms are throttled in Doze otherwise). -->
-    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.BROADCAST_CLOSE_SYSTEM_DIALOGS" />
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -86,9 +83,23 @@
             </intent-filter>
         </activity>
 
+        <provider
+            android:name=".channel.ChannelSearchProvider"
+            android:authorities="${applicationId}.channel.ChannelSearchProvider"
+            android:exported="false" />
+
+        <!-- Humla's library manifest declares its base service exported, with the actions
+             ACTION_CONNECT / ACTION_DISCONNECT for other apps. The app only runs MumlaService,
+             so the entry is removed: no other app may connect it to a server of its choice. -->
+        <service
+            android:name="se.lublin.humla.HumlaService"
+            tools:node="remove" />
+
+        <!-- Not exported: other apps must not be able to start a connection (with an open
+             microphone) to a server of their choice. Only the app itself starts the service. -->
         <service
             android:name=".service.MumlaService"
-            android:exported="true"
+            android:exported="false"
             android:enabled="true"
             android:foregroundServiceType="microphone" />
 
@@ -175,24 +186,11 @@
                 android:resource="@xml/widget_funk_large_info" />
         </receiver>
 
-        <!-- Mumla Funk: hold volume-down for 2 s to open the popup (key events only). -->
-        <service
-            android:name=".funk.FunkKeyService"
-            android:exported="true"
-            android:label="@string/funk_accessibility_label"
-            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
-            <intent-filter>
-                <action android:name="android.accessibilityservice.AccessibilityService" />
-            </intent-filter>
-            <meta-data
-                android:name="android.accessibilityservice"
-                android:resource="@xml/funk_key_service" />
-        </service>
 
         <activity
             android:name=".preference.CertificateSelectActivity"
             android:theme="@style/Theme.Mumla"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="se.lublin.mumla.app.CERTIFICATE_SELECT" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -201,7 +199,7 @@
         <activity
             android:name=".preference.CertificateImportActivity"
             android:theme="@style/Theme.Mumla"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="se.lublin.mumla.app.CERTIFICATE_IMPORT" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -210,7 +208,7 @@
         <activity
             android:name=".preference.CertificateExportActivity"
             android:theme="@style/Theme.Mumla"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="se.lublin.mumla.app.CERTIFICATE_EXPORT" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -219,7 +217,7 @@
         <activity
             android:name=".preference.CertificateGenerateActivity"
             android:theme="@style/Theme.Mumla"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="se.lublin.mumla.app.CERTIFICATE_GENERATE" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -228,7 +226,7 @@
         <activity
             android:name=".preference.ServerCertificateClearActivity"
             android:theme="@style/Theme.Mumla"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="se.lublin.mumla.app.CLEAR_SERVER_CERTIFICATES" />
                 <category android:name="android.intent.category.DEFAULT" />

@@ -1,11 +1,15 @@
-Mumla Funk turns Mumble into a walkie-talkie. It connects to regular Mumble servers and is made for groups that use a Mumble server as their radio network: everyone talks with push-to-talk, quickly and without looking.
+Mumla Funk turns Mumble into a walkie-talkie. It connects to any Mumble server, your own or a public one. For each server you choose whether it is a walkie-talkie server: then you get a big hold-to-talk button, the walkie-talkie popup and widgets. Otherwise the app shows the usual Mumble view with channels and chat.
 
-* Push-to-talk popup: one big button, hold to talk, release to stop. Shows the server, the connection and who is talking. Volume-down is the talk key while it is open. Works over the lock screen.
-* Hold the power button to open the popup (set Mumla Funk as digital assistant app).
-* Hold volume-down for 2 seconds to open the popup; a short press still changes the volume.
-* Two home screen widgets, each bound to a server: a small talk button and a large widget with everyone online. A crossed-out radio tower shows when you are not connected.
-* Simple home screen with server, status, talk button and user list.
-* Reliable end of transmission: the end-of-transmission flag is always sent when you release the button, like the desktop Mumble client.
-* Everything from Mumla stays available: channels, chat, certificates, access tokens, Tor.
+You need a Mumble server. Mumla Funk does not run any servers itself.
 
-Mumla Funk is a fork of Mumla and can be installed next to it. It is copylefted libre software (GPLv3): https://github.com/Filubu/mumla-funk
+Features:
+• Walkie-talkie popup: one big button, hold to talk, release to stop. It shows the server, the connection and who is talking, and also appears over the lock screen. While it is open, volume-down is the talk key.
+• Hold the power button to open the popup, with Mumla Funk set as digital assistant app.
+• Two home screen widgets, each bound to a server: a small talk button and a large widget with everyone online.
+• Reliable end of transmission: when you release the button, the end of the transmission arrives right away, like with the desktop Mumble client.
+• Energy saving: microphone only while talking, idle mode while nobody talks.
+• Channels, chat, certificates, access tokens and Tor stay available in the menu.
+
+Privacy: no ads, no tracking, no account, no data collection. Voice, chat and your username only go to the Mumble servers you add yourself.
+
+Mumla Funk is an unofficial fork of Mumla and can be installed next to it. It is not affiliated with Mumla or the Mumble project. Free software under the GNU GPL v3, source code: https://github.com/Filubu/mumla-funk

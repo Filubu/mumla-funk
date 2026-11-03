@@ -27,46 +27,41 @@ import android.widget.Toast;
 
 import androidx.preference.Preference;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-
 import se.lublin.mumla.R;
 import se.lublin.mumla.funk.BatteryOptimization;
-import se.lublin.mumla.funk.FunkKeyService;
 
 /**
- * Settings of the walkie-talkie shortcuts: power button (digital assistant) and volume-down
- * (accessibility service). Both live in system settings; we show their status and link there.
+ * Settings of the walkie-talkie: power button shortcut (digital assistant), volume-down in the
+ * popup and energy saving. The power button and the battery exemption live in system settings;
+ * we show their status and link there.
  */
 public class FunkSettingsFragment extends MumlaPreferenceFragment {
     private static final String KEY_ASSISTANT = "funk_assistant";
-    private static final String KEY_VOLUME_SERVICE = "funk_volume_service";
     private static final String KEY_BATTERY = "funk_battery_optimization";
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.settings_funk, rootKey);
-        findPreference(KEY_ASSISTANT).setOnPreferenceClickListener(p -> {
-            // "Digital assistant app" lives under voice input settings; else the default apps list.
-            Intent defaultApps = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
-                    ? new Intent(android.provider.Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)
-                    : new Intent(android.provider.Settings.ACTION_SETTINGS);
-            openFirst(new Intent(android.provider.Settings.ACTION_VOICE_INPUT_SETTINGS), defaultApps,
-                    new Intent(android.provider.Settings.ACTION_SETTINGS));
-            return true;
-        });
-        findPreference(KEY_VOLUME_SERVICE).setOnPreferenceClickListener(p -> {
-            if (FunkKeyService.isEnabled(requireContext())) {
-                openFirst(FunkKeyService.settingsIntent()); // To switch it off again.
-            } else {
-                showVolumeServiceDisclosure();
-            }
-            return true;
-        });
+        Preference assistant = findPreference(KEY_ASSISTANT);
+        if (assistant != null) {
+            assistant.setOnPreferenceClickListener(p -> {
+                // "Digital assistant app" lives under voice input settings; else the default apps.
+                Intent defaultApps = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                        ? new Intent(android.provider.Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)
+                        : new Intent(android.provider.Settings.ACTION_SETTINGS);
+                openFirst(new Intent(android.provider.Settings.ACTION_VOICE_INPUT_SETTINGS),
+                        defaultApps, new Intent(android.provider.Settings.ACTION_SETTINGS));
+                return true;
+            });
+        }
         Preference battery = findPreference(KEY_BATTERY);
         if (battery != null) {
             if (BatteryOptimization.isRelevant()) {
                 battery.setOnPreferenceClickListener(p -> {
-                    BatteryOptimization.request(requireActivity());
+                    if (!BatteryOptimization.openSettings(requireActivity())) {
+                        Toast.makeText(requireContext(), R.string.pref_funk_settings_unavailable,
+                                Toast.LENGTH_LONG).show();
+                    }
                     return true;
                 });
             } else {
@@ -84,30 +79,11 @@ public class FunkSettingsFragment extends MumlaPreferenceFragment {
             assistant.setSummary(isAssistant(context)
                     ? R.string.pref_funk_assistant_on : R.string.pref_funk_assistant_off);
         }
-        Preference volume = findPreference(KEY_VOLUME_SERVICE);
-        if (volume != null) {
-            volume.setSummary(FunkKeyService.isEnabled(context)
-                    ? R.string.pref_funk_volume_on : R.string.pref_funk_volume_off);
-        }
         Preference battery = findPreference(KEY_BATTERY);
         if (battery != null) {
             battery.setSummary(BatteryOptimization.isExempt(context)
                     ? R.string.pref_funk_battery_on : R.string.pref_funk_battery_off);
         }
-    }
-
-    /**
-     * Google Play requires a prominent disclosure and the user's consent before an app that is
-     * not an accessibility tool sends the user to switch on its accessibility service.
-     */
-    private void showVolumeServiceDisclosure() {
-        new MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.funk_accessibility_disclosure_title)
-                .setMessage(R.string.funk_accessibility_disclosure_message)
-                .setPositiveButton(R.string.funk_accessibility_disclosure_accept,
-                        (d, w) -> openFirst(FunkKeyService.settingsIntent()))
-                .setNegativeButton(R.string.funk_accessibility_disclosure_decline, null)
-                .show();
     }
 
     private static boolean isAssistant(Context context) {
