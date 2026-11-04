@@ -114,4 +114,5 @@
     <string name="funk_ping_idle_desc">Ping %1$d Millisekunden, Energiesparmodus</string>
     <string name="funk_member_talking">spricht</string>
     <string name="funk_member_muted">stumm</string>
+    <string name="funk_send_image">Bild senden</string>
 </resources>

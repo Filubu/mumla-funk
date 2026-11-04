@@ -1,34 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Mumla Funk design tokens, light theme. The dark values are in values-night/colors.xml
+     under the same names, so the theme (values/themes.xml) is defined only once.
+
+     The whole app follows the Funk screen: cool graphite neutrals (the display and popup are
+     built from funk_surface #16181D), one indigo accent (#3949AB, the launcher icon color) and
+     the Funk status colors for talking (red), live (green) and warnings (amber).
+     Accent color is reserved for things you can press and for state; everything else is
+     neutral. -->
 <resources>
-    <color name="md_theme_light_primary">#3949ab</color>
-    <color name="md_theme_light_primary_darker">#212b64</color> <!-- for pttPressed -->
-    <color name="md_theme_light_onPrimary">#ffffff</color>
+    <!-- Neutrals: background and the tonal container steps, lowest to highest. -->
+    <color name="ui_surface">#F8F9FB</color>
+    <color name="ui_surface_lowest">#FFFFFF</color>
+    <color name="ui_surface_low">#F2F3F6</color>
+    <color name="ui_surface_container">#EDEEF2</color>
+    <color name="ui_surface_high">#E7E9ED</color>
+    <color name="ui_surface_highest">#E1E3E8</color>
+    <color name="ui_on_surface">#16181D</color>
+    <!-- Secondary text and icons: 5.2:1 even on ui_surface_high. -->
+    <color name="ui_on_surface_muted">#5C616C</color>
+    <!-- Borders of fields and outlined buttons (3:1), and hairlines between areas. -->
+    <color name="ui_outline">#8B909A</color>
+    <color name="ui_hairline">#DDE0E5</color>
 
-    <!-- Mumla Funk: containers in the app's indigo instead of the purple Material 3 defaults. -->
-    <color name="md_theme_light_primaryContainer">#dee0ff</color>
-    <color name="md_theme_light_onPrimaryContainer">#00105c</color>
-    <color name="md_theme_light_secondaryContainer">#e0e1f9</color>
-    <color name="md_theme_light_onSecondaryContainer">#181a2c</color>
+    <!-- Accent: text buttons, switches, links, focus. -->
+    <color name="ui_primary">#3949AB</color>
+    <color name="ui_on_primary">#FFFFFF</color>
+    <color name="ui_primary_container">#DFE2F6</color>
+    <color name="ui_on_primary_container">#1A237E</color>
+    <color name="ui_secondary">#545A70</color>
+    <color name="ui_on_secondary">#FFFFFF</color>
+    <!-- Tonal buttons and selected rows: a quiet indigo tint. -->
+    <color name="ui_secondary_container">#DCE0F2</color>
+    <color name="ui_on_secondary_container">#1D2033</color>
 
-    <!-- Dark theme. The app bar, status bar, drawer and PTT bar stay dark navy
-         (colorPrimaryDark). Everything that is drawn with colorPrimary on the dark background
-         (text buttons, switches, headers, filled buttons) uses a light indigo, otherwise it was
-         almost invisible (contrast 1.1:1). -->
-    <color name="md_theme_dark_appbar">#001b2b</color>
-    <color name="md_theme_dark_primary_lighter">#002b45</color> <!-- for pttPressed -->
-    <color name="md_theme_dark_primary">#b9c3ff</color>
-    <color name="md_theme_dark_onPrimary">#0f2178</color>
-    <color name="md_theme_dark_primaryContainer">#2c3e91</color>
-    <color name="md_theme_dark_onPrimaryContainer">#dee0ff</color>
-    <color name="md_theme_dark_secondaryContainer">#414659</color>
-    <color name="md_theme_dark_onSecondaryContainer">#dfe1f9</color>
+    <!-- Filled buttons, the push-to-talk bar and the add button: the brand indigo with white
+         text in both themes (7.4:1), like the Funk talk button. -->
+    <color name="ui_accent_fill">#3949AB</color>
+    <color name="ui_on_accent_fill">#FFFFFF</color>
 
-    <color name="hot_corner_highlight">#ff2079ab</color>
+    <!-- Snackbars and tooltips look like the dark Funk card. -->
+    <color name="ui_inverse_surface">#23262D</color>
+    <color name="ui_inverse_on_surface">#F2F3F5</color>
+    <color name="ui_inverse_primary">#9FA8DA</color>
 
-    <color name="ripple_talk_state_on">#ffcc0000</color>
+    <color name="ui_error">#C62828</color>
+    <color name="ui_on_error">#FFFFFF</color>
+    <color name="ui_error_container">#FCE4E4</color>
+    <color name="ui_on_error_container">#5F1212</color>
+
+    <!-- Dialogs: white sheets on the dimmed screen. -->
+    <color name="ui_dialog">#FFFFFF</color>
+    <!-- Status bar below API 23, where its icons are always white. From API 23 on it is
+         ui_surface with dark icons (values-v23). -->
+    <color name="ui_status_bar">#FF23262D</color>
+
+    <!-- Ripple / pressed overlay on the neutral surfaces. -->
+    <color name="ui_ripple">#1F16181D</color>
+
+    <color name="hot_corner_highlight">#995C6BC0</color>
+
+    <!-- Talk state circles in Mumla's channel list, in the Funk status colors. -->
+    <color name="ripple_talk_state_on">@color/funk_talk</color>
     <color name="ripple_talk_state_off">#ffffffff</color>
-    <color name="ripple_talk_state_disabled">#ff666666</color>
-    <color name="ripple_talk_state_suppressed">#ff669900</color>
-    <color name="ripple_talk_state_server_muted">#ff0099cc</color>
-    <color name="ripple_talk_state_server_deafened">#ff0099cc</color>
+    <color name="ripple_talk_state_disabled">#FF7A7F8A</color>
+    <color name="ripple_talk_state_suppressed">@color/funk_live</color>
+    <color name="ripple_talk_state_server_muted">@color/funk_accent</color>
+    <color name="ripple_talk_state_server_deafened">@color/funk_accent</color>
 </resources>

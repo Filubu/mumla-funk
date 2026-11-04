@@ -17,16 +17,21 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<!-- A ring shown around the user's avatar when not talking. -->
+<!-- A ring shown around the user's avatar when not talking. Mumla Funk: a quiet ring and mic in
+     a mid grey that reads on light and dark lists and on the dark overlay (3:1 or more). -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="oval">
-            <stroke android:color="@color/ripple_talk_state_disabled" android:width="1dp" />
+            <stroke android:color="#668B909A" android:width="1.5dp" />
 
             <size
                 android:width="48dp"
                 android:height="48dp" />
         </shape>
     </item>
-    <item android:drawable="@drawable/ic_talking_off" />
+    <item>
+        <bitmap
+            android:src="@drawable/ic_talking_off"
+            android:tint="#FF8B909A" />
+    </item>
 </layer-list>

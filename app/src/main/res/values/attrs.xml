@@ -17,9 +17,8 @@
   -->
 
 <resources>
+    <!-- Cards of the server lists and the chat (Widget.Funk.Card). -->
     <attr name="cardStyle" format="reference" />
-    <attr name="popupOverlay" format="reference" />
-    <attr name="pttPressed" format="color" />
 
     <declare-styleable name="SeekBarDialogPreference">
         <attr name="max" format="integer" />

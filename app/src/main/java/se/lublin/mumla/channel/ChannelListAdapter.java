@@ -249,6 +249,8 @@ public class ChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             uvh.mUserName.setTypeface(null, typefaceStyle);
 
             uvh.mUserTalkHighlight.setImageDrawable(getTalkStateDrawable(user));
+            // Mumla Funk: highlight the row while the person talks, like the Funk display.
+            uvh.itemView.setActivated(isTalking(user));
 
             // Pad the view depending on channel's nested level.
             DisplayMetrics metrics = mContext.getResources().getDisplayMetrics();
@@ -336,12 +338,23 @@ public class ChannelListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         long itemId = user.getSession() | USER_ID_MASK;
         UserViewHolder uvh = (UserViewHolder) view.findViewHolderForItemId(itemId);
         if (uvh != null) {
+            uvh.itemView.setActivated(isTalking(user));
             Drawable newState = getTalkStateDrawable(user);
             ConstantState state = uvh.mUserTalkHighlight.getDrawable().getCurrent().getConstantState();
             if (state != null && !state.equals(newState.getConstantState())) {
                 uvh.mUserTalkHighlight.setImageDrawable(newState);
             }
         }
+    }
+
+    /** Mumla Funk: true when the row shows the "talking" symbol (same order as below). */
+    private static boolean isTalking(IUser user) {
+        if (user.isSelfDeafened() || user.isDeafened() || user.isSelfMuted() || user.isMuted()
+                || user.isSuppressed()) {
+            return false;
+        }
+        TalkState talk = user.getTalkState();
+        return talk == TalkState.TALKING || talk == TalkState.SHOUTING || talk == TalkState.WHISPERING;
     }
 
     private Drawable getTalkStateDrawable(IUser user) {

@@ -17,46 +17,54 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<androidx.cardview.widget.CardView
+<!-- Mumla Funk: one chat message as a flat bubble with 16 dp corners (like the lists inside
+     the Funk display), sender and time muted. -->
+<com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="?cardStyle"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    style="?cardStyle">
+    app:cardCornerRadius="16dp">
 
     <LinearLayout
         android:id="@+id/list_chat_item_box"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="8dp">
+        android:paddingStart="14dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="10dp">
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="example username → channel"
-            android:textSize="11sp"
             android:id="@+id/list_chat_item_target"
-            android:textColor="#999"
-            android:layout_marginBottom="4dp" />
-
-        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="example message"
+            android:layout_marginBottom="2dp"
+            android:fontFamily="sans-serif-medium"
+            android:text="example username → channel"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="12sp" />
+
+        <TextView
             android:id="@+id/list_chat_item_text"
-            android:layout_marginBottom="4dp"
-            android:textIsSelectable="true"/>
-
-        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="23:23:23"
-            android:textSize="11sp"
+            android:layout_marginBottom="4dp"
+            android:text="example message"
+            android:textColor="?attr/colorOnSurface"
+            android:textColorLink="?attr/colorPrimary"
+            android:textIsSelectable="true"
+            android:textSize="15sp" />
+
+        <TextView
             android:id="@+id/list_chat_item_time"
-            android:textColor="#999"/>
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="23:23:23"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="11sp" />
     </LinearLayout>
 
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

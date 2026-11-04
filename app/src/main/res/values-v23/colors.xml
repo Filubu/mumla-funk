@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- From API 23 the status bar can have dark icons (values-v23/themes.xml), so it takes
+         the app bar color. The dark theme overrides this in values-night/colors.xml. -->
+    <color name="ui_status_bar">@color/ui_surface</color>
+</resources>

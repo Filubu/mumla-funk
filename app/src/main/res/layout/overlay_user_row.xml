@@ -28,7 +28,7 @@
         android:layout_width="18dp"
         android:layout_height="match_parent"
         android:layout_marginLeft="8dp"
-        app:srcCompat="@drawable/ic_talking_off" />
+        android:src="@drawable/ic_talking_off" />
 
     <TextView
         android:id="@+id/user_row_name"
@@ -42,7 +42,7 @@
         android:paddingRight="4dp"
         android:singleLine="true"
         android:text="User name"
-        android:textColor="#333"
+        android:textColor="@color/funk_on_surface"
         android:textSize="12sp"/>
 
 </LinearLayout>

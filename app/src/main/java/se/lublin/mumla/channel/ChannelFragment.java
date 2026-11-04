@@ -143,19 +143,20 @@ public class ChannelFragment extends HumlaServiceFragment implements SharedPrefe
         mViewPager = (ViewPager) view.findViewById(R.id.channel_view_pager);
         mTabStrip = (PagerTabStrip) view.findViewById(R.id.channel_tab_strip);
         if(mTabStrip != null) {
-            // Mumla Funk: same dark color as the app bar (colorPrimary is light in dark mode).
-            TypedArray a = getActivity().obtainStyledAttributes(
-                    new int[] { androidx.appcompat.R.attr.colorPrimaryDark });
+            // Mumla Funk: flat like the app bar above it, muted labels, an indigo indicator.
+            TypedArray a = getActivity().obtainStyledAttributes(new int[] {
+                    com.google.android.material.R.attr.colorSurface,
+                    com.google.android.material.R.attr.colorOnSurfaceVariant,
+                    androidx.appcompat.R.attr.colorPrimary });
             int titleStripBackground = a.getColor(0, -1);
-            a.recycle();
-            a = getActivity().obtainStyledAttributes(
-                    new int[] { android.R.attr.textColorPrimaryInverse });
-            int titleStripColor = a.getColor(0, -1);
+            int titleStripColor = a.getColor(1, -1);
+            int indicatorColor = a.getColor(2, -1);
             a.recycle();
 
             mTabStrip.setTextColor(titleStripColor);
-            mTabStrip.setTabIndicatorColor(titleStripColor);
+            mTabStrip.setTabIndicatorColor(indicatorColor);
             mTabStrip.setBackgroundColor(titleStripBackground);
+            mTabStrip.setDrawFullUnderline(false);
             mTabStrip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
         }
 

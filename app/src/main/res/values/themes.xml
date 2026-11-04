@@ -1,35 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Mumla Funk app theme. Colors come from values(-night)/colors.xml, component styles,
+     shapes and text styles from values/styles_ui.xml. The look follows the Funk screen:
+     flat graphite surfaces, one indigo accent, round corners (32 / 24 / 16 / 12 dp, pill
+     buttons) and no shadows. -->
 <resources>
     <style name="Base.Theme.Mumla" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/md_theme_light_primary</item>
-        <item name="colorOnPrimary">@color/md_theme_light_onPrimary</item>
-        <!-- App bar, status bar (edge-to-edge), drawer and PTT bar. Material 3 would use
-             colorPrimary here. -->
-        <item name="colorPrimaryDark">@color/md_theme_light_primary</item>
-        <item name="colorPrimaryContainer">@color/md_theme_light_primaryContainer</item>
-        <item name="colorOnPrimaryContainer">@color/md_theme_light_onPrimaryContainer</item>
-        <item name="colorSecondaryContainer">@color/md_theme_light_secondaryContainer</item>
-        <item name="colorOnSecondaryContainer">@color/md_theme_light_onSecondaryContainer</item>
-        <item name="pttPressed">@color/md_theme_light_primary_darker</item>
-        <!-- Make it so appbar's popupmenu has light theme, even though appbar has dark -->
-        <item name="popupOverlay">@style/ThemeOverlay.Material3.Light</item>
+        <!-- Neutrals -->
+        <item name="android:colorBackground">@color/ui_surface</item>
+        <item name="colorSurface">@color/ui_surface</item>
+        <item name="colorOnSurface">@color/ui_on_surface</item>
+        <item name="colorSurfaceVariant">@color/ui_surface_highest</item>
+        <item name="colorOnSurfaceVariant">@color/ui_on_surface_muted</item>
+        <item name="colorSurfaceContainerLowest">@color/ui_surface_lowest</item>
+        <item name="colorSurfaceContainerLow">@color/ui_surface_low</item>
+        <item name="colorSurfaceContainer">@color/ui_surface_container</item>
+        <item name="colorSurfaceContainerHigh">@color/ui_surface_high</item>
+        <item name="colorSurfaceContainerHighest">@color/ui_surface_highest</item>
+        <item name="colorSurfaceBright">@color/ui_surface_lowest</item>
+        <item name="colorSurfaceDim">@color/ui_surface_high</item>
+        <item name="colorOutline">@color/ui_outline</item>
+        <item name="colorOutlineVariant">@color/ui_hairline</item>
+        <item name="colorSurfaceInverse">@color/ui_inverse_surface</item>
+        <item name="colorOnSurfaceInverse">@color/ui_inverse_on_surface</item>
+        <item name="colorPrimaryInverse">@color/ui_inverse_primary</item>
+        <item name="android:textColorPrimary">@color/ui_on_surface</item>
+        <item name="android:textColorSecondary">@color/ui_on_surface_muted</item>
+
+        <!-- Accent -->
+        <item name="colorPrimary">@color/ui_primary</item>
+        <item name="colorOnPrimary">@color/ui_on_primary</item>
+        <item name="colorPrimaryContainer">@color/ui_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/ui_on_primary_container</item>
+        <item name="colorSecondary">@color/ui_secondary</item>
+        <item name="colorOnSecondary">@color/ui_on_secondary</item>
+        <item name="colorSecondaryContainer">@color/ui_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/ui_on_secondary_container</item>
+        <!-- No third accent: keep it to indigo. -->
+        <item name="colorTertiary">@color/ui_primary</item>
+        <item name="colorOnTertiary">@color/ui_on_primary</item>
+        <item name="colorTertiaryContainer">@color/ui_primary_container</item>
+        <item name="colorOnTertiaryContainer">@color/ui_on_primary_container</item>
+        <item name="colorError">@color/ui_error</item>
+        <item name="colorOnError">@color/ui_on_error</item>
+        <item name="colorErrorContainer">@color/ui_error_container</item>
+        <item name="colorOnErrorContainer">@color/ui_on_error_container</item>
+
+        <!-- Status bar: the same color as the app bar. DrawerLayout paints it with
+             colorPrimaryDark. Light icons from API 23 on, see values-v23 and values-v27. -->
+        <item name="colorPrimaryDark">@color/ui_status_bar</item>
+        <item name="android:statusBarColor">@color/ui_status_bar</item>
+
+        <!-- Shapes: one corner scale for the whole app, taken from the Funk screen. -->
+        <item name="shapeAppearanceCornerExtraSmall">@style/ShapeAppearance.Funk.Corner.Small</item>
+        <item name="shapeAppearanceCornerSmall">@style/ShapeAppearance.Funk.Corner.Small</item>
+        <item name="shapeAppearanceCornerMedium">@style/ShapeAppearance.Funk.Corner.Medium</item>
+        <item name="shapeAppearanceCornerLarge">@style/ShapeAppearance.Funk.Corner.Large</item>
+        <item name="shapeAppearanceCornerExtraLarge">@style/ShapeAppearance.Funk.Corner.ExtraLarge</item>
+
+        <!-- Type: medium weight for titles, like the Funk display. -->
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Funk.Headline</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.Funk.TitleLarge</item>
+
+        <!-- Components -->
+        <item name="appBarLayoutStyle">@style/Widget.Funk.AppBarLayout</item>
+        <item name="toolbarStyle">@style/Widget.Funk.Toolbar</item>
+        <item name="materialButtonStyle">@style/Widget.Funk.Button</item>
+        <item name="materialButtonOutlinedStyle">@style/Widget.Funk.Button.Outlined</item>
+        <item name="materialButtonTonalStyle">@style/Widget.Funk.Button.Tonal</item>
+        <item name="borderlessButtonStyle">@style/Widget.Funk.Button.Text</item>
+        <item name="extendedFloatingActionButtonStyle">@style/Widget.Funk.ExtendedFab</item>
+        <item name="materialCardViewStyle">@style/Widget.Funk.Card</item>
+        <item name="cardStyle">@style/Widget.Funk.Card</item>
+        <item name="materialSwitchStyle">@style/Widget.Funk.Switch</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Funk.MaterialAlertDialog</item>
+        <!-- Corners of the AppCompat dialogs (settings), the same as the Material ones. -->
+        <item name="dialogCornerRadius">32dp</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.Funk</item>
+
         <!-- Make the Chat Target "banner" ActionMode obscure the ActionBar,
         instead of pushing it (and the rest of the layout) down. -->
         <item name="windowActionModeOverlay">true</item>
-        <!-- This makes the ActionMode background dark, somehow: that style is empty!
-         But it is what we want, on both dark/light themes (text color is bright) -->
         <item name="actionModeStyle">@style/App.Widget.ActionMode</item>
     </style>
 
-    <!-- This is for always have dark themed appbar, used in activity .xmls -->
-    <style name="TweakedAppBarLayout" parent="">
-        <!-- Dark navy in the dark theme, indigo in the light theme -->
-        <item name="android:background">?attr/colorPrimaryDark</item>
-        <!-- Use dark actionbar theme to ensure text/icons are light -->
-        <item name="android:theme">@style/ThemeOverlay.Material3.Dark.ActionBar</item>
-    </style>
-
-    <style name="App.Widget.ActionMode" parent="Widget.AppCompat.ActionMode">
+    <!-- The chat target banner over the app bar: a raised neutral strip. -->
+    <style name="App.Widget.ActionMode" parent="Widget.Material3.ActionMode">
+        <item name="background">?attr/colorSurfaceContainerHigh</item>
     </style>
 
     <style name="Theme.Mumla" parent="Base.Theme.Mumla" />
@@ -41,6 +97,17 @@
         <item name="colorOnPrimary">@color/funk_on_accent_light</item>
         <item name="colorSecondaryContainer">@color/funk_surface_raised</item>
         <item name="colorOnSecondaryContainer">@color/funk_on_surface</item>
+        <item name="colorOnSurface">@color/funk_on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/funk_on_surface_muted</item>
+        <item name="colorOutline">#FF6E7480</item>
+        <item name="shapeAppearanceCornerExtraSmall">@style/ShapeAppearance.Funk.Corner.Small</item>
+        <item name="shapeAppearanceCornerSmall">@style/ShapeAppearance.Funk.Corner.Small</item>
+        <item name="shapeAppearanceCornerMedium">@style/ShapeAppearance.Funk.Corner.Medium</item>
+        <item name="shapeAppearanceCornerLarge">@style/ShapeAppearance.Funk.Corner.Large</item>
+        <item name="shapeAppearanceCornerExtraLarge">@style/ShapeAppearance.Funk.Corner.ExtraLarge</item>
+        <item name="materialButtonStyle">@style/Widget.Funk.Button</item>
+        <item name="materialButtonTonalStyle">@style/Widget.Funk.Button.Tonal</item>
+        <item name="borderlessButtonStyle">@style/Widget.Funk.Button.Text</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowNoTitle">true</item>

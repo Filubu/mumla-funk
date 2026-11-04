@@ -25,14 +25,16 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="8dp">
+        android:paddingStart="20dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="16dp">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/version"
-            android:textSize="20sp"
-            android:fontFamily="sans-serif-condensed"
+            android:textAppearance="@style/TextAppearance.Funk.Label"
             android:layout_marginBottom="8dp"/>
         <TextView
             android:id="@+id/server_info_protocol"
@@ -54,8 +56,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/control_channel"
-            android:textSize="20sp"
-            android:fontFamily="sans-serif-condensed"
+            android:textAppearance="@style/TextAppearance.Funk.Label"
             android:layout_marginBottom="8dp"
             android:layout_marginTop="16dp" />
         <TextView
@@ -84,8 +85,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/voice_channel"
-            android:textSize="20sp"
-            android:fontFamily="sans-serif-condensed"
+            android:textAppearance="@style/TextAppearance.Funk.Label"
             android:layout_marginBottom="8dp"
             android:layout_marginTop="16dp" />
         <TextView
@@ -107,8 +107,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/audio_bandwidth"
-            android:textSize="20sp"
-            android:fontFamily="sans-serif-condensed"
+            android:textAppearance="@style/TextAppearance.Funk.Label"
             android:layout_marginBottom="8dp"
             android:layout_marginTop="16dp" />
         <TextView

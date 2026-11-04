@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mumla Funk motion: a screen fades in and settles up by a few dp. -->
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:duration="@integer/funk_motion_enter"
+    android:interpolator="@interpolator/funk_decelerate"
+    android:shareInterpolator="true">
+    <alpha
+        android:fromAlpha="0"
+        android:toAlpha="1" />
+    <translate
+        android:fromYDelta="1.5%"
+        android:toYDelta="0" />
+</set>

@@ -27,19 +27,15 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Using TweakedAppBarLayout to always have dark themed appbar -->
+        <!-- Mumla Funk: a flat app bar in the background color (Widget.Funk.AppBarLayout). -->
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/TweakedAppBarLayout">
+            android:layout_height="wrap_content">
 
-            <!-- The special popupTheme here makes it so popupmenu is will still have a light theme,
-            even though the AppBar has dark. See attrs.xml and themes.xml -->
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                app:popupTheme="?attr/popupOverlay"
                 app:title="@string/app_name" />
 
         </com.google.android.material.appbar.AppBarLayout>
@@ -52,15 +48,21 @@
 
     </LinearLayout>
 
+    <!-- Mumla Funk: the drawer is a light sheet with a rounded edge (bg_drawer) and pill
+         highlights for the rows (list_drawer_item). -->
     <ListView
         android:id="@+id/left_drawer"
         android:layout_width="240dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="?colorPrimaryDark"
+        android:background="@drawable/bg_drawer"
         android:choiceMode="singleChoice"
+        android:clipToPadding="false"
         android:divider="@android:color/transparent"
         android:dividerHeight="0dp"
-        android:fitsSystemWindows="true" />
+        android:fitsSystemWindows="true"
+        android:listSelector="@android:color/transparent"
+        android:paddingBottom="12dp"
+        android:scrollbarStyle="outsideOverlay" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

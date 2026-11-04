@@ -16,43 +16,50 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
+<!-- Mumla Funk: messages as bubbles, below them a rounded input field between the image and
+     send buttons (same order as before). -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
-    android:layout_height="fill_parent"
-    android:layout_width="fill_parent"
-    tools:ignore="NewApi"
-    android:divider="?attr/dividerVertical"
-    android:showDividers="middle" >
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    tools:ignore="NewApi">
 
     <ListView
         android:id="@+id/chat_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:dividerHeight="4dp"
+        android:dividerHeight="8dp"
         android:divider="@android:color/transparent"
         android:clipToPadding="false"
-        android:padding="8dp"
+        android:paddingStart="12dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="4dp"
+        android:listSelector="@android:color/transparent"
         tools:listitem="@layout/list_chat_item"></ListView>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:divider="?attr/dividerHorizontal"
-        android:showDividers="middle">
+        android:gravity="bottom"
+        android:paddingStart="4dp"
+        android:paddingTop="6dp"
+        android:paddingEnd="4dp"
+        android:paddingBottom="8dp">
 
         <ImageButton
             android:id="@+id/chatImageSend"
             android:layout_width="48dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="bottom"
-            android:background="?attr/selectableItemBackground"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/funk_send_image"
             android:enabled="false"
             app:srcCompat="@android:drawable/ic_menu_upload"
-            app:tint="?android:attr/textColorPrimary" />
+            app:tint="@color/funk_chat_icon" />
 
         <EditText
             android:id="@+id/chatTextEdit"
@@ -60,23 +67,31 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:minHeight="48dp"
+            android:background="@drawable/bg_funk_input"
+            android:paddingStart="18dp"
+            android:paddingTop="12dp"
+            android:paddingEnd="18dp"
+            android:paddingBottom="12dp"
             android:hint="@string/send_message"
+            android:textColor="?attr/colorOnSurface"
+            android:textColorHint="?attr/colorOnSurfaceVariant"
+            android:textSize="15sp"
             android:maxLines="4"
             android:inputType="textAutoCorrect|textMultiLine"
             android:imeOptions="actionSend"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp" >
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp" >
         </EditText>
 
         <ImageButton
             android:id="@+id/chatTextSend"
             android:layout_width="48dp"
-            android:layout_height="match_parent"
-            app:srcCompat="@drawable/ic_action_send"
-            android:tint="?android:attr/textColorPrimary"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/send_message"
             android:enabled="false"
-            android:layout_gravity="bottom"
-            android:background="?attr/selectableItemBackground"/>
+            app:srcCompat="@drawable/ic_action_send"
+            app:tint="@color/funk_chat_send" />
 
     </LinearLayout>
 </LinearLayout>

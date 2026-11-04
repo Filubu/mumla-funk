@@ -16,17 +16,20 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<androidx.cardview.widget.CardView
+<!-- Mumla Funk: a server as a flat card with 24 dp corners, like the Funk display. It shrinks a
+     little while pressed (funk_press_card). Same content and order as in Mumla. -->
+<com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    style="?cardStyle"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:foreground="?selectableItemBackground"
-    style="?cardStyle">
+    android:stateListAnimator="@animator/funk_press_card">
 <RelativeLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@drawable/bg_funk_card_press"
     tools:ignore="NewApi">
 
     <LinearLayout
@@ -39,17 +42,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingBottom="18dp"
-            android:paddingLeft="18dp"
-            android:paddingRight="18dp"
-            android:paddingTop="10dp" >
+            android:paddingStart="20dp"
+            android:paddingTop="16dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="18dp" >
 
-            <!-- Mumla Funk: name in the primary text color and a label for walkie-talkie
-                 servers. Leaves room for the overflow button on the right. -->
+            <!-- Name and a label for walkie-talkie servers. Leaves room for the overflow
+                 button on the right. -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="36dp"
+                android:layout_marginEnd="32dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -59,12 +62,10 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:ellipsize="end"
-                    android:fontFamily="sans-serif-medium"
                     android:gravity="start|center_vertical"
                     android:lines="1"
                     android:text="@string/server_host"
-                    android:textColor="?android:textColorPrimary"
-                    android:textSize="19sp" />
+                    android:textAppearance="@style/TextAppearance.Funk.ItemTitle" />
 
                 <TextView
                     android:id="@+id/server_row_funk"
@@ -72,61 +73,57 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:background="@drawable/bg_funk_badge"
-                    android:backgroundTint="?attr/colorSecondaryContainer"
-                    android:drawablePadding="4dp"
+                    android:backgroundTint="?attr/colorPrimaryContainer"
                     android:gravity="center_vertical"
-                    android:paddingStart="8dp"
-                    android:paddingTop="2dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="2dp"
+                    android:paddingStart="10dp"
+                    android:paddingTop="3dp"
+                    android:paddingEnd="10dp"
+                    android:paddingBottom="3dp"
                     android:text="@string/server_row_funk"
                     android:textAppearance="?attr/textAppearanceLabelMedium"
-                    android:textColor="?attr/colorOnSecondaryContainer"
+                    android:textColor="?attr/colorOnPrimaryContainer"
                     android:visibility="gone" />
             </LinearLayout>
 
             <RelativeLayout
                 android:id="@+id/server_row_info"
                 android:layout_width="match_parent"
-                android:layout_height="30dp"
-                android:paddingBottom="2dp" >
+                android:layout_height="28dp"
+                android:layout_marginTop="2dp" >
 
                 <TextView
                     android:id="@+id/server_row_version_status"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:fontFamily="sans-serif-light"
+                    android:layout_alignParentStart="true"
                     android:gravity="center_vertical"
-                    android:textColor="?android:textColorSecondary"
                     android:text="Version status"
-                    android:layout_alignParentLeft="true"/>
+                    android:textAppearance="@style/TextAppearance.Funk.Detail" />
 
                 <TextView
                     android:id="@+id/server_row_usercount"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
+                    android:layout_marginStart="8dp"
+                    android:layout_toEndOf="@id/server_row_version_status"
                     android:ellipsize="marquee"
                     android:focusable="false"
-                    android:fontFamily="sans-serif-light"
                     android:gravity="center_vertical"
                     android:marqueeRepeatLimit="marquee_forever"
                     android:scrollHorizontally="true"
                     android:singleLine="true"
-                    android:textColor="?android:textColorSecondary"
-                    android:layout_toRightOf="@id/server_row_version_status"
-                    android:layout_marginLeft="8dp"
-                    android:text="15/100" />
+                    android:text="15/100"
+                    android:textAppearance="@style/TextAppearance.Funk.Detail" />
 
                 <TextView
                     android:id="@+id/server_row_latency"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:fontFamily="sans-serif-light"
-                    android:textColor="?android:textColorSecondary"
-                    android:text="100ms"
-                    android:gravity="center_vertical"
+                    android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
-                    android:layout_alignParentRight="true"/>
+                    android:gravity="center_vertical"
+                    android:text="100ms"
+                    android:textAppearance="@style/TextAppearance.Funk.Detail" />
 
                 <ProgressBar
                     android:id="@+id/server_row_ping_progress"
@@ -134,67 +131,73 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
-                    android:visibility="invisible"
-                    android:indeterminate="true" />
+                    android:indeterminate="true"
+                    android:indeterminateTint="?attr/colorPrimary"
+                    android:visibility="invisible" />
             </RelativeLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="left|center_vertical"
-                android:paddingBottom="4dp" >
+                android:layout_marginTop="4dp"
+                android:gravity="start|center_vertical" >
 
                 <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_marginRight="5dp"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginEnd="8dp"
+                    android:importantForAccessibility="no"
                     app:srcCompat="@drawable/ic_user_light"
-                    app:tint="?android:attr/textColorSecondary" />
+                    app:tint="?attr/colorOnSurfaceVariant" />
 
                 <TextView
                     android:id="@+id/server_row_user"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="?android:textColorSecondary"
-                    android:text="@string/server_username"/>
+                    android:text="@string/server_username"
+                    android:textAppearance="@style/TextAppearance.Funk.Detail" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="left|center_vertical" >
+                android:layout_marginTop="4dp"
+                android:gravity="start|center_vertical" >
 
                 <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_marginRight="5dp"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginEnd="8dp"
+                    android:importantForAccessibility="no"
                     app:srcCompat="@drawable/ic_server_light"
-                    app:tint="?android:attr/textColorSecondary" />
+                    app:tint="?attr/colorOnSurfaceVariant" />
 
                 <TextView
                     android:id="@+id/server_row_address"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="?android:textColorSecondary"
-                    android:text="@string/server_host"/>
+                    android:text="@string/server_host"
+                    android:textAppearance="@style/TextAppearance.Funk.Detail" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 
     <!-- We can't have a focusable element in a GridView item -->
 
-    <!-- Mumla Funk: 48 dp touch target and a label for screen readers. -->
+    <!-- 48 dp touch target and a label for screen readers. -->
     <ImageView
         android:id="@+id/server_row_more"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_alignTop="@id/server_card"
-        android:layout_alignRight="@id/server_card"
+        android:layout_alignEnd="@id/server_card"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="@string/server_row_more"
         android:scaleType="center"
         app:srcCompat="@drawable/ic_card_overflow"
-        app:tint="?android:attr/textColorSecondary" />
+        app:tint="?attr/colorOnSurfaceVariant" />
 
 </RelativeLayout>
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

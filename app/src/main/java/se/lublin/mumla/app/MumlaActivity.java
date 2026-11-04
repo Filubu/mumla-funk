@@ -56,7 +56,6 @@ import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.PreferenceManager;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -137,6 +136,9 @@ public class MumlaActivity extends AppCompatActivity implements ListView.OnItemC
     private Server mServerPendingPerm = null;
     private boolean mPermPostNotificationsAsked = false;
 
+    private ListView mDrawerList;
+    /** The drawer row of the screen shown in the content frame. */
+    private int mShownDrawerItem = -1;
     private AlertDialog mConnectingDialog;
     private AlertDialog mErrorDialog;
 
@@ -315,7 +317,7 @@ public class MumlaActivity extends AppCompatActivity implements ListView.OnItemC
         mDatabase.open();
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
-        ListView mDrawerList = findViewById(R.id.left_drawer);
+        mDrawerList = findViewById(R.id.left_drawer);
 
         View headerView = getLayoutInflater().inflate(R.layout.list_drawer_headerlogo, mDrawerList, false);
         mDrawerList.addHeaderView(headerView, null, false);
@@ -546,6 +548,22 @@ public class MumlaActivity extends AppCompatActivity implements ListView.OnItemC
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         mDrawerLayout.closeDrawers();
         loadDrawerFragment((int) id);
+        // Settings is a separate screen: keep the highlight on the screen shown here.
+        markDrawerItem(mShownDrawerItem);
+    }
+
+    /** Mumla Funk: highlights the row of the screen shown (a pill in the drawer). */
+    private void markDrawerItem(int drawerItemId) {
+        if (mDrawerList == null || mDrawerAdapter == null) {
+            return;
+        }
+        for (int i = 0; i < mDrawerAdapter.getCount(); i++) {
+            if (mDrawerAdapter.getItemId(i) == drawerItemId) {
+                mDrawerList.setItemChecked(i + mDrawerList.getHeaderViewsCount(), true);
+                return;
+            }
+        }
+        mDrawerList.clearChoices();
     }
 
     /**
@@ -606,10 +624,13 @@ public class MumlaActivity extends AppCompatActivity implements ListView.OnItemC
                 return;
         }
         Fragment fragment = Fragment.instantiate(this, fragmentClass.getName(), args);
+        // Mumla Funk: the new screen fades in and settles by a few dp, the old one just fades.
         getSupportFragmentManager().beginTransaction()
+                .setCustomAnimations(R.anim.funk_screen_enter, R.anim.funk_screen_exit)
                 .replace(R.id.content_frame, fragment, fragmentClass.getName())
-                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                 .commit();
+        mShownDrawerItem = fragmentId;
+        markDrawerItem(fragmentId);
         requireNonNull(getSupportActionBar()).setTitle(mDrawerAdapter.getItemWithId(fragmentId).title);
     }
 
