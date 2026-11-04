@@ -28,7 +28,7 @@ Stand: November 2026.
 | Akku-Optimierung (`REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`) | entfällt: Berechtigung entfernt, die App öffnet nur die Systemliste |
 | Datensicherheit | „Keine Daten erhoben“, siehe [Datensicherheit](#datensicherheit) |
 | Vordergrunddienst Typ Mikrofon | Erklärung mit Video in der Play Console offen. Pflicht für jede App, die im Hintergrund Sprache überträgt, lässt sich nicht vermeiden |
-| Datenschutzerklärung | Website und Link in der App, Seite muss noch live gehen |
+| Datenschutzerklärung | erfüllt: <https://funk.filubu.de/datenschutz.html> (netcup), auch in der App verlinkt |
 | Werbe-ID | nicht genutzt, die Berechtigung `AD_ID` fehlt im Manifest |
 | Paketname | `de.filubu.funk`, nach dem ersten Upload nicht mehr änderbar |
 
@@ -47,7 +47,7 @@ eine Freigabe mit Mikrofon-Dienst teilweise erst danach zulässt.
 4. Öffentliche Angaben setzen:
    - Name des Entwicklers: `Filubu`
    - E-Mail-Adresse: `info@filubu.de` (wird im Play Store öffentlich angezeigt)
-   - Website: `https://filubu.github.io/mumla-funk-website/`
+   - Website: `https://funk.filubu.de/`
 5. Händlerstatus (EU, Digital Services Act): **kein Händler** angeben. Mumla Funk ist kostenlos
    und ohne Einnahmen, daher erscheinen weder Anschrift noch Telefonnummer im Play Store.
 
@@ -165,7 +165,7 @@ Play Console › **Richtlinien › App-Inhalte**. Die Antworten gelten für die 
 ### Datenschutzerklärung
 
 ```text
-https://filubu.github.io/mumla-funk-website/datenschutz.html
+https://funk.filubu.de/datenschutz.html
 ```
 
 Die Seite muss erreichbar sein, bevor sie eingetragen wird, siehe README der Website.
