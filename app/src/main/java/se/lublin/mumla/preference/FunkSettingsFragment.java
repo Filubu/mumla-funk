@@ -29,6 +29,7 @@ import androidx.preference.Preference;
 
 import se.lublin.mumla.R;
 import se.lublin.mumla.funk.BatteryOptimization;
+import se.lublin.mumla.funk.FunkLiveUpdate;
 
 /**
  * Settings of the walkie-talkie: power button shortcut (digital assistant), volume-down in the
@@ -38,10 +39,23 @@ import se.lublin.mumla.funk.BatteryOptimization;
 public class FunkSettingsFragment extends MumlaPreferenceFragment {
     private static final String KEY_ASSISTANT = "funk_assistant";
     private static final String KEY_BATTERY = "funk_battery_optimization";
+    private static final String KEY_LIVE_UPDATE = "funk_live_update";
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.settings_funk, rootKey);
+        Preference liveUpdate = findPreference(KEY_LIVE_UPDATE);
+        if (liveUpdate != null && FunkLiveUpdate.isSupported()) {
+            // Live Updates are switched in the system settings (per app); show the state, link there.
+            liveUpdate.setVisible(true);
+            liveUpdate.setOnPreferenceClickListener(p -> {
+                if (!FunkLiveUpdate.openSettings(requireActivity())) {
+                    Toast.makeText(requireContext(), R.string.pref_funk_settings_unavailable,
+                            Toast.LENGTH_LONG).show();
+                }
+                return true;
+            });
+        }
         Preference assistant = findPreference(KEY_ASSISTANT);
         if (assistant != null) {
             assistant.setOnPreferenceClickListener(p -> {
@@ -83,6 +97,11 @@ public class FunkSettingsFragment extends MumlaPreferenceFragment {
         if (battery != null) {
             battery.setSummary(BatteryOptimization.isExempt(context)
                     ? R.string.pref_funk_battery_on : R.string.pref_funk_battery_off);
+        }
+        Preference liveUpdate = findPreference(KEY_LIVE_UPDATE);
+        if (liveUpdate != null && liveUpdate.isVisible()) {
+            liveUpdate.setSummary(FunkLiveUpdate.isAllowed(context)
+                    ? R.string.pref_funk_live_on : R.string.pref_funk_live_off);
         }
     }
 

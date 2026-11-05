@@ -42,6 +42,12 @@ behält das komplette Mumla und setzt eine Funk-Bedienung obendrauf.
   Tipp auf den Knopf. Solange das Fenster offen ist, ist die Leiser-Taste die Sprechtaste.
   Es erscheint über jeder App und auch über dem Sperrbildschirm.
 - **Ein/Aus-Taste gedrückt halten** öffnet das Funk-Fenster (Mumla Funk als digitaler Assistent).
+- **Live-Pille in der Statusleiste** (Android 16+, auch Samsung One UI 8): Solange man verbunden
+  ist, zeigt eine Pille oben links, wer gerade spricht („Max“, beim eigenen Senden „Du“). Ab
+  Android 17 wird der Name rot. Die Farbe der Pille selbst legt Android fest. Antippen klappt die
+  Benachrichtigung auf, ein Tipp darauf öffnet das Funk-Fenster. Abschaltbar in den
+  Android-Einstellungen der App (Live-Updates). Siehe
+  [Live-Pille](docs/ARCHITEKTUR.md#live-pille-live-update).
 - **Zwei Homescreen-Widgets**, jeweils fest an einen Server gebunden:
   - ein kleiner runder Funk-Knopf,
   - ein großes Widget mit Status, allen Teilnehmern und einem Knopf für Sprechen oder Verbinden.
