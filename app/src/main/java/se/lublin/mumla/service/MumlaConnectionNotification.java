@@ -31,14 +31,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
+import android.os.Bundle;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
+
+import java.util.Objects;
 
 import se.lublin.mumla.R;
 import se.lublin.mumla.app.DrawerAdapter;
 import se.lublin.mumla.app.MumlaActivity;
+import se.lublin.mumla.funk.FunkLiveUpdate;
+import se.lublin.mumla.funk.PttActivity;
 
 /**
  * Wrapper to create Mumla notifications.
@@ -57,6 +64,18 @@ public class MumlaConnectionNotification {
     private boolean mActionsShown;
     /** The service is in the foreground with this notification. */
     private boolean mForeground;
+    private boolean mReceiverRegistered;
+
+    /*
+     * Mumla Funk: Live Update (status bar chip, see FunkLiveUpdate). The server name is the title
+     * (a Live Update needs one), the chip shows who is talking.
+     */
+    @Nullable
+    private String mTitle;
+    @NonNull
+    private FunkLiveUpdate.Status mLiveStatus = FunkLiveUpdate.Status.QUIET;
+    /** Saved walkie-talkie server: a tap opens the popup for it. -1: a tap opens the app. */
+    private long mPopupServerId = -1;
 
     private BroadcastReceiver mNotificationReceiver = new BroadcastReceiver() {
         @Override
@@ -99,11 +118,33 @@ public class MumlaConnectionNotification {
     }
 
     /**
-     * Shows the notification and registers the notification action button receiver.
+     * Mumla Funk: title and talk status for the Live Update. Call {@link #show()} afterwards if
+     * this returns true.
+     *
+     * @param popupServerId saved walkie-talkie server whose popup a tap opens, or -1 for the app
+     * @return true if anything changed
+     */
+    public boolean setLive(@Nullable String title, @NonNull FunkLiveUpdate.Status status,
+                           long popupServerId) {
+        if (Objects.equals(mTitle, title) && mLiveStatus.equals(status)
+                && mPopupServerId == popupServerId) {
+            return false;
+        }
+        mTitle = title;
+        mLiveStatus = status;
+        mPopupServerId = popupServerId;
+        return true;
+    }
+
+    /**
+     * Shows (or updates) the notification and registers the notification action button receiver.
      */
     public void show() {
         createNotification();
 
+        if (mReceiverRegistered) {
+            return; // Registering again would add the filter twice: every action would run twice.
+        }
         IntentFilter filter = new IntentFilter();
         filter.addAction(BROADCAST_DEAFEN);
         filter.addAction(BROADCAST_MUTE);
@@ -113,6 +154,7 @@ public class MumlaConnectionNotification {
             // registerReceiver() let any app send these actions).
             ContextCompat.registerReceiver(mService, mNotificationReceiver, filter,
                     ContextCompat.RECEIVER_NOT_EXPORTED);
+            mReceiverRegistered = true;
         } catch (IllegalArgumentException e) {
             // Thrown if receiver is already registered.
             e.printStackTrace();
@@ -129,6 +171,7 @@ public class MumlaConnectionNotification {
             // Thrown if receiver is not registered.
             e.printStackTrace();
         }
+        mReceiverRegistered = false;
         mService.stopForeground(true);
         mForeground = false;
         NotificationManager manager =
@@ -155,15 +198,28 @@ public class MumlaConnectionNotification {
                 new NotificationCompat.Builder(mService, channelId);
 
         // app name is always displayed in notification on >= O
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
+        if (mTitle != null) {
+            builder.setContentTitle(mTitle); // Mumla Funk: the server (a Live Update needs a title)
+        } else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
             builder.setContentTitle(mService.getString(R.string.app_name));
         }
-        builder.setContentText(mCustomContentText);
-        builder.setSmallIcon(R.drawable.ic_stat_notify);
+        builder.setContentText(mLiveStatus.text != null ? mLiveStatus.text : mCustomContentText);
+        // The small icon is also the icon of the status bar chip.
+        builder.setSmallIcon(mLiveStatus.talking ? R.drawable.ic_funk_tower : R.drawable.ic_stat_notify);
         builder.setPriority(NotificationCompat.PRIORITY_DEFAULT);
         builder.setCategory(NotificationCompat.CATEGORY_CALL);
         builder.setShowWhen(false);
         builder.setOngoing(true);
+        // Updated on every talk change: never make a sound or vibrate again.
+        builder.setOnlyAlertOnce(true);
+
+        // Mumla Funk: Live Update (Android 16+, ignored before). Not colorized, no custom views.
+        Bundle live = new Bundle();
+        live.putBoolean(FunkLiveUpdate.EXTRA_REQUEST_PROMOTED_ONGOING, true);
+        if (mLiveStatus.chipText != null) {
+            live.putString(FunkLiveUpdate.EXTRA_SHORT_CRITICAL_TEXT, mLiveStatus.chipText);
+        }
+        builder.addExtras(live);
 
         if (mActionsShown) {
             // Add notification triggers
@@ -185,14 +241,26 @@ public class MumlaConnectionNotification {
                             overlayIntent, FLAG_CANCEL_CURRENT | FLAG_IMMUTABLE));
         }
 
-        Intent channelListIntent = new Intent(mService, MumlaActivity.class);
-        channelListIntent.putExtra(MumlaActivity.EXTRA_DRAWER_FRAGMENT, DrawerAdapter.ITEM_SERVER);
-        // FLAG_CANCEL_CURRENT ensures that the extra always gets sent.
-        PendingIntent pendingIntent = PendingIntent.getActivity(mService, 0,
-                channelListIntent, FLAG_CANCEL_CURRENT | FLAG_IMMUTABLE);
+        PendingIntent pendingIntent;
+        if (mPopupServerId >= 0) {
+            // Mumla Funk: walkie-talkie server, the tap (also after tapping the status bar chip)
+            // opens the popup. It has a button for the full app.
+            pendingIntent = PendingIntent.getActivity(mService, 3,
+                    PttActivity.createIntent(mService, mPopupServerId, false),
+                    PendingIntent.FLAG_UPDATE_CURRENT | FLAG_IMMUTABLE);
+        } else {
+            Intent channelListIntent = new Intent(mService, MumlaActivity.class);
+            channelListIntent.putExtra(MumlaActivity.EXTRA_DRAWER_FRAGMENT, DrawerAdapter.ITEM_SERVER);
+            // FLAG_CANCEL_CURRENT ensures that the extra always gets sent.
+            pendingIntent = PendingIntent.getActivity(mService, 0,
+                    channelListIntent, FLAG_CANCEL_CURRENT | FLAG_IMMUTABLE);
+        }
         builder.setContentIntent(pendingIntent);
 
         Notification notification = builder.build();
+        if (mLiveStatus.talking) {
+            notification = FunkLiveUpdate.withTalkingStyle(mService, notification); // Android 17: red
+        }
         if (mForeground) {
             // Only update it. Calling startForeground() again re-checks whether the app may start
             // a microphone foreground service, which Android 14+ refuses while in the background

@@ -44,6 +44,7 @@ flowchart LR
 | `funk/FunkFragment.java`, `res/layout/fragment_funk.xml`, `funk_display.xml`, `funk_controls.xml`, `layout-land/` | Funk-Bildschirm in der App, solange man mit einem Funk-Server verbunden ist, siehe [Funk-Bildschirm](#funk-bildschirm-funkfragment). |
 | `funk/FunkPrefs.java` | Einstellungen der Funk-Funktionen: Funk-Server ja/nein je Server, zuletzt genutzter Server, Server je Widget, Leiser-Taste im Fenster. |
 | `funk/BatteryOptimization.java` | Status der Akku-Ausnahme und Link in die Systemliste (ohne eigene Berechtigung). |
+| `funk/FunkLiveUpdate.java` | Live-Pille in der Statusleiste (Android 16+): wer spricht, als Text der Pille; Android 17 rot; Link in die Systemeinstellung, siehe [Live-Pille](#live-pille-live-update). |
 | `funk/FunkServers.java` | Gespeicherte Server laden, Standard-Server auflösen, Anzeigenamen. |
 | `funk/widget/FunkWidgets.java` | Baut die `RemoteViews` beider Widgets aus `FunkState`. |
 | `funk/widget/FunkWidgetSmall.java`, `FunkWidgetLarge.java`, `FunkWidgetProvider.java` | Die zwei `AppWidgetProvider`. |
@@ -56,7 +57,8 @@ Geänderte Mumla-Dateien:
 
 | Datei | Änderung |
 |---|---|
-| `service/MumlaService.java` | Veröffentlicht `FunkState` und aktualisiert die Widgets bei Ereignissen. Der TALK-Broadcast ist entfernt (siehe [Sicherheit](#sicherheit)). |
+| `service/MumlaService.java` | Veröffentlicht `FunkState` und aktualisiert die Widgets und die Live-Pille bei Ereignissen. Der TALK-Broadcast ist entfernt (siehe [Sicherheit](#sicherheit)). |
+| `service/MumlaConnectionNotification.java` | Servername als Titel, Live-Update-Anfrage, wer spricht (Text, Symbol), Tippen öffnet bei Funk-Servern das Funk-Fenster. Ton nur beim ersten Anzeigen. Der Empfänger der Knöpfe wird nur einmal registriert. |
 | `app/MumlaActivity.java` | Serverliste als Start. Nach dem Verbinden Funk-Bildschirm oder Kanalliste, je nach Server. Merkt sich den zuletzt genutzten Server. Nimmt `EXTRA_CONNECT_SERVER_ID` aus dem Funk-Fenster an. Erzeugt beim ersten Start still ein Zertifikat. |
 | `app/DrawerAdapter.java` | Menüeintrag „Funk“ unter dem verbundenen Server, „Meine Server“. Symbole und Texte in den Farben des Designs. |
 | `servers/ServerEditFragment.java`, `res/layout/dialog_server_edit.xml` | Formular mit Beispielen, Hinweisen, Prüfung der Felder und dem Schalter „Funk-Server“. |
@@ -167,9 +169,17 @@ Aufgebaut wie ein modernes Funkgerät, ohne eines nachzubilden: ein Gehäuse
   höchstens 5 Zeilen, auf kurzen Bildschirmen 4, 3 oder 2. Bei mehr Teilnehmern scrollt die
   Liste, ein Ausblenden am Rand und ein dauerhaft sichtbarer Scrollbalken zeigen das an. Der
   Platz für die volle Liste wird beim Bemessen des Knopfs abgezogen, damit die Karte passt.
-- **Darstellung**: transparentes Theme `Theme.Mumla.FunkPopup` mit einer dunklen Karte unten.
-  Text-Knöpfe nutzen dort `funk_accent_light`, da `funk_accent` auf der dunklen Karte zu wenig
-  Kontrast hat.
+- **Darstellung**: transparentes Theme `Theme.Mumla.FunkPopup.Talk` mit einer dunklen Karte
+  unten. Text-Knöpfe nutzen dort `funk_accent_light`, da `funk_accent` auf der dunklen Karte zu
+  wenig Kontrast hat.
+- **Kein abgedunkelter Hintergrund**: Beim Tippen auf ein Widget lässt der Launcher das ganze
+  Fenster aus dem Widget auf Bildschirmgröße wachsen, beim Tippen auf die Benachrichtigung
+  klappt SystemUI sie zum Fenster auf. Ein dunkler Hintergrund im Fenster (früher
+  `funk_scrim`, 60 % Schwarz) war dabei als schwarzes Rechteck zu sehen, das aufgeht. Jetzt
+  zeichnet das Fenster nur die Karte (Rand und Schatten heben sie ab). Die Symbole der Status-
+  und Navigationsleiste richten sich ab Android 12 nach dem Hintergrundbild
+  (`WallpaperColors.HINT_SUPPORTS_DARK_TEXT`, auf dem Sperrbildschirm nach dessen Bild), wie
+  beim Launcher. Über einer anderen App kann das danebenliegen.
   Ein Tipp daneben schließt das Fenster. Nach 30 s ohne Bedienung schließt es sich von selbst,
   aber nie während des Sendens.
 - **Fenster-Eigenschaften**:
@@ -235,6 +245,40 @@ Video verlangt und sie das größte Ablehnungsrisiko war.
   Wie viele passen, folgt aus der aktuellen Widget-Höhe. Der Rest erscheint als „+N weitere“.
 - **Keine Kollisionen**: `PendingIntent`s erhalten je Widget und Aktion eigene Daten-URIs und
   Request-Codes, damit sie sich nicht gegenseitig überschreiben.
+
+## Live-Pille (Live Update)
+
+Ab Android 16 kann eine laufende Benachrichtigung ein *Live Update* werden. Dann zeigt die
+Statusleiste oben eine Pille (Chip), wie bei Navigation oder Essenslieferung. Mumla Funk nutzt
+dafür die Verbindungs-Benachrichtigung des Vordergrunddienstes:
+
+- **Voraussetzungen** (sonst stuft Android sie zu einer normalen Benachrichtigung zurück):
+  Berechtigung `POST_PROMOTED_NOTIFICATIONS` im Manifest (normale Berechtigung), das Extra
+  `android.requestPromotedOngoing`, laufend (`ongoing`), mit Titel (der Servername), Standard-Stil,
+  keine eigenen Views, nicht `colorized`, Kanal nicht `IMPORTANCE_MIN`. Die Schlüssel stehen als
+  Text in `FunkLiveUpdate`, weil `compileSdk` 36 sie noch nicht kennt.
+- **Inhalt der Pille**: Symbol = kleines Symbol der Benachrichtigung, Text = `shortCriticalText`.
+  Niemand spricht: nur das App-Symbol. Jemand spricht: Funkmast-Symbol und der Name („Max“,
+  bei mehreren „Max +1“, beim eigenen Senden „Du“). Bis 7 Zeichen passen sicher, längere Namen
+  kürzt das System. Der Text der Benachrichtigung zeigt dann „Max spricht“.
+- **Farbe**: Die Pille färbt Android selbst (in Android 16 `ColorsModel.SystemThemed` in der
+  SystemUI), `setColor()` wirkt dort nicht und `setColorized()` verhindert das Live Update.
+  Android 17 kennt semantische Stile: Solange jemand spricht, setzt die App über
+  `Notification.Builder#setCompactContent` den Stil `SEMANTIC_STYLE_DANGER`, das System zeigt den
+  Text dann rot. Das geschieht per Reflection und fällt auf älteren Versionen weg.
+- **Antippen**: Ein Tipp auf die Pille klappt die Benachrichtigung auf (so macht es Android bei
+  allen Live Updates, die App kann das nicht ändern). Ein Tipp auf die Benachrichtigung öffnet
+  bei Funk-Servern das Funk-Fenster, sonst die App.
+- **Sichtbarkeit**: Die Pille fehlt, solange die App (auch das Funk-Fenster) im Vordergrund ist,
+  und auf dem Sperrbildschirm. Nutzer können Live Updates je App abschalten. Einstellungen ›
+  Funk › „Live-Anzeige in der Statusleiste“ zeigt den Stand und öffnet die Systemeinstellung.
+- **Aktualisierung**: `MumlaService` aktualisiert die Benachrichtigung nur, wenn sich Titel,
+  Sprecher oder Ziel des Tippens ändern, und höchstens alle 400 ms. Android verwirft sonst
+  Aktualisierungen, und ein verworfenes „spricht nicht mehr“ ließe die Pille stehen. Die letzte
+  Änderung kommt immer an. `setOnlyAlertOnce(true)`, damit dabei kein Ton kommt.
+- **Samsung**: One UI 8 übernimmt Live Updates von Android 16 (Statusleiste und Now Bar),
+  je nach Version erst nach Freischaltung in den Einstellungen. Darstellung und Farben legt
+  Samsung fest.
 
 ## Ende-Flag (Terminator)
 
@@ -401,8 +445,18 @@ Wenige, kurze Animationen mit denselben Kurven (`FunkMotion`, `res/interpolator/
 - **Display**: Ändert sich die große Zeile („Kanal frei“ → „Max spricht“), blendet der neue
   Text ein. Gleicher Text wird nicht neu animiert, auch wenn der Zustand mehrmals pro Sekunde
   kommt.
-- **Funk-Fenster**: Die Karte steigt von unten auf und setzt sich, beim Schließen sinkt sie
-  kurz ab.
+- **Funk-Fenster**: Federn wie bei iOS-Sheets (`SpringAnimation`, Werte in `FunkMotion`),
+  keine feste Dauer.
+  - Öffnen: Die Karte steigt 64 dp auf, wächst von 92 % und blendet ein (Steifigkeit 420,
+    Dämpfung 0,82: nach etwa 0,3 s in Ruhe, kaum sichtbares Nachgeben). Sie wächst aus der
+    Unterkante und startet mit dem ersten gezeichneten Frame, damit das Aufbauen des Layouts
+    den Anfang nicht verschluckt.
+  - Schließen (daneben tippen, ×, Zurück, nach 30 s): Sie sinkt ab, wird etwas kleiner und
+    blendet aus (etwa 0,2 s, ohne Nachschwingen).
+  - Schließt man das Fenster, während es noch aufgeht, übernehmen die Federn die laufende
+    Bewegung samt Geschwindigkeit, es springt nichts.
+  - Das Fenster selbst animiert nicht (`Animation.Funk.Popup`, ab Android 14 zusätzlich
+    `overrideActivityTransition`), sonst liefen zwei Bewegungen gegeneinander.
 
 Alle Animationen folgen der Animationsgeschwindigkeit des Systems. Sind Animationen
 ausgeschaltet (Entwickleroptionen, Bedienungshilfen), laufen keine Schleifen: Statt der

@@ -28,6 +28,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.widget.Toast;
@@ -54,6 +55,8 @@ import se.lublin.humla.util.HumlaException;
 import se.lublin.humla.util.HumlaObserver;
 import se.lublin.mumla.R;
 import se.lublin.mumla.Settings;
+import se.lublin.mumla.funk.FunkLiveUpdate;
+import se.lublin.mumla.funk.FunkPrefs;
 import se.lublin.mumla.funk.FunkState;
 import se.lublin.mumla.funk.widget.FunkWidgets;
 import se.lublin.mumla.util.HtmlUtils;
@@ -130,8 +133,44 @@ public class MumlaService extends HumlaService implements
             mFunkUpdateScheduled = false;
             FunkState.publish(FunkState.build(MumlaService.this));
             FunkWidgets.updateAll(MumlaService.this);
+            scheduleLiveUpdate();
         }
     };
+
+    /*
+     * Mumla Funk: the Live Update (status bar chip) shows who is talking, see FunkLiveUpdate.
+     * Android drops notification updates beyond a few per second, and a dropped "stopped
+     * talking" would leave the chip showing a speaker: updates are spaced, the last one always
+     * comes.
+     */
+    private static final long LIVE_UPDATE_INTERVAL_MS = 400;
+    private long mLastLiveUpdate;
+    private final Runnable mLiveUpdate = new Runnable() {
+        @Override
+        public void run() {
+            if (mNotification == null) {
+                return;
+            }
+            FunkState state = FunkState.current();
+            long popupServerId = FunkPrefs.get(MumlaService.this).isFunkServer(state.serverId)
+                    ? state.serverId : -1;
+            if (mNotification.setLive(state.serverName,
+                    FunkLiveUpdate.statusOf(MumlaService.this, state), popupServerId)) {
+                mLastLiveUpdate = SystemClock.uptimeMillis();
+                mNotification.show();
+            }
+        }
+    };
+
+    private void scheduleLiveUpdate() {
+        mFunkHandler.removeCallbacks(mLiveUpdate);
+        long wait = mLastLiveUpdate + LIVE_UPDATE_INTERVAL_MS - SystemClock.uptimeMillis();
+        if (wait > 0) {
+            mFunkHandler.postDelayed(mLiveUpdate, wait);
+        } else {
+            mLiveUpdate.run();
+        }
+    }
 
     private void scheduleFunkUpdate(boolean urgent) {
         if (urgent) {
@@ -439,6 +478,7 @@ public class MumlaService extends HumlaService implements
         unregisterObserver(mObserver);
         unregisterObserver(mFunkObserver);
         mFunkHandler.removeCallbacks(mFunkPublish);
+        mFunkHandler.removeCallbacks(mLiveUpdate);
         FunkState.publish(FunkState.DISCONNECTED);
         FunkWidgets.updateAll(this);
         if(mTTS != null) mTTS.shutdown();

@@ -122,4 +122,11 @@
     <string name="funk_member_talking">talking</string>
     <string name="funk_member_muted">muted</string>
     <string name="funk_send_image">Send image</string>
+
+    <!-- Live Update: chip in the status bar (Android 16+). Chip texts: up to 7 characters fit. -->
+    <string name="funk_chip_self">You</string>
+    <string name="funk_chip_several">%1$s +%2$d</string>
+    <string name="pref_funk_live_title">Live status in the status bar</string>
+    <string name="pref_funk_live_on">On: while you are connected, a chip at the top of the status bar shows who is talking. Tap it to see the notification, tap that to open the walkie-talkie popup.</string>
+    <string name="pref_funk_live_off">Off. Tap and allow Live Updates for Mumla Funk, then the status bar shows who is talking.</string>
 </resources>

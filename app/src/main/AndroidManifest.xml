@@ -37,6 +37,9 @@
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BROADCAST_STICKY" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Mumla Funk: Live Update, the status bar chip that shows who is talking (Android 16+).
+         Normal permission, granted at install; users can turn Live Updates off per app. -->
+    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
 
     <queries>
         <!-- We're using guardianproject's OrbotHelper to check if Orbot is installed -->
@@ -142,7 +145,7 @@
             android:launchMode="singleTask"
             android:showWhenLocked="true"
             android:taskAffinity="${applicationId}.funk"
-            android:theme="@style/Theme.Mumla.FunkPopup"
+            android:theme="@style/Theme.Mumla.FunkPopup.Talk"
             android:turnScreenOn="true"
             tools:targetApi="o_mr1">
             <intent-filter>

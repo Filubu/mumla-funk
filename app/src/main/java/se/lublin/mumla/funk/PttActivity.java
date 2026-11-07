@@ -19,6 +19,8 @@ package se.lublin.mumla.funk;
 
 import android.Manifest;
 import android.app.KeyguardManager;
+import android.app.WallpaperColors;
+import android.app.WallpaperManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -38,16 +40,22 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
+import androidx.core.view.OneShotPreDrawListener;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.core.widget.ImageViewCompat;
+import androidx.dynamicanimation.animation.DynamicAnimation;
+import androidx.dynamicanimation.animation.SpringAnimation;
+import androidx.dynamicanimation.animation.SpringForce;
 
 import com.google.android.material.button.MaterialButton;
 
@@ -88,6 +96,11 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
     /** At most this many people are visible in the list above the button; more scroll. */
     private static final int MAX_LIST_ROWS = 5;
     private static final long SWITCH_TIMEOUT_MS = 4_000;
+    /** Opening: the card starts this far down and this small. */
+    private static final float ENTER_OFFSET_DP = 64f;
+    private static final float ENTER_SCALE = 0.92f;
+    /** Closing: the card shrinks to this while it slides down. */
+    private static final float EXIT_SCALE = 0.96f;
 
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     private final Runnable mIdleClose = this::closeAnimated;
@@ -117,6 +130,12 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
 
     private View mRoot;
     private View mCard;
+    /** Springs of the card for opening and closing; closing retargets them (see FunkMotion). */
+    private SpringAnimation mCardAlpha;
+    private SpringAnimation mCardY;
+    private SpringAnimation mCardScaleX;
+    private SpringAnimation mCardScaleY;
+    private boolean mClosing;
     private ImageView mStatusIcon;
     private TextView mServerName;
     private TextView mServerSub;
@@ -214,6 +233,15 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
         mUsersScroll = findViewById(R.id.ptt_users_scroll);
         mUsers = findViewById(R.id.ptt_users);
 
+        mCardAlpha = FunkMotion.spring(mCard, DynamicAnimation.ALPHA,
+                FunkMotion.FADE_IN_STIFFNESS, SpringForce.DAMPING_RATIO_NO_BOUNCY);
+        mCardY = FunkMotion.spring(mCard, DynamicAnimation.TRANSLATION_Y,
+                FunkMotion.SHEET_IN_STIFFNESS, FunkMotion.SHEET_IN_DAMPING);
+        mCardScaleX = FunkMotion.spring(mCard, DynamicAnimation.SCALE_X,
+                FunkMotion.SHEET_IN_STIFFNESS, FunkMotion.SHEET_SCALE_DAMPING);
+        mCardScaleY = FunkMotion.spring(mCard, DynamicAnimation.SCALE_Y,
+                FunkMotion.SHEET_IN_STIFFNESS, FunkMotion.SHEET_SCALE_DAMPING);
+
         mRoot.setOnClickListener(v -> closeAnimated());
         findViewById(R.id.ptt_close).setOnClickListener(v -> closeAnimated());
         findViewById(R.id.ptt_open_app).setOnClickListener(v -> openApp(false));
@@ -229,18 +257,82 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
 
         handleIntent(getIntent());
 
+        // Only the card is drawn, no dimmed background: the system's own animations (the launcher
+        // grows the window out of the widget, the notification expands into it) then show no
+        // dark rectangle. The card's motion is ours alone, so the window itself does not animate.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, 0, 0);
+            overrideActivityTransition(OVERRIDE_TRANSITION_CLOSE, 0, 0);
+        } else {
+            overridePendingTransition(0, 0);
+        }
+        matchSystemBarsToWallpaper();
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                closeAnimated();
+            }
+        });
+
         if (savedInstanceState == null && FunkMotion.enabled()) {
-            // The card rises from below and settles, the background dims at the same time.
-            float density = getResources().getDisplayMetrics().density;
-            mRoot.setAlpha(0f);
-            mRoot.animate().alpha(1f).setDuration(FunkMotion.ENTER_MS / 2 + 60)
-                    .setInterpolator(FunkMotion.STANDARD).start();
-            mCard.setTranslationY(40 * density);
-            mCard.setScaleX(0.97f);
-            mCard.setScaleY(0.97f);
-            mCard.animate().translationY(0f).scaleX(1f).scaleY(1f)
-                    .setDuration(FunkMotion.ENTER_MS + 80)
-                    .setInterpolator(FunkMotion.DECELERATE).start();
+            playEnter();
+        }
+    }
+
+    /**
+     * The card rises a little, grows from {@link #ENTER_SCALE} and fades in, on springs (see
+     * {@link FunkMotion#SHEET_IN_STIFFNESS}). It starts with the first frame that is drawn, so
+     * that inflating the layout does not swallow the beginning of the motion.
+     */
+    private void playEnter() {
+        float density = getResources().getDisplayMetrics().density;
+        mCard.setAlpha(0f);
+        mCard.setTranslationY(ENTER_OFFSET_DP * density);
+        mCard.setScaleX(ENTER_SCALE);
+        mCard.setScaleY(ENTER_SCALE);
+        OneShotPreDrawListener.add(mCard, () -> {
+            if (mClosing) {
+                return;
+            }
+            // Grow out of the bottom edge, where the card sits, like a sheet.
+            mCard.setPivotX(mCard.getWidth() / 2f);
+            mCard.setPivotY(mCard.getHeight());
+            mCardAlpha.animateToFinalPosition(1f);
+            mCardY.animateToFinalPosition(0f);
+            mCardScaleX.animateToFinalPosition(1f);
+            mCardScaleY.animateToFinalPosition(1f);
+        });
+    }
+
+    /**
+     * Without a dimmed background the status and navigation bars show the wallpaper (or the lock
+     * screen) behind the popup: use dark icons on a light wallpaper, as the launcher does.
+     */
+    private void matchSystemBarsToWallpaper() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            return; // The wallpaper's hints are public from Android 12 on; keep light icons.
+        }
+        try {
+            WallpaperManager wallpaper = WallpaperManager.getInstance(this);
+            KeyguardManager keyguard = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
+            WallpaperColors colors = null;
+            if (keyguard != null && keyguard.isKeyguardLocked()) {
+                colors = wallpaper.getWallpaperColors(WallpaperManager.FLAG_LOCK);
+            }
+            if (colors == null) {
+                colors = wallpaper.getWallpaperColors(WallpaperManager.FLAG_SYSTEM);
+            }
+            if (colors == null) {
+                return;
+            }
+            boolean darkIcons =
+                    (colors.getColorHints() & WallpaperColors.HINT_SUPPORTS_DARK_TEXT) != 0;
+            WindowInsetsControllerCompat bars =
+                    WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+            bars.setAppearanceLightStatusBars(darkIcons);
+            bars.setAppearanceLightNavigationBars(darkIcons);
+        } catch (RuntimeException e) {
+            // Not worth failing for; the theme's light icons stay.
         }
     }
 
@@ -343,6 +435,9 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
     @Override
     protected void onDestroy() {
         mHandler.removeCallbacksAndMessages(null);
+        for (SpringAnimation spring : new SpringAnimation[]{mCardAlpha, mCardY, mCardScaleX, mCardScaleY}) {
+            spring.cancel();
+        }
         mDatabase.close();
         super.onDestroy();
     }
@@ -366,14 +461,37 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
             scheduleIdleClose(); // never auto-close while transmitting
             return;
         }
-        mCard.animate().translationY(32 * getResources().getDisplayMetrics().density)
-                .scaleX(0.98f).scaleY(0.98f)
-                .setDuration(FunkMotion.EXIT_MS + 30).setInterpolator(FunkMotion.ACCELERATE).start();
-        mRoot.animate().alpha(0f).setDuration(FunkMotion.EXIT_MS + 30)
-                .setInterpolator(FunkMotion.ACCELERATE).withEndAction(() -> {
-            finish();
-            overridePendingTransition(0, 0);
-        }).start();
+        if (mClosing) {
+            return;
+        }
+        mClosing = true;
+        if (!FunkMotion.enabled() || !mCard.isLaidOut()) {
+            finishWithoutAnimation();
+            return;
+        }
+        // The card slides back down and fades. The springs take over the current motion, also
+        // when the popup is closed while it is still opening.
+        float drop = mCard.getHeight() * 0.6f;
+        FunkMotion.springTo(mCardY, drop, FunkMotion.SHEET_OUT_STIFFNESS, FunkMotion.SHEET_OUT_DAMPING);
+        FunkMotion.springTo(mCardScaleX, EXIT_SCALE, FunkMotion.SHEET_OUT_STIFFNESS, FunkMotion.SHEET_OUT_DAMPING);
+        FunkMotion.springTo(mCardScaleY, EXIT_SCALE, FunkMotion.SHEET_OUT_STIFFNESS, FunkMotion.SHEET_OUT_DAMPING);
+        mCardAlpha.addEndListener((animation, canceled, value, velocity) -> {
+            if (!canceled) {
+                finishWithoutAnimation();
+            }
+        });
+        FunkMotion.springTo(mCardAlpha, 0f, FunkMotion.FADE_OUT_STIFFNESS,
+                SpringForce.DAMPING_RATIO_NO_BOUNCY);
+    }
+
+    private void finishWithoutAnimation() {
+        if (isFinishing()) {
+            return;
+        }
+        finish();
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            overridePendingTransition(0, 0); // From Android 14 on: overrideActivityTransition()
+        }
     }
 
     // ---------------------------------------------------------------- state rendering

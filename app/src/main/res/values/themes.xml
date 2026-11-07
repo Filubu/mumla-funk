@@ -117,4 +117,27 @@
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
     </style>
+
+    <!-- The walkie-talkie popup (PttActivity) animates its card itself, on springs: the window
+         must not move as well. (The widget setup keeps the system animation above.) -->
+    <style name="Theme.Mumla.FunkPopup.Talk">
+        <item name="android:windowAnimationStyle">@style/Animation.Funk.Popup</item>
+    </style>
+
+    <!-- Walkie-talkie popup window: no system animation when it opens or closes. Launches from
+         a widget or a notification still get the launcher's / SystemUI's own animation. -->
+    <style name="Animation.Funk.Popup" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/funk_none</item>
+        <item name="android:activityOpenExitAnimation">@anim/funk_none</item>
+        <item name="android:activityCloseEnterAnimation">@anim/funk_none</item>
+        <item name="android:activityCloseExitAnimation">@anim/funk_none</item>
+        <item name="android:taskOpenEnterAnimation">@anim/funk_none</item>
+        <item name="android:taskOpenExitAnimation">@anim/funk_none</item>
+        <item name="android:taskCloseEnterAnimation">@anim/funk_none</item>
+        <item name="android:taskCloseExitAnimation">@anim/funk_none</item>
+        <item name="android:taskToFrontEnterAnimation">@anim/funk_none</item>
+        <item name="android:taskToFrontExitAnimation">@anim/funk_none</item>
+        <item name="android:taskToBackEnterAnimation">@anim/funk_none</item>
+        <item name="android:taskToBackExitAnimation">@anim/funk_none</item>
+    </style>
 </resources>

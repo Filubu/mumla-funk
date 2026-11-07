@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Mumla Funk push-to-talk popup: a single floating card over a dimmed background, with the
-     server, a short list of who is online and the big talk button. -->
+<!-- Mumla Funk push-to-talk popup: a single floating card, with the server, a short list of who
+     is online and the big talk button. No dimmed background: the system's launch animations
+     (out of the widget, out of the notification) would show it as a dark rectangle. A tap next
+     to the card closes the popup. The root stays a view of its own: it takes that tap and the
+     system bar insets. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/ptt_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/funk_scrim"
     android:clickable="true"
-    android:focusable="false">
+    android:focusable="false"
+    tools:ignore="MergeRootFrame,UselessParent">
 
     <LinearLayout
         android:id="@+id/ptt_card"
