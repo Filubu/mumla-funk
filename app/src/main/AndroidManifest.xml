@@ -145,7 +145,7 @@
             android:launchMode="singleTask"
             android:showWhenLocked="true"
             android:taskAffinity="${applicationId}.funk"
-            android:theme="@style/Theme.Mumla.FunkPopup"
+            android:theme="@style/Theme.Mumla.FunkPopup.Talk"
             android:turnScreenOn="true"
             tools:targetApi="o_mr1">
             <intent-filter>

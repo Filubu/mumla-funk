@@ -20,6 +20,7 @@ package se.lublin.mumla.funk;
 import android.animation.ValueAnimator;
 import android.os.Build;
 import android.text.TextUtils;
+import android.view.View;
 import android.view.animation.Interpolator;
 import android.view.animation.PathInterpolator;
 import android.widget.TextView;
@@ -27,6 +28,9 @@ import android.widget.TextView;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.dynamicanimation.animation.DynamicAnimation;
+import androidx.dynamicanimation.animation.SpringAnimation;
+import androidx.dynamicanimation.animation.SpringForce;
 
 /**
  * Motion of the Mumla Funk design: a few short, calm transitions that explain a change (a new
@@ -48,7 +52,47 @@ public final class FunkMotion {
     public static final long ENTER_MS = 300;
     public static final long EXIT_MS = 150;
 
+    /*
+     * Springs for the popup card, in the manner of iOS sheets: no fixed duration, the motion
+     * follows physics, can be interrupted at any time and continues with its current speed.
+     * Response (time of one swing) is about 2π / √stiffness: 420 → 0.31 s. A damping ratio
+     * slightly below 1 lets the card settle with a barely visible give, 1 has no overshoot.
+     */
+    /** Card rising into place: quick, with a soft settle. */
+    public static final float SHEET_IN_STIFFNESS = 420f;
+    public static final float SHEET_IN_DAMPING = 0.82f;
+    /** Card growing from slightly smaller: no overshoot, or the edges would wobble. */
+    public static final float SHEET_SCALE_DAMPING = 1f;
+    /** Card going away: firmer and without overshoot. */
+    public static final float SHEET_OUT_STIFFNESS = 800f;
+    public static final float SHEET_OUT_DAMPING = 1f;
+    /** Fades: fast and without overshoot (about 0.15 s in, 0.2 s out). */
+    public static final float FADE_IN_STIFFNESS = 1500f;
+    public static final float FADE_OUT_STIFFNESS = 1200f;
+
     private FunkMotion() {
+    }
+
+    /** A spring on one property of a view, starting from the property's current value. */
+    @NonNull
+    public static SpringAnimation spring(@NonNull View view,
+                                         @NonNull DynamicAnimation.ViewProperty property,
+                                         float stiffness, float dampingRatio) {
+        SpringAnimation animation = new SpringAnimation(view, property);
+        animation.setSpring(new SpringForce().setStiffness(stiffness).setDampingRatio(dampingRatio));
+        return animation;
+    }
+
+    /** Retargets a (possibly running) spring: it keeps its current speed, so the motion stays smooth. */
+    public static void springTo(@NonNull SpringAnimation animation, float finalPosition,
+                                float stiffness, float dampingRatio) {
+        SpringForce force = animation.getSpring();
+        if (force == null) {
+            force = new SpringForce();
+            animation.setSpring(force);
+        }
+        force.setStiffness(stiffness).setDampingRatio(dampingRatio);
+        animation.animateToFinalPosition(finalPosition);
     }
 
     /** False when the user turned animations off (developer options or accessibility). */
