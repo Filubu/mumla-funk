@@ -11,7 +11,7 @@ Im Repo vorbereitet:
   Damit fallen die Erklärungen zu Bedienungshilfe und Zahlungen weg (seit 1.0.5).
 - Workflow `.github/workflows/play.yml`: baut das signierte App Bundle, optional mit Upload in den internen Test
 - Link zur Datenschutzerklärung unter Einstellungen › Über
-- Version 1.0.5 (Versionscode 1000500) mit Release Notes in `fastlane/metadata/android/*/changelogs/1000500.txt`
+- Version 1.0.7 (Versionscode 1000700) mit Release Notes in `fastlane/metadata/android/*/changelogs/1000700.txt`
 - Website mit Datenschutzerklärung im Repo [mumla-funk-website](https://github.com/Filubu/mumla-funk-website)
 
 ## Prüfung der Play-Anforderungen
@@ -93,9 +93,9 @@ er aber nicht nötig.
 Über GitHub:
 
 1. Auf GitHub › **Actions › Google Play › Run workflow** öffnen.
-2. Unter „Tag or branch“ `master` oder einen Tag wie `v1.0.5` eintragen, „upload“ leer lassen.
+2. Unter „Tag or branch“ `master` oder einen Tag wie `v1.0.7` eintragen, „upload“ leer lassen.
 3. Nach dem Lauf unter **Artifacts** `mumla-funk-play` herunterladen und entpacken. Darin
-   liegen `mumla-funk-1.0.5.aab` und die Release Notes unter `whatsnew/`.
+   liegen `mumla-funk-1.0.7.aab` und die Release Notes unter `whatsnew/`.
 
 Ein gepushter Tag `v*` baut das Bundle ebenfalls, parallel zum GitHub-Release.
 
@@ -117,26 +117,26 @@ Signiert wird es nur mit `app/signing.gradle`, siehe Haupt-README.
 1. **Test und Release › Testen › Interner Test › Tester**: eine E-Mail-Liste anlegen, z. B.
    „Funkgruppe“, und die Google-Konten der Tester eintragen. Maximal 100 Tester.
 2. **Neuen Release erstellen**, die `.aab` hochladen.
-3. Release-Name: `1.0.5`. Release Notes aus `whatsnew/` oder hier kopieren:
+3. Release-Name: `1.0.7`. Release Notes aus `whatsnew/` oder hier kopieren:
 
    ```text
    <de-DE>
-   * Neuer Startbildschirm mit Hilfe für den Einstieg
-   * Pro Server wählbar: Funk-Server mit großem Sprechknopf oder normale Mumble-Ansicht
-   * Server einrichten mit Beispielen und klaren Hinweisen
-   * Besser lesbar im dunklen Design
-   * Entfernt: Leiser-Taste 2 s (Bedienungshilfe), Absturzbericht, Spenden-Links
-   * Andere Apps können keine Verbindung und kein Senden mehr auslösen
+   * Neues Design „Handfunkgerät“ für Funk-Bildschirm und Funk-Fenster: Leuchtdisplay, Kanal-Tasten und ein Spektrum der Stimme (Einstellungen › Funk)
+   * Live-Anzeige in der Statusleiste, wer gerade spricht (Android 16+)
+   * Funk-Fenster ohne dunklen Hintergrund, öffnet weich
+   * Link zur Datenschutzerklärung aktualisiert
    </de-DE>
    <en-US>
-   * New start screen with help for getting started
-   * Per server: walkie-talkie server with a big talk button, or the usual Mumble view
-   * Server setup with examples and clear hints
-   * Better readable in the dark theme
-   * Removed: hold volume-down for 2 s (accessibility service), crash report, donation links
-   * Other apps can no longer start a connection or a transmission
+   * New "handheld radio" design for the walkie-talkie screen and popup: glowing display, channel keys and a voice spectrum (Settings › Walkie-talkie)
+   * Live status in the status bar: who is talking (Android 16+)
+   * Walkie-talkie popup without dark background, opens smoothly
+   * Updated privacy policy link
    </en-US>
    ```
+
+   1.0.7 folgt direkt auf 1.0.5: Der GitHub-Release 1.0.6 wurde gebaut, bevor Version und
+   Versionscode erhöht waren, und enthält daher intern noch 1.0.5 (Code 1000500). Für Play
+   gab es keine 1.0.6, die Release Notes oben umfassen alles seit 1.0.5.
 
 4. **Automatischen Schutz** (App-Bundle-Optimierungen) ausschalten: Info-Symbol neben
    „Automatischer Schutz“ › „Schutz für diesen Release deaktivieren“, oder dauerhaft unter
@@ -154,9 +154,28 @@ Hinweise:
   und Zertifikat einmal übertragen. Ab 1.0.4 sind GitHub-APK und Play-Version gegenseitig
   updatefähig, da Paket-ID und Schlüssel gleich sind.
 - Jeder neue Upload braucht einen höheren Versionscode als der vorherige. Version und Code stehen
-  in `app/build.gradle` (`funkVersion`, `versionCode`).
+  in `app/build.gradle` (`funkVersion`, `versionCode`), die Release Notes in
+  `fastlane/metadata/android/de/changelogs/<Versionscode>.txt` und `en-US/…` (je höchstens
+  500 Zeichen, der Workflow kürzt sonst). Beides muss im Commit stehen, **bevor** der Tag gesetzt
+  wird, sonst baut der Workflow die alte Version, siehe [Neue Version](#neue-version).
 - Für einen schnellen Test ohne Track gibt es zusätzlich **Interne App-Freigabe**: Bundle hochladen
   und Link teilen, ohne Erklärungen und ohne Versionscode-Regel.
+
+### Neue Version
+
+Reihenfolge für jedes Update, damit GitHub-Release und Play-Bundle dieselbe, neue Version haben:
+
+1. In `app/build.gradle` `funkVersion` und `versionCode` erhöhen (Schema `XYYZZbb`, z. B. 1.0.8 →
+   `1000800`).
+2. Release Notes anlegen: `fastlane/metadata/android/de/changelogs/<Versionscode>.txt` und
+   `fastlane/metadata/android/en-US/changelogs/<Versionscode>.txt`, je höchstens 500 Zeichen.
+   Die Notes oben in diesem Abschnitt gleich mit anpassen.
+3. Committen und nach `master` mergen.
+4. Erst dann auf GitHub einen Release mit neuem Tag `vX.Y.Z` auf `master` anlegen. Die Workflows
+   bauen daraufhin die APK für den GitHub-Release und das Bundle für Play (Artifacts von
+   „Google Play“, mit `whatsnew/`).
+5. Bundle im internen Test hochladen wie oben beschrieben (oder automatisch, siehe
+   [Automatischer Upload](#8-automatischer-upload)).
 
 ## 6. App-Inhalte
 
@@ -302,6 +321,8 @@ Funktionen:
 • Funk-Fenster: ein großer Knopf, halten zum Sprechen, loslassen beendet. Es zeigt Server, Verbindung und wer gerade spricht und erscheint auch über dem Sperrbildschirm. Solange es offen ist, ist die Leiser-Taste die Sprechtaste.
 • Ein/Aus-Taste gedrückt halten öffnet das Funk-Fenster, wenn Mumla Funk als digitaler Assistent festgelegt ist.
 • Zwei Homescreen-Widgets, jeweils an einen Server gebunden: ein kleiner Sprechknopf und ein großes Widget mit allen Teilnehmern.
+• Zwei Designs zur Wahl: modern oder als Handfunkgerät mit Leuchtdisplay, Kanal-Tasten und einem Spektrum der Stimme.
+• Live-Anzeige in der Statusleiste (Android 16+): wer gerade spricht.
 • Zuverlässiges Sende-Ende: Beim Loslassen kommt das Ende der Durchsage sofort an, wie beim Desktop-Client von Mumble.
 • Energiesparen: Mikrofon nur beim Senden, Ruhezustand, solange niemand spricht.
 • Kanäle, Chat, Zertifikate, Zugriffstoken und Tor bleiben über das Menü erreichbar.
@@ -330,6 +351,8 @@ Features:
 • Walkie-talkie popup: one big button, hold to talk, release to stop. It shows the server, the connection and who is talking, and also appears over the lock screen. While it is open, volume-down is the talk key.
 • Hold the power button to open the popup, with Mumla Funk set as digital assistant app.
 • Two home screen widgets, each bound to a server: a small talk button and a large widget with everyone online.
+• Two designs to choose from: modern, or a handheld radio with a glowing display, channel keys and a voice spectrum.
+• Live status in the status bar (Android 16+): who is talking.
 • Reliable end of transmission: when you release the button, the end of the transmission arrives right away, like with the desktop Mumble client.
 • Energy saving: microphone only while talking, idle mode while nobody talks.
 • Channels, chat, certificates, access tokens and Tor stay available in the menu.

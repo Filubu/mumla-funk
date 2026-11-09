@@ -1,0 +1,4 @@
+* Neues Design „Handfunkgerät“ für Funk-Bildschirm und Funk-Fenster: Leuchtdisplay, Kanal-Tasten und ein Spektrum der Stimme (Einstellungen › Funk)
+* Live-Anzeige in der Statusleiste, wer gerade spricht (Android 16+)
+* Funk-Fenster ohne dunklen Hintergrund, öffnet weich
+* Link zur Datenschutzerklärung aktualisiert
