@@ -268,7 +268,11 @@ Für Google Play baut der Workflow `.github/workflows/play.yml` mit denselben Se
 signiertes App Bundle. Alles zum Play Store, vom Konto bis zum internen Test, steht in
 [play/README.md](play/README.md).
 
-Version und Versionscode stehen in `app/build.gradle` (`funkVersion`, `versionCode`).
+Version und Versionscode stehen in `app/build.gradle` (`funkVersion`, `versionCode`), die
+Release Notes für Play in `fastlane/metadata/android/{de,en-US}/changelogs/<Versionscode>.txt`.
+Beides vor dem Tag erhöhen bzw. anlegen und nach `master` mergen, erst dann den Release mit dem
+neuen Tag anlegen. Sonst bauen die Workflows die alte Version. Der genaue Ablauf steht in
+[play/README.md](play/README.md#neue-version).
 
 Updates lassen sich nur installieren, wenn sie mit **demselben** Schlüssel signiert sind.
 Der Schlüssel gehört deshalb sicher aufbewahrt und **nie** ins Repository. Lokal signiert

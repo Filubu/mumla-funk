@@ -6,6 +6,8 @@ Features:
 • Walkie-talkie popup: one big button, hold to talk, release to stop. It shows the server, the connection and who is talking, and also appears over the lock screen. While it is open, volume-down is the talk key.
 • Hold the power button to open the popup, with Mumla Funk set as digital assistant app.
 • Two home screen widgets, each bound to a server: a small talk button and a large widget with everyone online.
+• Two designs to choose from: modern, or a handheld radio with a glowing display, channel keys and a voice spectrum.
+• Live status in the status bar (Android 16+): who is talking.
 • Reliable end of transmission: when you release the button, the end of the transmission arrives right away, like with the desktop Mumble client.
 • Energy saving: microphone only while talking, idle mode while nobody talks.
 • Channels, chat, certificates, access tokens and Tor stay available in the menu.

@@ -1,0 +1,4 @@
+* New "handheld radio" design for the walkie-talkie screen and popup: glowing display, channel keys and a voice spectrum (Settings › Walkie-talkie)
+* Live status in the status bar: who is talking (Android 16+)
+* Walkie-talkie popup without dark background, opens smoothly
+* Updated privacy policy link

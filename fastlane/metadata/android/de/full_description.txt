@@ -6,6 +6,8 @@ Funktionen:
 • Funk-Fenster: ein großer Knopf, halten zum Sprechen, loslassen beendet. Es zeigt Server, Verbindung und wer gerade spricht und erscheint auch über dem Sperrbildschirm. Solange es offen ist, ist die Leiser-Taste die Sprechtaste.
 • Ein/Aus-Taste gedrückt halten öffnet das Funk-Fenster, wenn Mumla Funk als digitaler Assistent festgelegt ist.
 • Zwei Homescreen-Widgets, jeweils an einen Server gebunden: ein kleiner Sprechknopf und ein großes Widget mit allen Teilnehmern.
+• Zwei Designs zur Wahl: modern oder als Handfunkgerät mit Leuchtdisplay, Kanal-Tasten und einem Spektrum der Stimme.
+• Live-Anzeige in der Statusleiste (Android 16+): wer gerade spricht.
 • Zuverlässiges Sende-Ende: Beim Loslassen kommt das Ende der Durchsage sofort an, wie beim Desktop-Client von Mumble.
 • Energiesparen: Mikrofon nur beim Senden, Ruhezustand, solange niemand spricht.
 • Kanäle, Chat, Zertifikate, Zugriffstoken und Tor bleiben über das Menü erreichbar.
