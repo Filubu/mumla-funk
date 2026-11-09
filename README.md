@@ -60,6 +60,19 @@ behält das komplette Mumla und setzt eine Funk-Bedienung obendrauf.
   Ping, wer gerade spricht („Max spricht“, „Du sendest“, „Kanal frei“), wer zuletzt gesprochen
   hat und allen Teilnehmern (scrollt im Display). Unten, gut mit dem Daumen erreichbar, die
   große Sprechtaste, darüber „Trennen“ und „Kanäle & Chat“.
+- **Zweites Design „Handfunkgerät“** (Einstellungen › Funk › „Design des Funkgeräts“): Funk-Bildschirm
+  und Funk-Fenster als klassisches Handfunkgerät, nach dem Vorbild von
+  [MumbleFunkClient](https://github.com/NoertNet/MumbleFunkClient). Dunkles Gehäuse mit Antenne,
+  Lampen NET/RX/TX und ein Leuchtdisplay: Bernstein heißt bereit, Grün „du sendest“, Rot „jemand
+  anders spricht“, „Belegt“ blinkt. Dazu Kanal-Tasten (◀ Kanal / Kanal ▶ wechseln den Kanal,
+  „Liste“ öffnet Kanäle & Chat), eine breite, geriffelte PTT-Taste und der Ein/Aus-Knopf. Unten
+  im Display zeigt ein **Spektrum** die Stimme beim Senden und Empfangen, in einem eigenen
+  Bereich, der auf kleinen Bildschirmen wegfällt statt etwas zu verdecken. Siehe
+  [Design Handfunkgerät](docs/ARCHITEKTUR.md#design-handfunkgerät).
+
+  | Empfang | Beim Senden | Funk-Fenster |
+  |:---:|:---:|:---:|
+  | <img src="docs/images/handfunk-empfang.png" width="190" alt="Handfunkgerät beim Empfang"> | <img src="docs/images/handfunk-sendet.png" width="190" alt="Handfunkgerät beim Senden"> | <img src="docs/images/handfunk-fenster.png" width="190" alt="Funk-Fenster als Handfunkgerät"> |
 - **Zuverlässiges Sende-Ende**: Beim Loslassen wird immer das Ende-Flag (Terminator) gesendet,
   wie beim Desktop-Client.
 - **Energiesparen**: Mikrofon nur beim Senden, Ruhezustand wenn niemand spricht, das Handy
@@ -212,6 +225,8 @@ flowchart LR
   Schnappschuss `FunkState` zusammen. Funk-Fenster, Funk-Bildschirm und Widgets zeigen nur
   diesen Zustand an.
 - Der Ende-Flag-Fix steckt in `libraries/humla/.../protocol/AudioHandler.java`.
+- Das Spektrum im Design „Handfunkgerät“ liest den Ton über `libraries/humla/.../audio/AudioTap.java`
+  (Mikrofon beim Senden, Wiedergabe beim Empfang), nur solange es auf dem Bildschirm ist.
 
 Details zu allen Teilen, Abläufen und Design-Entscheidungen stehen in
 [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md).
@@ -280,6 +295,12 @@ Durchgang auf einem echten Gerät:
   mit passenden Symbolen.
 - **Bewegung**: Bildschirmwechsel, Drücken und Loslassen der Sprechtaste, „Kanal frei“ →
   „Max spricht“. Mit ausgeschalteten Animationen (Entwickleroptionen) darf nichts mehr laufen.
+- **Design Handfunkgerät** (Einstellungen › Funk): Umschalten wirkt beim Zurückkehren auf den
+  Funk-Bildschirm und beim nächsten Öffnen des Funk-Fensters. Display bernstein, grün beim
+  Senden, rot beim Empfang; Spektrum bewegt sich beim Senden und Empfangen und steht still,
+  sobald niemand spricht; ◀ Kanal / Kanal ▶ wechseln den Kanal; auf einem kleinen Handy und im
+  geteilten Bildschirm verschwindet das Spektrum, bevor die Teilnehmerliste unter zwei Zeilen
+  fällt. Hoch- und Querformat.
 - **Widgets**:
   - einrichten,
   - Verbindungsaufbau aus dem Widget,
@@ -309,8 +330,8 @@ Konflikte sind vor allem in diesen Dateien zu erwarten:
 - den Icons
 
 Humla liegt nicht mehr als Submodul vor. Neuere Humla-Versionen werden nach
-`libraries/humla/` kopiert. Danach muss der Ende-Flag-Fix wieder enthalten sein (siehe
-`docs/ARCHITEKTUR.md`).
+`libraries/humla/` kopiert. Danach müssen der Ende-Flag-Fix und die zwei Aufrufe von `AudioTap`
+(in `AudioHandler` und `AudioOutput`) wieder enthalten sein (siehe `docs/ARCHITEKTUR.md`).
 
 ### Mitmachen
 

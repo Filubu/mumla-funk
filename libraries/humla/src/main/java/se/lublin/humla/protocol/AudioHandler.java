@@ -27,6 +27,7 @@ import android.util.Log;
 import se.lublin.humla.R;
 import se.lublin.humla.audio.AudioInput;
 import se.lublin.humla.audio.AudioOutput;
+import se.lublin.humla.audio.AudioTap;
 import se.lublin.humla.audio.encoder.CELT11Encoder;
 import se.lublin.humla.audio.encoder.CELT7Encoder;
 import se.lublin.humla.audio.encoder.IEncoder;
@@ -463,6 +464,8 @@ public class AudioHandler extends HumlaNetworkListener implements AudioInput.Aud
                     frame[i] = (short) val;
                 }
             }
+            // Mumla Funk: the spectrum of the walkie-talkie display shows what is sent.
+            AudioTap.feedInput(frame, frameSize, mInput.getSampleRate());
 
             synchronized (mEncoderLock) {
                 if (mEncoder != null) {

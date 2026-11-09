@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Glowing display of the handheld radio design, used by the walkie-talkie screen and the
+     popup. From the top: signal and ping, server, channel number; the channel name; the mode
+     (READY, TRANSMIT, RECEIVE, BUSY); who is talking; everyone on the server (scrolls inside
+     the display); the spectrum of the voice. Texts take the display color, see FunkHandset. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/handset_lcd"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_handset_lcd">
+
+    <LinearLayout
+        android:id="@+id/handset_lcd_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingStart="19dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="19dp"
+        android:paddingBottom="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <!-- Signal bars from the ping, like the reception of a radio. -->
+            <LinearLayout
+                android:id="@+id/handset_signal"
+                android:layout_width="wrap_content"
+                android:layout_height="14dp"
+                android:gravity="bottom"
+                android:importantForAccessibility="no"
+                android:orientation="horizontal">
+
+                <View
+                    android:id="@+id/handset_bar1"
+                    android:layout_width="4dp"
+                    android:layout_height="4dp" />
+
+                <View
+                    android:id="@+id/handset_bar2"
+                    android:layout_width="4dp"
+                    android:layout_height="7dp"
+                    android:layout_marginStart="2dp" />
+
+                <View
+                    android:id="@+id/handset_bar3"
+                    android:layout_width="4dp"
+                    android:layout_height="11dp"
+                    android:layout_marginStart="2dp" />
+
+                <View
+                    android:id="@+id/handset_bar4"
+                    android:layout_width="4dp"
+                    android:layout_height="14dp"
+                    android:layout_marginStart="2dp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/handset_ms"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:singleLine="true"
+                android:textAppearance="@style/TextAppearance.Funk.Handset.Small"
+                tools:text="42 ms" />
+
+            <TextView
+                android:id="@+id/handset_server"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:singleLine="true"
+                android:textAppearance="@style/TextAppearance.Funk.Handset.Small"
+                tools:text="funk.example.org" />
+
+            <TextView
+                android:id="@+id/handset_channel_index"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:textAppearance="@style/TextAppearance.Funk.Handset.Small"
+                tools:text="Kanal 2/5" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/handset_big"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textAppearance="@style/TextAppearance.Funk.Handset.Big"
+            tools:text="Lobby" />
+
+        <TextView
+            android:id="@+id/handset_mode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:accessibilityLiveRegion="polite"
+            android:singleLine="true"
+            android:textAppearance="@style/TextAppearance.Funk.Handset.Mode"
+            tools:text="Bereit" />
+
+        <TextView
+            android:id="@+id/handset_who"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:accessibilityLiveRegion="polite"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textAppearance="@style/TextAppearance.Funk.Handset.Small"
+            tools:text="Ich: Fil" />
+
+        <View
+            android:id="@+id/handset_divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="10dp" />
+
+        <!-- The popup gives this a fixed height (a few rows), the screen lets it fill the rest. -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/handset_users_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="6dp"
+            android:layout_weight="1"
+            android:fadingEdgeLength="16dp"
+            android:requiresFadingEdge="vertical"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/handset_users"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </androidx.core.widget.NestedScrollView>
+
+        <!-- Spectrum of the voice: own room at the bottom, nothing is drawn over the text.
+             The screen hides it when the display is too short for it and two rows of people,
+             the popup only shows it on tall screens (FunkHandset). -->
+        <LinearLayout
+            android:id="@+id/handset_spectrum_section"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:importantForAccessibility="noHideDescendants"
+            android:orientation="vertical">
+
+            <View
+                android:id="@+id/handset_spectrum_divider"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="8dp" />
+
+            <TextView
+                android:id="@+id/handset_spectrum_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:singleLine="true"
+                android:text="@string/handset_spectrum"
+                android:textAppearance="@style/TextAppearance.Funk.Handset.Small"
+                android:textSize="11sp" />
+
+            <se.lublin.mumla.funk.FunkSpectrumView
+                android:id="@+id/handset_spectrum"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/handset_spectrum_height"
+                android:layout_marginTop="6dp" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

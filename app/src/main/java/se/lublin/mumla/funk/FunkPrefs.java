@@ -39,6 +39,14 @@ public final class FunkPrefs {
     /** Servers saved before 1.0.5 had no setting; they were all used with the walkie-talkie UI. */
     public static final boolean DEFAULT_SERVER_FUNK = true;
     private static final String PREF_WIDGET_SERVER_NAME = "funk_widget_server_name_";
+    /**
+     * Look of the walkie-talkie screen and popup: {@link #DESIGN_MODERN} (default) or
+     * {@link #DESIGN_HANDSET}, a handheld radio with a glowing display. Values of
+     * {@code R.array.funk_design_values}.
+     */
+    public static final String PREF_DESIGN = "funk_design";
+    public static final String DESIGN_MODERN = "modern";
+    public static final String DESIGN_HANDSET = "handset";
 
     private final SharedPreferences mPrefs;
 
@@ -62,6 +70,11 @@ public final class FunkPrefs {
 
     public boolean isVolumePttInPopup() {
         return mPrefs.getBoolean(PREF_VOLUME_PTT_IN_POPUP, DEFAULT_VOLUME_PTT_IN_POPUP);
+    }
+
+    /** True if the walkie-talkie screen and popup use the handheld radio design. */
+    public boolean isHandsetDesign() {
+        return DESIGN_HANDSET.equals(mPrefs.getString(PREF_DESIGN, DESIGN_MODERN));
     }
 
     public boolean wereNotificationsAsked() {

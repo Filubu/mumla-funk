@@ -136,6 +136,8 @@ public class AudioOutput implements Runnable, AudioOutputSpeech.TalkStateListene
 
         while(mRunning) {
             if(fetchAudio(mix, 0, mBufferSize)) {
+                // Mumla Funk: the spectrum of the walkie-talkie display looks at what is played.
+                AudioTap.feed(mix, 0, mBufferSize, AudioHandler.SAMPLE_RATE, false);
                 mAudioTrack.write(mix, 0, mBufferSize);
             } else {
                 Log.v(TAG, "Pausing thread.");

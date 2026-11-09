@@ -27,4 +27,8 @@
 
     <!-- Mumla Funk: one row in the display and the popup list. -->
     <dimen name="funk_member_row_height">36dp</dimen>
+    <!-- One person in the display of the handheld radio design. -->
+    <dimen name="handset_user_row_height">26dp</dimen>
+    <!-- Bars of the spectrum in that display: 8 segments of 4 dp with gaps of 2 dp. -->
+    <dimen name="handset_spectrum_height">46dp</dimen>
 </resources>

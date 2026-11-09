@@ -48,7 +48,7 @@
     <string name="funk_widget_other_server">Aktiv: %1$s</string>
 
     <string name="pref_funk_header">Funk</string>
-    <string name="pref_funk_header_summary">Ein/Aus-Taste, Funk-Fenster, Energiesparen</string>
+    <string name="pref_funk_header_summary">Design, Ein/Aus-Taste, Funk-Fenster, Energiesparen</string>
     <string name="pref_funk_assistant_title">Ein/Aus-Taste halten öffnet Funk</string>
     <string name="pref_funk_assistant_on">Aktiv: Mumla Funk ist als digitaler Assistent festgelegt.</string>
     <string name="pref_funk_assistant_off">Antippen und Mumla Funk als Standard-App für den digitalen Assistenten wählen. Danach in den System-Gesten bei „Ein/Aus-Taste gedrückt halten“ den digitalen Assistenten einstellen.</string>
@@ -122,4 +122,37 @@
     <string name="pref_funk_live_title">Live-Anzeige in der Statusleiste</string>
     <string name="pref_funk_live_on">An: Solange du verbunden bist, zeigt eine Pille oben in der Statusleiste, wer gerade spricht. Antippen zeigt die Benachrichtigung, ein Tipp darauf öffnet das Funk-Fenster.</string>
     <string name="pref_funk_live_off">Aus. Antippen und Live-Updates für Mumla Funk erlauben, dann zeigt die Statusleiste, wer gerade spricht.</string>
+
+    <!-- Design von Funk-Bildschirm und Funk-Fenster (Einstellungen › Funk › Design) -->
+    <string name="pref_funk_design_title">Design des Funkgeräts</string>
+    <string-array name="funk_design_names">
+        <item>Modern</item>
+        <item>Handfunkgerät mit Leuchtdisplay</item>
+    </string-array>
+
+    <!-- Design Handfunkgerät. Display und Tasten zeigen das in Großbuchstaben; kurz halten,
+         die Tasten stehen nebeneinander. -->
+    <string name="handset_mode_off">Aus</string>
+    <string name="handset_mode_connecting">Verbinde …</string>
+    <string name="handset_mode_lost">Kein Signal</string>
+    <string name="handset_mode_ready">Bereit</string>
+    <string name="handset_mode_tx">Sendet</string>
+    <string name="handset_mode_rx">Empfang</string>
+    <string name="handset_mode_busy">Belegt</string>
+    <string name="handset_mode_muted">Stumm</string>
+    <string name="handset_me">Ich: %1$s</string>
+    <string name="handset_me_tag">Ich</string>
+    <string name="handset_x_sending">%1$s sendet</string>
+    <string name="handset_channel_index">Kanal %1$d/%2$d</string>
+    <string name="handset_channel_prev">◀ Kanal</string>
+    <string name="handset_channel_next">Kanal ▶</string>
+    <string name="handset_channel_prev_desc">Vorheriger Kanal</string>
+    <string name="handset_channel_next_desc">Nächster Kanal</string>
+    <string name="handset_channel_list">Liste</string>
+    <string name="handset_power_on">Ein</string>
+    <string name="handset_power_off">Aus</string>
+    <string name="handset_idle">Ruhe</string>
+    <string name="handset_ready_to_switch_on">Bereit zum Einschalten</string>
+    <string name="handset_reconnecting">Verbinde neu …</string>
+    <string name="handset_spectrum">Spektrum</string>
 </resources>

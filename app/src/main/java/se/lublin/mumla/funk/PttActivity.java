@@ -57,8 +57,6 @@ import androidx.dynamicanimation.animation.DynamicAnimation;
 import androidx.dynamicanimation.animation.SpringAnimation;
 import androidx.dynamicanimation.animation.SpringForce;
 
-import com.google.android.material.button.MaterialButton;
-
 import java.security.cert.X509Certificate;
 import java.util.List;
 
@@ -128,6 +126,11 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
     /** The widget's server was deleted meanwhile. */
     private boolean mServerMissing;
 
+    /** Handheld radio design (Settings › Walkie-talkie › Design), read when the popup opens. */
+    private boolean mHandsetDesign;
+    /** Display of the handheld radio design, null in the default design. */
+    @Nullable
+    private FunkHandset mHandset;
     private View mRoot;
     private View mCard;
     /** Springs of the card for opening and closing; closing retargets them (see FunkMotion). */
@@ -142,7 +145,7 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
     private PttButtonView mButton;
     private TextView mLabel;
     private TextView mHint;
-    private MaterialButton mAction;
+    private TextView mAction;
     private View mUsersScroll;
     private ViewGroup mUsers;
     /** Rows of the list that fit on this screen (up to {@link #MAX_LIST_ROWS}). */
@@ -214,10 +217,11 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
                     | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         }
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
-        setContentView(R.layout.activity_ptt);
+        mFunkPrefs = FunkPrefs.get(this);
+        mHandsetDesign = mFunkPrefs.isHandsetDesign();
+        setContentView(mHandsetDesign ? R.layout.activity_ptt_handset : R.layout.activity_ptt);
 
         mSettings = Settings.getInstance(this);
-        mFunkPrefs = FunkPrefs.get(this);
         mDatabase = new MumlaSQLiteDatabase(this);
         mDatabase.open();
 
@@ -232,6 +236,12 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
         mAction = findViewById(R.id.ptt_action);
         mUsersScroll = findViewById(R.id.ptt_users_scroll);
         mUsers = findViewById(R.id.ptt_users);
+        if (mHandsetDesign) {
+            // Handheld radio design: the display takes the place of server line and list.
+            mHandset = new FunkHandset(mCard);
+            mButton.setLook(PttButtonView.Look.KEY);
+            FunkHandset.asButton(mAction);
+        }
 
         mCardAlpha = FunkMotion.spring(mCard, DynamicAnimation.ALPHA,
                 FunkMotion.FADE_IN_STIFFNESS, SpringForce.DAMPING_RATIO_NO_BOUNCY);
@@ -350,8 +360,23 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
             lp.width = (int) (440 * density);
             mCard.setLayoutParams(lp);
         }
-        float rowDp = getResources().getDimension(R.dimen.funk_member_row_height) / density;
         mListRows = heightDp >= 720 ? MAX_LIST_ROWS : heightDp >= 600 ? 4 : heightDp >= 480 ? 3 : 2;
+        if (mHandset != null) {
+            // Housing, lamps, display and hint take about 400 dp besides the rows and the key.
+            // The spectrum (about 70 dp) only where the key keeps most of its height.
+            float rowDp = getResources().getDimension(R.dimen.handset_user_row_height) / density;
+            mHandset.setMaxRows(mListRows);
+            float spectrumDp = getResources().getDimension(R.dimen.handset_spectrum_height) / density + 24;
+            boolean spectrum = heightDp - 400 - mListRows * rowDp - spectrumDp >= 140;
+            mHandset.setSpectrumShown(spectrum);
+            float key = Math.min(170, heightDp - 400 - mListRows * rowDp - (spectrum ? spectrumDp : 0));
+            key = Math.max(84, key);
+            ViewGroup.LayoutParams lp = mButton.getLayoutParams();
+            lp.height = (int) ((key + PttButtonView.KEY_EXTRA_HEIGHT_DP) * density);
+            mButton.setLayoutParams(lp);
+            return;
+        }
+        float rowDp = getResources().getDimension(R.dimen.funk_member_row_height) / density;
         float listDp = mListRows * rowDp + 8 + 12; // rows, padding, margin
         float size = Math.min(216, Math.min(widthDp - 96, heightDp - 290 - listDp));
         size = Math.max(120, size);
@@ -399,11 +424,18 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
         // Flags 0: only bind if the service is running, or as soon as a connect starts it.
         mBound = bindService(new Intent(this, MumlaService.class), mConnection, 0);
         render(FunkState.current());
+        if (mHandset != null) {
+            mHandset.resume();
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        if (mFunkPrefs.isHandsetDesign() != mHandsetDesign) {
+            recreate(); // the design was changed in the settings while the popup was in the background
+            return;
+        }
         scheduleIdleClose();
     }
 
@@ -421,6 +453,9 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
     @Override
     protected void onStop() {
         FunkState.removeListener(this);
+        if (mHandset != null) {
+            mHandset.stop();
+        }
         if (mService != null) {
             mService.unregisterObserver(mObserver);
             mService = null;
@@ -521,26 +556,24 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
         boolean targetOn = isTargetOn(state);
         String serverName = mServer != null ? FunkServers.displayName(mServer)
                 : state.serverName != null ? state.serverName : getString(R.string.funk_no_server);
-        mServerName.setText(serverName);
-
         boolean connected = targetOn && state.connection == FunkState.Connection.CONNECTED;
-        mStatusIcon.setImageResource(connected ? R.drawable.ic_funk_tower : R.drawable.ic_funk_tower_off);
-        ImageViewCompat.setImageTintList(mStatusIcon, ContextCompat.getColorStateList(this,
-                connected ? R.color.funk_live : R.color.funk_on_surface_muted));
 
+        String serverSub;
         String label;
         String hint = null;
-        int hintColor = ContextCompat.getColor(this, R.color.funk_on_surface_muted);
+        // The hint says who is talking; the handset design shows that in its display instead.
+        boolean hintIsTalking = false;
+        int hintColor = ContextCompat.getColor(this,
+                mHandset != null ? R.color.handset_muted : R.color.funk_on_surface_muted);
         String action = null;
         PttButtonView.Mode mode;
 
         if (connected) {
             int online = state.members.size();
-            mServerSub.setText(state.channelName != null
+            serverSub = state.channelName != null
                     ? getString(R.string.funk_channel_online, state.channelName, online)
-                    : getString(R.string.funk_online_count, online));
+                    : getString(R.string.funk_online_count, online);
             boolean ptt = Settings.ARRAY_INPUT_METHOD_PTT.equals(mSettings.getInputMethod());
-            boolean optimistic = (mButton.isHolding() || mKeyTalking) && !mSettings.isPushToTalkToggle();
             if (state.selfMuted) {
                 mode = PttButtonView.Mode.MUTED;
                 label = getString(R.string.funk_muted);
@@ -549,7 +582,7 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
                 mode = PttButtonView.Mode.READY;
                 label = getString(R.string.funk_not_ptt_mode);
                 action = getString(R.string.funk_switch_to_ptt);
-            } else if (state.selfTalking || optimistic) {
+            } else if (isTransmitting(state)) {
                 mode = PttButtonView.Mode.TALKING;
                 label = getString(R.string.funk_transmitting);
             } else {
@@ -562,6 +595,7 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
                         ? getString(R.string.funk_x_talking, talking.get(0).name)
                         : getString(R.string.funk_several_talking, talking.get(0).name, talking.size() - 1);
                 hintColor = ContextCompat.getColor(this, R.color.funk_live);
+                hintIsTalking = true;
             } else if (hint == null && mode == PttButtonView.Mode.READY && action == null
                     && mFunkPrefs.isVolumePttInPopup()) {
                 hint = getString(R.string.funk_volume_hint);
@@ -570,17 +604,17 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
             mode = PttButtonView.Mode.CONNECTING;
             boolean reconnecting = targetOn && state.connection == FunkState.Connection.RECONNECTING;
             label = getString(reconnecting ? R.string.funk_reconnecting : R.string.funk_connecting);
-            mServerSub.setText(R.string.funk_connecting);
+            serverSub = getString(R.string.funk_connecting);
         } else if (mServer == null) {
             mode = PttButtonView.Mode.OFFLINE;
             label = getString(mServerMissing ? R.string.funk_server_removed : R.string.funk_no_server);
             hint = getString(mServerMissing ? R.string.funk_server_removed_hint : R.string.funk_no_server_hint);
             action = getString(R.string.funk_open_app);
-            mServerSub.setText(R.string.funk_not_connected);
+            serverSub = getString(R.string.funk_not_connected);
         } else {
             mode = PttButtonView.Mode.OFFLINE;
             label = getString(R.string.funk_tap_to_connect);
-            mServerSub.setText(R.string.funk_not_connected);
+            serverSub = getString(R.string.funk_not_connected);
             if (state.connection != FunkState.Connection.DISCONNECTED && state.serverName != null) {
                 hint = getString(R.string.funk_widget_other_server, state.serverName);
             }
@@ -589,15 +623,31 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
         if (mError != null && mode == PttButtonView.Mode.OFFLINE) {
             hint = mError;
             hintColor = ContextCompat.getColor(this, R.color.funk_warn);
+            hintIsTalking = false;
             if (mErrorNeedsApp) {
                 action = getString(R.string.funk_open_app);
             }
         }
 
-        renderUsers(connected ? state.members : null);
         mButton.setMode(mode);
-        FunkMotion.swapText(mLabel, label);
-        FunkMotion.swapText(mHint, hint != null ? hint : "", hintColor);
+        if (mHandset != null) {
+            // On the key under "PTT": what to do now; the line below keeps the other hints.
+            String keySub = mode == PttButtonView.Mode.MUTED ? getString(R.string.funk_tap_to_unmute)
+                    : mode == PttButtonView.Mode.TALKING ? getString(R.string.funk_release_to_stop)
+                    : label;
+            renderHandset(mHandset, state, targetOn, serverName, mode, label, keySub);
+            boolean showHint = hint != null && !hintIsTalking && !hint.equals(keySub);
+            FunkMotion.swapText(mHint, showHint ? hint : "", hintColor);
+        } else {
+            mServerName.setText(serverName);
+            mStatusIcon.setImageResource(connected ? R.drawable.ic_funk_tower : R.drawable.ic_funk_tower_off);
+            ImageViewCompat.setImageTintList(mStatusIcon, ContextCompat.getColorStateList(this,
+                    connected ? R.color.funk_live : R.color.funk_on_surface_muted));
+            mServerSub.setText(serverSub);
+            renderUsers(connected ? state.members : null);
+            FunkMotion.swapText(mLabel, label);
+            FunkMotion.swapText(mHint, hint != null ? hint : "", hintColor);
+        }
         if (action != null) {
             mAction.setText(action);
             mAction.setVisibility(View.VISIBLE);
@@ -614,6 +664,32 @@ public class PttActivity extends AppCompatActivity implements FunkState.Listener
         } else {
             mAction.setVisibility(View.GONE);
         }
+    }
+
+    /** While the finger or a key is down, show "transmitting" right away (not in toggle mode). */
+    private boolean isTransmitting(@NonNull FunkState state) {
+        return state.selfTalking
+                || ((mButton.isHolding() || mKeyTalking) && !mSettings.isPushToTalkToggle());
+    }
+
+    /**
+     * Handheld radio design: lamps and display for the server of this popup, the labels on the
+     * key. While the popup's server is not the connected one, the display is switched off.
+     */
+    private void renderHandset(@NonNull FunkHandset handset, @NonNull FunkState state,
+                               boolean targetOn, @NonNull String serverName,
+                               @NonNull PttButtonView.Mode pttMode, @NonNull String label,
+                               @NonNull String keySub) {
+        FunkState.Connection connection = targetOn ? state.connection
+                : mConnectRequested ? FunkState.Connection.CONNECTING
+                : FunkState.Connection.DISCONNECTED;
+        FunkHandset.Mode mode = FunkHandset.modeOf(connection, state, isTransmitting(state));
+        handset.render(mode, state, serverName, mServer == null ? label : null);
+        long ms = connection == FunkState.Connection.CONNECTED && mService != null
+                ? mService.getLatencyMillis() : -1;
+        handset.renderPing(ms, ms >= 0 && mService.isConnectionIdle());
+        mButton.setKeyText(FunkHandset.keyLabel(this, pttMode, mode), keySub);
+        mButton.setReceiving(mode == FunkHandset.Mode.RX || mode == FunkHandset.Mode.BUSY);
     }
 
     /** The list above the button: everyone on the server, at most {@link #mListRows} visible. */

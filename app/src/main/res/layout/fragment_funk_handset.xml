@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Walkie-talkie screen in the "handheld radio" design (Settings › Walkie-talkie › Design):
+     a dark housing with an antenna, status lamps, a glowing display, channel keys, the grooved
+     push-to-talk key and the power key at the bottom. Landscape:
+     layout-land/fragment_funk_handset.xml, same ids. The default design is fragment_funk.xml. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="false"
+    android:paddingStart="12dp"
+    android:paddingTop="6dp"
+    android:paddingEnd="12dp"
+    android:paddingBottom="12dp">
+
+    <View
+        android:layout_width="24dp"
+        android:layout_height="32dp"
+        android:layout_gravity="top|start"
+        android:layout_marginStart="44dp"
+        android:background="@drawable/handset_antenna"
+        android:importantForAccessibility="no" />
+
+    <LinearLayout
+        android:id="@+id/funk_body"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="28dp"
+        android:background="@drawable/bg_handset_housing"
+        android:elevation="6dp"
+        android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingTop="14dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:paddingBottom="12dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:importantForAccessibility="no"
+                android:singleLine="true"
+                android:text="@string/handset_brand"
+                android:textAppearance="@style/TextAppearance.Funk.Handset.Plate" />
+
+            <include layout="@layout/funk_handset_lamps" />
+        </LinearLayout>
+
+        <include
+            layout="@layout/funk_handset_lcd"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="2dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/funk_channel_prev"
+                style="@style/Widget.Funk.Handset.Key"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:contentDescription="@string/handset_channel_prev_desc"
+                android:text="@string/handset_channel_prev" />
+
+            <TextView
+                android:id="@+id/funk_channels"
+                style="@style/Widget.Funk.Handset.Key.Small"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:contentDescription="@string/funk_channels_chat"
+                android:text="@string/handset_channel_list" />
+
+            <TextView
+                android:id="@+id/funk_channel_next"
+                style="@style/Widget.Funk.Handset.Key"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:contentDescription="@string/handset_channel_next_desc"
+                android:text="@string/handset_channel_next" />
+        </LinearLayout>
+
+        <!-- The height follows the screen (FunkFragment.sizeButton). -->
+        <se.lublin.mumla.funk.PttButtonView
+            android:id="@+id/funk_ptt"
+            android:layout_width="match_parent"
+            android:layout_height="190dp"
+            android:layout_marginTop="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="6dp"
+            android:paddingEnd="2dp">
+
+            <TextView
+                android:id="@+id/handset_plate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:importantForAccessibility="no"
+                android:singleLine="true"
+                android:textAppearance="@style/TextAppearance.Funk.Handset.Plate"
+                tools:text="MF-1 · 1.0.6" />
+
+            <TextView
+                android:id="@+id/funk_connect_toggle"
+                style="@style/Widget.Funk.Handset.Key.Small"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="Aus" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

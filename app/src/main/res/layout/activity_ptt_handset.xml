@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Walkie-talkie popup in the "handheld radio" design (Settings › Walkie-talkie › Design):
+     the housing as a floating card with status lamps, the glowing display (with a few rows of
+     people) and the grooved push-to-talk key. Same ids as activity_ptt.xml where PttActivity
+     needs them; the display is filled by FunkHandset. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ptt_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clickable="true"
+    android:focusable="false"
+    tools:ignore="MergeRootFrame,UselessParent">
+
+    <LinearLayout
+        android:id="@+id/ptt_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_margin="12dp"
+        android:background="@drawable/bg_handset_housing"
+        android:clickable="true"
+        android:elevation="12dp"
+        android:focusable="false"
+        android:orientation="vertical"
+        android:paddingStart="14dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="18dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <include
+                layout="@layout/funk_handset_lamps"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1" />
+
+            <ImageButton
+                android:id="@+id/ptt_open_app"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/funk_open_app"
+                android:padding="11dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_funk_open"
+                app:tint="@color/handset_muted" />
+
+            <ImageButton
+                android:id="@+id/ptt_close"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/funk_close"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_funk_close"
+                app:tint="@color/handset_muted" />
+        </LinearLayout>
+
+        <include
+            layout="@layout/funk_handset_lcd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp" />
+
+        <!-- The height follows the screen (PttActivity.sizeCard). -->
+        <se.lublin.mumla.funk.PttButtonView
+            android:id="@+id/ptt_button"
+            android:layout_width="match_parent"
+            android:layout_height="170dp"
+            android:layout_marginTop="10dp" />
+
+        <TextView
+            android:id="@+id/ptt_hint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:gravity="center"
+            android:minLines="1"
+            android:textAppearance="@style/TextAppearance.Funk.Handset.Hint"
+            tools:text="oder Leiser-Taste halten" />
+
+        <TextView
+            android:id="@+id/ptt_action"
+            style="@style/Widget.Funk.Handset.Key"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:visibility="gone"
+            tools:text="In App öffnen"
+            tools:visibility="visible" />
+    </LinearLayout>
+</FrameLayout>

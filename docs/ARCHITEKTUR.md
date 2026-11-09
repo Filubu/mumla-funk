@@ -7,7 +7,8 @@ Mumla Funk besteht aus drei Schichten:
 
 1. **Humla** (`libraries/humla/`): das Mumble-Protokoll, also Verbindung, Audio und Codecs.
    Aus Mumla übernommen, geändert sind der [Ende-Flag-Fix](#ende-flag-terminator), das
-   Energiesparen und zwei Abfragen für das Display (`isConnectionIdle()`, `getLatencyMillis()`).
+   Energiesparen, zwei Abfragen für das Display (`isConnectionIdle()`, `getLatencyMillis()`) und
+   ein Abgriff des Tons für das [Spektrum](#spektrum) (`audio/AudioTap.java`).
 2. **Mumla** (`app/`, Pakete außer `funk`): Vordergrunddienst, Kanäle, Chat, Serverliste,
    Zertifikate und Einstellungen. Nahezu unverändert.
 3. **Funk** (`app/src/main/java/se/lublin/mumla/funk/`): die Walkie-Talkie-Bedienung. Sie
@@ -37,21 +38,24 @@ flowchart LR
 | Datei | Aufgabe |
 |---|---|
 | `funk/FunkState.java` | Unveränderlicher Schnappschuss: Verbindung, Server, eigener Kanal, alle Teilnehmer, wer spricht, ob man stumm ist. Statischer „aktueller Zustand“ plus Listener. Merkt sich, wer zuletzt gesprochen hat. |
-| `funk/PttActivity.java` | Funk-Fenster: Teilnehmerliste, großer Sprechknopf für einen Server, Verbindungsaufbau, Fehleranzeige, Leiser-Taste als Sprechtaste. |
+| `funk/PttActivity.java`, `res/layout/activity_ptt.xml`, `activity_ptt_handset.xml` | Funk-Fenster: Teilnehmerliste, großer Sprechknopf für einen Server, Verbindungsaufbau, Fehleranzeige, Leiser-Taste als Sprechtaste. Zwei Layouts, je nach [Design](#design-handfunkgerät). |
 | `funk/FunkMemberList.java`, `res/layout/funk_member_row.xml` | Teilnehmerzeilen für das Display und die Liste im Funk-Fenster (beide dunkel), Zeilen werden wiederverwendet. |
-| `funk/PttButtonView.java` | Der runde Knopf als eigene View: Zustände OFFLINE, CONNECTING, READY, TALKING, MUTED; Federn beim Drücken, Überblenden zwischen den Zuständen, Puls beim Senden, Haptik, Touch-Logik (halten oder tippen). |
+| `funk/PttButtonView.java` | Der runde Knopf als eigene View: Zustände OFFLINE, CONNECTING, READY, TALKING, MUTED; Federn beim Drücken, Überblenden zwischen den Zuständen, Puls beim Senden, Haptik, Touch-Logik (halten oder tippen). Im Design Handfunkgerät eine breite, geriffelte Taste mit Beschriftung (`Look.KEY`). |
 | `funk/FunkMotion.java` | Kurven, Dauern und das Überblenden von Texten für alle Animationen, siehe [Design](#design). |
-| `funk/FunkFragment.java`, `res/layout/fragment_funk.xml`, `funk_display.xml`, `funk_controls.xml`, `layout-land/` | Funk-Bildschirm in der App, solange man mit einem Funk-Server verbunden ist, siehe [Funk-Bildschirm](#funk-bildschirm-funkfragment). |
-| `funk/FunkPrefs.java` | Einstellungen der Funk-Funktionen: Funk-Server ja/nein je Server, zuletzt genutzter Server, Server je Widget, Leiser-Taste im Fenster. |
+| `funk/FunkFragment.java`, `res/layout/fragment_funk.xml`, `funk_display.xml`, `funk_controls.xml`, `fragment_funk_handset.xml`, `layout-land/` | Funk-Bildschirm in der App, solange man mit einem Funk-Server verbunden ist, siehe [Funk-Bildschirm](#funk-bildschirm-funkfragment). |
+| `funk/FunkHandset.java`, `res/layout/funk_handset_lcd.xml`, `funk_handset_lamps.xml`, `funk_handset_user_row.xml` | Design Handfunkgerät: füllt Lampen und Leuchtdisplay aus `FunkState` für Funk-Bildschirm und Funk-Fenster, siehe [Design Handfunkgerät](#design-handfunkgerät). |
+| `funk/FunkSpectrum.java`, `funk/FunkSpectrumView.java` | Spektrum der Stimme im Leuchtdisplay: FFT über den Ton aus `AudioTap`, 16 Bänder, Balken aus Segmenten, siehe [Spektrum](#spektrum). |
+| `funk/FunkPrefs.java` | Einstellungen der Funk-Funktionen: Funk-Server ja/nein je Server, zuletzt genutzter Server, Server je Widget, Leiser-Taste im Fenster, Design (`funk_design`). |
 | `funk/BatteryOptimization.java` | Status der Akku-Ausnahme und Link in die Systemliste (ohne eigene Berechtigung). |
 | `funk/FunkLiveUpdate.java` | Live-Pille in der Statusleiste (Android 16+): wer spricht, als Text der Pille; Android 17 rot; Link in die Systemeinstellung, siehe [Live-Pille](#live-pille-live-update). |
 | `funk/FunkServers.java` | Gespeicherte Server laden, Standard-Server auflösen, Anzeigenamen. |
 | `funk/widget/FunkWidgets.java` | Baut die `RemoteViews` beider Widgets aus `FunkState`. |
 | `funk/widget/FunkWidgetSmall.java`, `FunkWidgetLarge.java`, `FunkWidgetProvider.java` | Die zwei `AppWidgetProvider`. |
 | `funk/widget/FunkWidgetConfigActivity.java` | Serverauswahl beim Platzieren eines Widgets (auch nachträglich über „Widget anpassen“). |
-| `preference/FunkSettingsFragment.java`, `res/xml/settings_funk.xml` | Einstellungen › Funk: Ein/Aus-Taste, Leiser-Taste im Fenster, Energiesparen, Akku-Ausnahme. |
+| `preference/FunkSettingsFragment.java`, `res/xml/settings_funk.xml` | Einstellungen › Funk: Design, Ein/Aus-Taste, Leiser-Taste im Fenster, Energiesparen, Akku-Ausnahme. |
 | `res/values*/strings_funk.xml`, `colors_funk.xml` | Texte (Englisch, Deutsch) und Farben der Funk-Oberfläche. |
 | `res/values/styles_ui.xml`, `res/values(-night)/colors.xml`, `integers_motion.xml`, `res/interpolator/`, `res/animator/` | Das Design der ganzen App: Farben, Ecken, Schrift, Knöpfe, Karten, Bewegung, siehe [Design](#design). |
+| `res/values/styles_handset.xml`, `colors_handset.xml`, `res/drawable/bg_handset_*`, `handset_*` | Design Handfunkgerät: Gehäuse, Display, Tasten, Lampen, immer dunkel. |
 
 Geänderte Mumla-Dateien:
 
@@ -158,6 +162,12 @@ Aufgebaut wie ein modernes Funkgerät, ohne eines nachzubilden: ein Gehäuse
   Sprechtaste und ihre Beschriftung. Die Tastengröße folgt der Bildschirmhöhe (132 bis 240 dp),
   das Display behält mindestens 168 dp.
 - **Querformat** (`layout-land/fragment_funk.xml`): Display links, Bedienung rechts.
+
+Mit Einstellungen › Funk › „Design des Funkgeräts“ = „Handfunkgerät“ lädt der Funk-Bildschirm
+stattdessen `fragment_funk_handset.xml` (siehe [Design Handfunkgerät](#design-handfunkgerät)).
+Er liegt dafür in einem eigenen `FrameLayout`; ändert sich die Einstellung, tauscht
+`onResume()` das Layout aus, ohne das Fragment neu zu erzeugen. Die Logik (Zustände,
+Sprechtaste, Verbinden) ist dieselbe, nur die Anzeige unterscheidet sich.
 
 ## Funk-Fenster (PttActivity)
 
@@ -462,6 +472,91 @@ Alle Animationen folgen der Animationsgeschwindigkeit des Systems. Sind Animatio
 ausgeschaltet (Entwickleroptionen, Bedienungshilfen), laufen keine Schleifen: Statt der
 Ringe zeigt die Sprechtaste beim Senden einen stehenden Ring, statt des kreisenden Bogens
 einen stehenden.
+
+### Design Handfunkgerät
+
+Ein zweites Design für Funk-Bildschirm und Funk-Fenster, gewählt unter Einstellungen › Funk ›
+„Design des Funkgeräts“ (`FunkPrefs.PREF_DESIGN`, Werte `modern` und `handset`, Standard
+`modern`). Vorbild ist die Oberfläche von
+[MumbleFunkClient](https://github.com/NoertNet/MumbleFunkClient) (`app/ui/style.css`): ein
+Handfunkgerät mit Leuchtdisplay. Widgets, Overlay und der Rest der App bleiben im normalen
+Design.
+
+| Empfang | Beim Senden | Funk-Fenster |
+|:---:|:---:|:---:|
+| <img src="images/handfunk-empfang.png" width="180" alt="Empfang"> | <img src="images/handfunk-sendet.png" width="180" alt="Beim Senden"> | <img src="images/handfunk-fenster.png" width="180" alt="Funk-Fenster"> |
+
+- **Gehäuse** (`bg_handset_housing`): dunkles Oliv mit hellerer Oberkante, Ecken 34 dp, im
+  Hochformat mit Antenne. Immer dunkel, auch im hellen Design der App; es liegt dann wie ein
+  Gerät auf dem hellen Hintergrund.
+- **Lampen** NET (verbunden, Bernstein), RX (jemand anders spricht, Rot), TX (du sendest,
+  Grün). Für Screenreader ausgeblendet, das Display sagt dasselbe.
+- **Leuchtdisplay** (`funk_handset_lcd.xml`, gefüllt von `FunkHandset`): Monospace in
+  Großbuchstaben mit leichtem Leuchten (`setShadowLayer`), Scanlines und dunkler Innenrand
+  (`FunkHandset.LcdOverlay`). Inhalt von oben: Signalbalken und Ping, Server, „Kanal 2/5“; der
+  Kanal groß; der Zustand; wer spricht (sonst wer zuletzt gesprochen hat oder der eigene Name);
+  alle Teilnehmer (eigener Kanal zuerst, „Ich“, andere Kanäle rechts daneben, wer spricht, ist
+  hinterlegt); unten das [Spektrum](#spektrum). Die Farbe zeigt den Zustand:
+
+  | Zustand | Anzeige | Farbe |
+  |---|---|---|
+  | bereit | Bereit | Bernstein |
+  | du sendest | Sendet | Grün |
+  | jemand anders spricht | Empfang | Rot |
+  | du sendest, während jemand anders spricht | Belegt (blinkt) | Rot |
+  | stumm | Stumm | Bernstein |
+  | Verbindungsaufbau, Verbindung verloren | Verbinde …, Kein Signal (blinkt) | Bernstein |
+  | nicht verbunden | Aus, Display gedimmt | Bernstein |
+
+  Signalbalken: 4 bis 60 ms, 3 bis 120 ms, 2 bis 300 ms, sonst 1. Im Ruhezustand steht „Ruhe“
+  statt des Werts, der dann Minuten alt sein kann.
+- **Tasten** (`Widget.Funk.Handset.Key`, `bg_handset_key`): erhabene Tasten mit heller
+  Ober- und dunkler Unterkante, gedrückt sinkt die Fläche ein. Text-Views statt Material-Knöpfe,
+  `FunkHandset.asButton()` meldet sie Screenreadern als Knöpfe.
+  - ◀ Kanal / Kanal ▶ treten dem vorigen oder nächsten Kanal bei, in der Reihenfolge der
+    Kanalliste (`FunkState.channelIds`, Humla hält Unterkanäle nach Position und Name sortiert),
+    am Ende geht es von vorn los. Fehlt die Berechtigung, meldet der Server das wie in Mumla.
+  - „Liste“ öffnet Kanäle & Chat.
+  - Ein/Aus: bernsteinfarben „Ein“, solange nicht verbunden, sonst „Aus“.
+- **PTT-Taste** (`PttButtonView`, `Look.KEY`): breit, geriffelt (Rillen im Winkel von 115°),
+  Höhe etwa ein Fünftel des Bildschirms. Groß steht „PTT“, beim Senden „Sendet“ (grün) oder
+  „Belegt“ (rot), darunter klein, was die Taste gerade tut. Rand und Leuchten werden grün beim
+  Senden und rot, sobald jemand anders spricht. Gedrückt sinkt sie auf ihre Unterkante und
+  bekommt oben einen Schatten. Bedienung, Haptik und Sicherungen sind dieselben wie beim runden
+  Knopf.
+- **Funk-Fenster** (`activity_ptt_handset.xml`): das Gehäuse als Karte mit Lampen, Display (bis
+  zu 5 Teilnehmer, auf kurzen Bildschirmen weniger) und PTT-Taste. Hinweise und Fehler stehen
+  darunter. Das Design wird beim Öffnen gelesen; war das Fenster im Hintergrund, während es
+  sich geändert hat, baut `onResume()` es neu auf.
+
+### Spektrum
+
+Unten im Leuchtdisplay zeigt das Design Handfunkgerät die Stimme als Spektrum, wie der
+MumbleFunkClient: 16 Balken aus Segmenten von 100 Hz bis 8 kHz, beim Senden das eigene
+Mikrofon (grün), beim Empfang die Wiedergabe (rot), bei „Belegt“ je Band das Lautere von beidem.
+
+- **Abgriff** (`libraries/humla/.../audio/AudioTap.java`): Humla gibt dem Abgriff den Ton an
+  zwei Stellen, ohne ihn zu verändern. `AudioHandler.onAudioInputReceived()` nach der
+  Verstärkung, also was gesendet wird (nur beim Senden), und `AudioOutput.run()` mit der
+  fertigen Mischung direkt vor der Wiedergabe. Ohne Zuhörer kostet das ein Lesen eines
+  `volatile`-Felds.
+- **Analyse** (`FunkSpectrum`): auf dem jeweiligen Audio-Thread ein Ringpuffer mit den letzten
+  etwa 20 ms (1024 Werte bei 48 kHz, weniger bei kleineren Abtastraten des Mikrofons), alle
+  40 ms eine FFT mit Hann-Fenster. Je Band die mittlere Leistung in dBFS, über 400 Hz um 3 dB je
+  Oktave angehoben und darunter ebenso abgesenkt (Stimmen sind in den Höhen leiser), −72 dB ist
+  leer, −12 dB voll. Die Werte
+  gehen per `Handler` an den Main-Thread.
+- **Anzeige** (`FunkSpectrumView`): steigt schnell, fällt langsam, und hört auf zu zeichnen,
+  sobald alles still ist. Ohne Animationen springen die Balken und es läuft keine Schleife.
+- **Energie**: `FunkHandset.resume()` meldet sich an, `stop()` ab (Funk-Bildschirm in
+  `onResume()`/`onPause()`, Funk-Fenster in `onStart()`/`onStop()`). Gerechnet wird also nur,
+  solange das Spektrum zu sehen ist und jemand spricht; im Ruhezustand laufen die Audio-Threads
+  gar nicht.
+- **Kein Überlappen**: Das Spektrum hat einen eigenen Bereich unter der Teilnehmerliste. Auf dem
+  Funk-Bildschirm fällt es weg, sobald die Liste dadurch unter zwei Zeilen käme (kleines Handy,
+  Querformat, geteilter Bildschirm), und kommt zurück, wenn wieder Platz ist
+  (`FunkHandset.fitSpectrum()`). Das Funk-Fenster zeigt es nur auf Bildschirmen, auf denen die
+  PTT-Taste trotzdem mindestens 140 dp hoch bleibt.
 
 ### Vorschaubilder
 

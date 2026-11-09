@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One person in the display of the handheld radio design. While the person talks, the row
+     is lit in the display color (see FunkHandset). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/handset_user_row_height"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="6dp"
+    android:paddingEnd="6dp">
+
+    <TextView
+        android:id="@+id/handset_user_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:importantForAccessibility="no"
+        android:singleLine="true"
+        android:textAppearance="@style/TextAppearance.Funk.Handset.User" />
+
+    <TextView
+        android:id="@+id/handset_user_tag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:ellipsize="end"
+        android:importantForAccessibility="no"
+        android:maxWidth="140dp"
+        android:singleLine="true"
+        android:textAppearance="@style/TextAppearance.Funk.Handset.Small" />
+</LinearLayout>
