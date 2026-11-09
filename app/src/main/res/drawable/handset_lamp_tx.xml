@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Status lamp TX of the handheld radio design: I am transmitting (green, glowing). -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <gradient
+                android:endColor="#0038E07A"
+                android:gradientRadius="8dp"
+                android:startColor="#B338E07A"
+                android:type="radial" />
+            <size android:width="16dp" android:height="16dp" />
+        </shape>
+    </item>
+    <item
+        android:bottom="3dp"
+        android:left="3dp"
+        android:right="3dp"
+        android:top="3dp">
+        <shape android:shape="oval">
+            <solid android:color="@color/handset_green" />
+        </shape>
+    </item>
+</layer-list>

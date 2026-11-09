@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Status lamp RX of the handheld radio design: somebody else is talking (red, glowing). -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <gradient
+                android:endColor="#00FF4A3F"
+                android:gradientRadius="8dp"
+                android:startColor="#B3FF4A3F"
+                android:type="radial" />
+            <size android:width="16dp" android:height="16dp" />
+        </shape>
+    </item>
+    <item
+        android:bottom="3dp"
+        android:left="3dp"
+        android:right="3dp"
+        android:top="3dp">
+        <shape android:shape="oval">
+            <solid android:color="@color/handset_red" />
+        </shape>
+    </item>
+</layer-list>

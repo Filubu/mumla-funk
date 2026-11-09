@@ -49,7 +49,7 @@
     <string name="funk_widget_other_server">Active: %1$s</string>
 
     <string name="pref_funk_header">Walkie-talkie</string>
-    <string name="pref_funk_header_summary">Power button, popup, energy saving</string>
+    <string name="pref_funk_header_summary">Design, power button, popup, energy saving</string>
     <string name="pref_funk_assistant_title">Hold power button to open the walkie-talkie</string>
     <string name="pref_funk_assistant_on">Active: Mumla Funk is your digital assistant app.</string>
     <string name="pref_funk_assistant_off">Tap and choose Mumla Funk as default digital assistant app. Then make sure \"Press and hold power button\" is set to \"Digital assistant\" in the system gesture settings.</string>
@@ -129,4 +129,48 @@
     <string name="pref_funk_live_title">Live status in the status bar</string>
     <string name="pref_funk_live_on">On: while you are connected, a chip at the top of the status bar shows who is talking. Tap it to see the notification, tap that to open the walkie-talkie popup.</string>
     <string name="pref_funk_live_off">Off. Tap and allow Live Updates for Mumla Funk, then the status bar shows who is talking.</string>
+
+    <!-- Design of the walkie-talkie screen and popup (Settings › Walkie-talkie › Design) -->
+    <string name="pref_funk_design_title">Walkie-talkie design</string>
+    <string-array name="funk_design_names">
+        <item>Modern</item>
+        <item>Handheld radio with glowing display</item>
+    </string-array>
+    <string-array name="funk_design_values" translatable="false">
+        <item>modern</item>
+        <item>handset</item>
+    </string-array>
+
+    <!-- Handheld radio design. The display and the keys show these in capitals; keep them
+         short, the key labels have to fit next to each other. -->
+    <string name="handset_brand" translatable="false">Mumla·Funk</string>
+    <string name="handset_plate" translatable="false">MF-1 · %1$s</string>
+    <string name="handset_lamp_net" translatable="false">NET</string>
+    <string name="handset_lamp_rx" translatable="false">RX</string>
+    <string name="handset_lamp_tx" translatable="false">TX</string>
+    <string name="handset_ptt" translatable="false">PTT</string>
+    <string name="handset_no_ping" translatable="false">– ms</string>
+    <string name="handset_mode_off">Off</string>
+    <string name="handset_mode_connecting">Connecting …</string>
+    <string name="handset_mode_lost">No signal</string>
+    <string name="handset_mode_ready">Ready</string>
+    <string name="handset_mode_tx">Sending</string>
+    <string name="handset_mode_rx">Receiving</string>
+    <string name="handset_mode_busy">Busy</string>
+    <string name="handset_mode_muted">Muted</string>
+    <string name="handset_me">Me: %1$s</string>
+    <string name="handset_me_tag">Me</string>
+    <string name="handset_x_sending">%1$s sending</string>
+    <string name="handset_channel_index">Ch %1$d/%2$d</string>
+    <string name="handset_channel_prev">◀ Chan</string>
+    <string name="handset_channel_next">Chan ▶</string>
+    <string name="handset_channel_prev_desc">Previous channel</string>
+    <string name="handset_channel_next_desc">Next channel</string>
+    <string name="handset_channel_list">List</string>
+    <string name="handset_power_on">On</string>
+    <string name="handset_power_off">Off</string>
+    <string name="handset_idle">Idle</string>
+    <string name="handset_ready_to_switch_on">Ready to switch on</string>
+    <string name="handset_reconnecting">Reconnecting …</string>
+    <string name="handset_spectrum">Spectrum</string>
 </resources>

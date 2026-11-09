@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mumla Funk: the "handheld radio" design of the walkie-talkie screen and popup
+     (Settings › Walkie-talkie › Design). Monospaced capitals like on a radio display, raised
+     keys. Colors in colors_handset.xml; the display color (amber, green, red) and its glow are
+     set by FunkHandset. -->
+<resources>
+
+    <!-- ============================================================ Display -->
+    <style name="TextAppearance.Funk.Handset" parent="">
+        <item name="android:fontFamily">monospace</item>
+        <item name="fontFamily">monospace</item>
+        <item name="android:textColor">@color/handset_amber</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="textAllCaps">true</item>
+    </style>
+
+    <!-- Small lines: server, channel number, who is talking. -->
+    <style name="TextAppearance.Funk.Handset.Small">
+        <item name="android:textSize">12sp</item>
+        <item name="android:letterSpacing">0.1</item>
+    </style>
+
+    <!-- The channel name, big. -->
+    <style name="TextAppearance.Funk.Handset.Big">
+        <item name="android:textSize">30sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.06</item>
+    </style>
+
+    <!-- READY, TRANSMIT, RECEIVE, BUSY. -->
+    <style name="TextAppearance.Funk.Handset.Mode">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.24</item>
+    </style>
+
+    <!-- People in the display. -->
+    <style name="TextAppearance.Funk.Handset.User">
+        <item name="android:textSize">14sp</item>
+        <item name="android:letterSpacing">0.06</item>
+    </style>
+
+    <!-- Engraving on the housing: brand and type plate. -->
+    <style name="TextAppearance.Funk.Handset.Plate">
+        <item name="android:textSize">11sp</item>
+        <item name="android:letterSpacing">0.18</item>
+        <item name="android:textColor">@color/handset_plate</item>
+    </style>
+
+    <!-- Labels next to the status lamps. -->
+    <style name="TextAppearance.Funk.Handset.Lamp">
+        <item name="android:textSize">11sp</item>
+        <item name="android:letterSpacing">0.08</item>
+        <item name="android:textColor">@color/handset_muted</item>
+    </style>
+
+    <!-- Hints under the push-to-talk key in the popup. -->
+    <style name="TextAppearance.Funk.Handset.Hint">
+        <item name="android:textSize">12sp</item>
+        <item name="android:letterSpacing">0.04</item>
+        <item name="android:textColor">@color/handset_muted</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="textAllCaps">false</item>
+    </style>
+
+    <style name="Widget.Funk.Handset.Lamp" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:drawablePadding">4dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:importantForAccessibility">no</item>
+        <item name="android:textAppearance">@style/TextAppearance.Funk.Handset.Lamp</item>
+    </style>
+
+    <!-- ============================================================ Keys
+         Plain text views with a key background (FunkHandset.asButton() tells accessibility
+         services that they are buttons): Material buttons would draw their own background. -->
+    <style name="Widget.Funk.Handset.Key" parent="">
+        <item name="android:background">@drawable/bg_handset_key</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:gravity">center</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:minWidth">64dp</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">11dp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:letterSpacing">0.08</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textColor">@color/handset_key_text</item>
+    </style>
+
+    <!-- Small keys. The power key turns amber while switched off (FunkFragment). -->
+    <style name="Widget.Funk.Handset.Key.Small">
+        <item name="android:minHeight">44dp</item>
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">10dp</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+</resources>

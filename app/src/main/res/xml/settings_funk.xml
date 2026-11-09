@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Mumla Funk: shortcuts for the walkie-talkie popup, and energy saving. -->
+<!-- Mumla Funk: design, shortcuts for the walkie-talkie popup, and energy saving. -->
 <androidx.preference.PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+    <!-- Look of the walkie-talkie screen and popup, see FunkPrefs.isHandsetDesign(). -->
+    <ListPreference
+        app:defaultValue="modern"
+        app:entries="@array/funk_design_names"
+        app:entryValues="@array/funk_design_values"
+        app:iconSpaceReserved="false"
+        app:key="funk_design"
+        app:title="@string/pref_funk_design_title"
+        app:useSimpleSummaryProvider="true" />
     <Preference
         app:key="funk_assistant"
         app:iconSpaceReserved="false"

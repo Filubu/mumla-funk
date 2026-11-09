@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mumla Funk: colors of the "handheld radio" design of the walkie-talkie screen and popup
+     (Settings › Walkie-talkie › Design). A dark housing with a glowing display; always dark, in
+     the light and in the dark theme. Display colors: amber = ready, green = I am transmitting,
+     red = somebody else is. -->
+<resources>
+    <color name="handset_housing_top">#FF262A22</color>
+    <color name="handset_housing_bottom">#FF14170F</color>
+    <color name="handset_housing_edge">#FF0B0C0A</color>
+    <color name="handset_housing_light">#FF454B3D</color>
+    <color name="handset_antenna_edge">#FF0C0E0B</color>
+    <color name="handset_antenna_center">#FF1F231C</color>
+
+    <color name="handset_bezel">#FF2F342A</color>
+    <color name="handset_bezel_light">#FF4B5142</color>
+    <color name="handset_lcd_top">#FF101A13</color>
+    <color name="handset_lcd_bottom">#FF060A07</color>
+    <!-- Dark text on a lit row of the display (who is talking). -->
+    <color name="handset_on_lcd">#FF050805</color>
+
+    <color name="handset_amber">#FFFFB23E</color>
+    <color name="handset_green">#FF38E07A</color>
+    <color name="handset_red">#FFFF4A3F</color>
+
+    <color name="handset_text">#FFD9DFCF</color>
+    <color name="handset_muted">#FF8B9480</color>
+    <!-- Type plate and brand: decorative engraving. -->
+    <color name="handset_plate">#FF6F7766</color>
+    <color name="handset_lamp_off">#FF262A22</color>
+
+    <!-- Keys: raised, with a light top edge and a dark lower edge. -->
+    <color name="handset_key_top">#FF3A4033</color>
+    <color name="handset_key_bottom">#FF272C22</color>
+    <color name="handset_key_light">#FF5A6150</color>
+    <color name="handset_key_edge">#FF0A0B09</color>
+    <!-- The power key (switch on) is amber. -->
+    <color name="handset_power_top">#FFE7A32F</color>
+    <color name="handset_power_bottom">#FFB9780F</color>
+    <color name="handset_power_light">#FFFFD27A</color>
+    <color name="handset_power_edge">#FF5A3A05</color>
+    <color name="handset_on_power">#FF1A1205</color>
+
+    <!-- The grooved push-to-talk key. -->
+    <color name="handset_ptt_stripe_a">#FF2B3025</color>
+    <color name="handset_ptt_stripe_b">#FF20241B</color>
+    <color name="handset_ptt_light">#FF4A5142</color>
+    <color name="handset_ptt_text">#FFCFD6C3</color>
+</resources>
