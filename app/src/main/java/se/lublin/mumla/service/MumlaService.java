@@ -45,6 +45,7 @@ import java.util.List;
 
 import se.lublin.humla.Constants;
 import se.lublin.humla.HumlaService;
+import se.lublin.humla.audio.MediaDucker;
 import se.lublin.humla.exception.AudioException;
 import se.lublin.humla.model.IChannel;
 import se.lublin.humla.model.IMessage;
@@ -436,6 +437,7 @@ public class MumlaService extends HumlaService implements
         mSettings = Settings.getInstance(this);
         mPTTSoundEnabled = mSettings.isPttSoundEnabled();
         mShortTtsMessagesEnabled = mSettings.isShortTextToSpeechMessagesEnabled();
+        MediaDucker.setEnabled(mSettings.isDuckMediaEnabled());
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         preferences.registerOnSharedPreferenceChangeListener(this);
 
@@ -603,6 +605,9 @@ public class MumlaService extends HumlaService implements
                 break;
             case Settings.PREF_FRAMES_PER_PACKET:
                 changedExtras.putInt(EXTRAS_FRAMES_PER_PACKET, mSettings.getFramesPerPacket());
+                break;
+            case Settings.PREF_DUCK_MEDIA:
+                MediaDucker.setEnabled(mSettings.isDuckMediaEnabled());
                 break;
             case Settings.PREF_ENERGY_SAVING:
                 // Directly, not via configureExtras(): that would also restart the audio.

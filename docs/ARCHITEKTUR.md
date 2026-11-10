@@ -142,13 +142,13 @@ Servers zu warten. Im Umschaltmodus gilt das nicht.
 
 ## Funk-Bildschirm (FunkFragment)
 
-Aufgebaut wie ein modernes Funkgerät, ohne eines nachzubilden: ein Gehäuse
-(`colorSurfaceContainerHigh`, Ecken 32 dp) mit einem Display oben und der Bedienung unten.
+Bewusst schlicht: oben ein Display, darunter die Bedienung direkt auf dem Hintergrund der App.
+Ein Gehäuse um beides gibt es nicht mehr, das Display ist die einzige Fläche.
 
 - **Display** (`funk_display.xml`): immer dunkel wie Funk-Fenster und Widgets, auch im hellen
   Design. Kein Pixel- oder LCD-Look, sondern normale Schrift auf einer dunklen Fläche mit
   leichtem Verlauf. Inhalt von oben:
-  - Funkmast, Server, Kanal und Teilnehmerzahl, rechts der Ping mit Signal-Symbol (grün bis
+  - Funkmast, Server und Teilnehmerzahl (der Kanal steht im Kanalwechsel darunter), rechts der Ping mit Signal-Symbol (grün bis
     120 ms, gelb bis 300 ms, sonst rot). Er kommt aus `IHumlaService.getLatencyMillis()` und
     wird alle 2 s neu angezeigt. Im Ruhezustand steht „· Ruhe“ dahinter, der Wert kann dann
     Minuten alt sein (`isConnectionIdle()`).
@@ -157,10 +157,16 @@ Aufgebaut wie ein modernes Funkgerät, ohne eines nachzubilden: ein Gehäuse
     Wer zuletzt gesprochen hat, merkt sich `FunkState` je Server, solange die App läuft.
   - Alle Teilnehmer (`FunkMemberList`). Die Liste scrollt innerhalb des Displays, so bleibt
     die Sprechtaste immer an derselben Stelle.
-- **Lautsprecher-Gitter** als Trennung (`funk_grille.xml`, nur Deko).
-- **Bedienung** (`funk_controls.xml`): „Trennen“ und „Kanäle & Chat“, darunter die große
-  Sprechtaste und ihre Beschriftung. Die Tastengröße folgt der Bildschirmhöhe (132 bis 240 dp),
-  das Display behält mindestens 168 dp.
+- **Bedienung** (`funk_controls.xml`), von oben:
+  - **Kanalwechsel**: Pfeil zurück, der aktuelle Kanal mit seinem Platz in der Liste
+    („Lobby · 2/5“), Pfeil vor. Die Pfeile treten dem vorherigen oder nächsten Kanal bei (am
+    Ende geht es von vorn weiter), ein Tipp auf den Kanal öffnet die Kanalliste als Dialog
+    (Unterkanäle eingerückt, Teilnehmerzahl in Klammern), ein Tipp dort wechselt. Die Zeile ist
+    nur verbunden sichtbar, behält aber ihren Platz, damit die Sprechtaste nicht springt. Bei
+    nur einem Kanal sind die Tasten deaktiviert. Die Kanäle kommen aus `FunkState.channels`.
+  - die große Sprechtaste und ihre Beschriftung. Die Tastengröße folgt der Bildschirmhöhe
+    (132 bis 240 dp, im Querformat ab 104 dp), das Display behält mindestens 168 dp.
+  - unten zwei unauffällige Text-Knöpfe: „Trennen“ und „Kanäle & Chat“ (Mumlas Kanalliste).
 - **Querformat** (`layout-land/fragment_funk.xml`): Display links, Bedienung rechts.
 
 Mit Einstellungen › Funk › „Design des Funkgeräts“ = „Handfunkgerät“ lädt der Funk-Bildschirm
@@ -402,7 +408,7 @@ Ein Satz Farbrollen in `res/values/colors.xml` (hell) und `res/values-night/colo
 
 | Ecke | Wo |
 |---|---|
-| 32 dp | Gehäuse des Funk-Bildschirms, Funk-Fenster, Widget-Einrichtung, Dialoge |
+| 32 dp | Funk-Fenster, Widget-Einrichtung, Dialoge |
 | 24 dp | Display, Karten der Serverliste, Widgets, Rand des Drawers |
 | 16 dp | Listen im Display und im Funk-Fenster, Chat-Nachrichten, Overlay |
 | 12 dp | Eingabefelder, Menüs, Snackbars |
@@ -570,3 +576,26 @@ Teil des Builds.
 - Bluetooth-Headset- oder Funk-Taste (`KEYCODE_HEADSETHOOK` / Media-Button) als Sprechtaste.
 - Die übrigen Sprachen der Store-Texte unter `fastlane/` stammen noch von Mumla. Angepasst
   sind nur `en-US` und `de`.
+
+## Medien leiser beim Funken
+
+Läuft Musik oder ein Video, wird es leise, sobald jemand spricht oder man selbst sendet, so wie bei der Ansage eines
+Navis (Einstellungen › Funk › „Medien leiser, wenn jemand spricht“, Standard an).
+
+- **Audiofokus** (`libraries/humla/.../audio/MediaDucker.java`): Beginnt die Wiedergabe von
+  Sprache, fordert `AudioOutput` den Fokus `AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK` an (Nutzung
+  „Navigationsansage“, Inhalt Sprache). Android senkt dann andere Apps ab; Apps mit
+  gesprochenem Inhalt (Podcasts, Hörbücher) pausieren meist stattdessen. 1,5 s nach dem Ende
+  der Durchsage gibt Humla den Fokus zurück, bei einem Hin und Her bleibt die Musik also unten.
+- **Verzögerung**: Das Absenken dauert einen Moment. Lief gerade etwas (`isMusicActive()`),
+  schickt `AudioOutput` die Stimme darum durch eine Verzögerungsleitung von rund 300 ms
+  (`MediaDucker.LEAD_MS`, auf ganze Wiedergabe-Blöcke gerundet). Die Blöcke werden weiter im
+  Abspieltakt aus den Jitter-Puffern geholt, nur später ausgegeben; am Ende läuft die Leitung
+  leer, es geht nichts verloren. Ohne laufende Medien gibt es keine Verzögerung, ebenso wenn
+  die Musik vom letzten Funkspruch noch unten ist.
+- Die Einstellung (`funk_duck_media`) setzt `MumlaService` über `MediaDucker.setEnabled()`,
+  sie gilt ab der nächsten Durchsage.
+- **Eigenes Senden**: `AudioHandler` hält den Fokus ebenfalls, solange wir senden
+  (`MediaDucker.TRANSMIT`), damit die Musik nicht ins Mikrofon spielt. Verzögert wird dabei
+  nichts. Der Fokus geht erst zurück, wenn weder gesendet noch abgespielt wird.
+

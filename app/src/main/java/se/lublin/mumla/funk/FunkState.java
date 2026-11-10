@@ -63,6 +63,23 @@ public final class FunkState {
         }
     }
 
+    /** A channel of the server, for the channel switch of the walkie-talkie screen. */
+    public static final class Channel {
+        public final int id;
+        public final String name;
+        /** 0 for the root channel, 1 for its subchannels, and so on. */
+        public final int depth;
+        /** People in this channel (not in its subchannels). */
+        public final int users;
+
+        Channel(int id, String name, int depth, int users) {
+            this.id = id;
+            this.name = name;
+            this.depth = depth;
+            this.users = users;
+        }
+    }
+
     public interface Listener {
         void onFunkStateChanged(@NonNull FunkState state);
     }
@@ -91,6 +108,8 @@ public final class FunkState {
     public final int channelId;
     /** All channels of the server in the order of the channel list, for the channel keys. */
     public final List<Integer> channelIds;
+    /** The same channels, in the same order, with their names. */
+    public final List<Channel> channels;
     /** Everyone on the server, own channel first. */
     public final List<Member> members;
     public final boolean selfTalking;
@@ -98,14 +117,19 @@ public final class FunkState {
     public final boolean selfMuted;
 
     private FunkState(Connection connection, long serverId, @Nullable String serverName,
-                      @Nullable String channelName, int channelId, List<Integer> channelIds,
+                      @Nullable String channelName, int channelId, List<Channel> channels,
                       List<Member> members, boolean selfTalking, boolean selfMuted) {
         this.connection = connection;
         this.serverId = serverId;
         this.serverName = serverName;
         this.channelName = channelName;
         this.channelId = channelId;
-        this.channelIds = Collections.unmodifiableList(channelIds);
+        List<Integer> ids = new ArrayList<>(channels.size());
+        for (Channel channel : channels) {
+            ids.add(channel.id);
+        }
+        this.channelIds = Collections.unmodifiableList(ids);
+        this.channels = Collections.unmodifiableList(channels);
         this.members = Collections.unmodifiableList(members);
         this.selfTalking = selfTalking;
         this.selfMuted = selfMuted;
@@ -218,7 +242,7 @@ public final class FunkState {
 
         String channelName = null;
         int channelId = -1;
-        List<Integer> channelIds = new ArrayList<>();
+        List<Channel> channels = new ArrayList<>();
         boolean selfMuted = false;
         boolean selfTalking = false;
         List<Member> members = new ArrayList<>();
@@ -234,7 +258,7 @@ public final class FunkState {
             }
             selfTalking = service.isTalking() && !selfMuted;
             int selfSession = self != null ? self.getSession() : -1;
-            collect(service.getRootChannel(), ownChannel, selfSession, members, channelIds);
+            collect(service.getRootChannel(), ownChannel, selfSession, members, channels, 0);
         } catch (RuntimeException e) {
             // Not (or no longer) synchronized with the server; show what we have.
             Log.d(TAG, "build: " + e);
@@ -247,21 +271,23 @@ public final class FunkState {
             return c != 0 ? c : a.name.compareToIgnoreCase(b.name);
         });
         return new FunkState(connection, serverId, serverName, channelName, channelId,
-                channelIds, members, selfTalking, selfMuted);
+                channels, members, selfTalking, selfMuted);
     }
 
     /**
-     * Collects the users of a channel and its subchannels, and the channel ids depth-first.
-     * Humla keeps subchannels sorted by position and name, so the ids come in the order of the
+     * Collects the users of a channel and its subchannels, and the channels depth-first.
+     * Humla keeps subchannels sorted by position and name, so they come in the order of the
      * channel list.
      */
     private static void collect(@Nullable IChannel channel, @Nullable IChannel ownChannel,
-                                int selfSession, List<Member> out, List<Integer> channelIds) {
+                                int selfSession, List<Member> out, List<Channel> channels,
+                                int depth) {
         if (channel == null) {
             return;
         }
-        channelIds.add(channel.getId());
-        for (IUser user : new ArrayList<IUser>(channel.getUsers())) {
+        List<IUser> users = new ArrayList<IUser>(channel.getUsers());
+        channels.add(new Channel(channel.getId(), channel.getName(), depth, users.size()));
+        for (IUser user : users) {
             if (user == null) {
                 continue;
             }
@@ -274,7 +300,7 @@ public final class FunkState {
                     user.getSession() == selfSession, sameChannel));
         }
         for (IChannel sub : new ArrayList<IChannel>(channel.getSubchannels())) {
-            collect(sub, ownChannel, selfSession, out, channelIds);
+            collect(sub, ownChannel, selfSession, out, channels, depth + 1);
         }
     }
 

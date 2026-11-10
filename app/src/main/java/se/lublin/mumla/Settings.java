@@ -153,6 +153,9 @@ public class Settings {
     /** Mumla Funk: energy saving while nobody talks (see Humla's IdleController). */
     public static final String PREF_ENERGY_SAVING = "funk_energy_saving";
     public static final boolean DEFAULT_ENERGY_SAVING = true;
+    /** Mumla Funk: turn music and other media down while somebody talks (Humla's MediaDucker). */
+    public static final String PREF_DUCK_MEDIA = "funk_duck_media";
+    public static final boolean DEFAULT_DUCK_MEDIA = true;
     /** Seconds between keep-alive pings while idle; the server's timeout must be longer. */
     public static final String PREF_IDLE_KEEPALIVE = "funk_idle_keepalive";
     public static final String DEFAULT_IDLE_KEEPALIVE = "120";
@@ -371,6 +374,10 @@ public class Settings {
 
     public String getEchoCancellationMethod() {
         return preferences.getString(PREF_ECHO_CANCELLATION_METHOD, DEFAULT_ECHO_CANCELLATION_METHOD);
+    }
+
+    public boolean isDuckMediaEnabled() {
+        return preferences.getBoolean(PREF_DUCK_MEDIA, DEFAULT_DUCK_MEDIA);
     }
 
     public boolean isEnergySavingEnabled() {

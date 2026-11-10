@@ -23,6 +23,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.format.DateFormat;
 import android.util.DisplayMetrics;
+import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,8 +35,11 @@ import android.widget.TextView;
 import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.ImageViewCompat;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.Date;
 import java.util.List;
@@ -52,12 +56,13 @@ import se.lublin.mumla.util.HumlaServiceFragment;
 /**
  * Walkie-talkie screen of the app, shown while connected to a server that is set up as
  * walkie-talkie server. It looks like a modern handset: a dark display on top (server, ping, who
- * is talking right now, who talked last, who is online) and the big hold-to-talk button at the
- * bottom, within thumb reach. Other servers get Mumla's channel list instead (see MumlaActivity).
+ * is talking right now, who talked last, who is online), below it the channel switch (previous,
+ * next, or pick from the list) and the big hold-to-talk button, within thumb reach. Other
+ * servers get Mumla's channel list instead (see MumlaActivity).
  *
  * <p>Two designs, chosen in Settings › Walkie-talkie › Design ({@link FunkPrefs#isHandsetDesign()}):
- * the default one ({@code fragment_funk.xml}) and a handheld radio with a glowing display and
- * channel keys ({@code fragment_funk_handset.xml}, display filled by {@link FunkHandset}). A
+ * the default one ({@code fragment_funk.xml}, minimal: no housing around it) and a handheld
+ * radio with a glowing display and channel keys ({@code fragment_funk_handset.xml}, display filled by {@link FunkHandset}). A
  * change of the setting takes effect when the screen comes back.
  */
 public class FunkFragment extends HumlaServiceFragment implements FunkState.Listener,
@@ -110,6 +115,13 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
     private View mUsersEmpty;
     private TextView mLabel;
     private TextView mHint;
+    /** Channel switch: the row, and its middle button with the channel name (opens the list). */
+    @Nullable
+    private View mChannelBar;
+    @Nullable
+    private TextView mChannelPick;
+    @Nullable
+    private AlertDialog mChannelDialog;
 
     // Both designs.
     private TextView mConnectToggle;
@@ -156,17 +168,22 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
         mHint = view.findViewById(R.id.funk_hint);
         mChannelPrev = view.findViewById(R.id.funk_channel_prev);
         mChannelNext = view.findViewById(R.id.funk_channel_next);
+        mChannelBar = view.findViewById(R.id.funk_channel_bar);
+        mChannelPick = view.findViewById(R.id.funk_channel_pick);
 
         mConnectToggle.setOnClickListener(v -> toggleConnection());
         mChannels.setOnClickListener(v -> activity().showDrawerItem(DrawerAdapter.ITEM_SERVER));
         mPtt.setListener(this);
+        if (mChannelPrev != null && mChannelNext != null) {
+            mChannelPrev.setOnClickListener(v -> stepChannel(v, -1));
+            mChannelNext.setOnClickListener(v -> stepChannel(v, 1));
+        }
+        if (mChannelPick != null) {
+            mChannelPick.setOnClickListener(v -> showChannelPicker());
+        }
         if (mHandsetDesign) {
             mHandset = new FunkHandset(view);
             mPtt.setLook(PttButtonView.Look.KEY);
-            if (mChannelPrev != null && mChannelNext != null) {
-                mChannelPrev.setOnClickListener(v -> stepChannel(-1));
-                mChannelNext.setOnClickListener(v -> stepChannel(1));
-            }
             FunkHandset.asButton(mChannelPrev, mChannels, mChannelNext, mConnectToggle);
             TextView plate = view.findViewById(R.id.handset_plate);
             plate.setText(getString(R.string.handset_plate, BuildConfig.VERSION_NAME));
@@ -191,8 +208,9 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
             mPtt.setLayoutParams(lp);
             return;
         }
-        float size = landscape ? heightDp - 230 : Math.min(widthDp - 120, heightDp * 0.32f);
-        size = Math.max(132, Math.min(240, size));
+        // Around it: the channel switch, the label and the bottom buttons.
+        float size = landscape ? heightDp - 256 : Math.min(widthDp - 120, heightDp * 0.3f);
+        size = Math.max(landscape ? 104 : 132, Math.min(240, size));
         ViewGroup.LayoutParams lp = mPtt.getLayoutParams();
         lp.width = lp.height = (int) (size * dm.density);
         mPtt.setLayoutParams(lp);
@@ -223,6 +241,10 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
         mHandler.removeCallbacks(mPingRefresh);
         if (mPtt.isHolding()) {
             onPttUp();
+        }
+        if (mChannelDialog != null) {
+            mChannelDialog.dismiss();
+            mChannelDialog = null;
         }
         if (mHandset != null) {
             mHandset.stop();
@@ -274,6 +296,12 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
         // Controls (the handset design sets its texts in renderHandset)
         mConnectToggle.setEnabled(on || mServer != null);
         mChannels.setEnabled(connected);
+        boolean canStep = connected && state.channelIds.size() > 1;
+        if (mChannelPrev != null && mChannelNext != null) {
+            mChannelPrev.setEnabled(canStep);
+            mChannelNext.setEnabled(canStep);
+        }
+        renderChannelSwitch(state, connected, canStep);
 
         String label;
         String hint = "";
@@ -349,16 +377,81 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
             mConnectToggle.setTextColor(ContextCompat.getColorStateList(requireContext(),
                     on ? R.color.handset_key_text : R.color.handset_power_text));
         }
-        boolean canStep = state.connection == FunkState.Connection.CONNECTED
-                && state.channelIds.size() > 1;
-        if (mChannelPrev != null && mChannelNext != null) {
-            mChannelPrev.setEnabled(canStep);
-            mChannelNext.setEnabled(canStep);
+    }
+
+    /**
+     * Channel switch of the default design: the current channel and its place in the list on
+     * the middle button. Only there while connected; the row keeps its room, so the talk
+     * button does not jump.
+     */
+    private void renderChannelSwitch(@NonNull FunkState state, boolean connected,
+                                     boolean canStep) {
+        if (mChannelBar == null || mChannelPick == null) {
+            return;
+        }
+        boolean show = connected && state.channelName != null;
+        mChannelBar.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
+        if (!show) {
+            return;
+        }
+        int index = state.channelIndex();
+        int count = state.channelIds.size();
+        if (index >= 0 && count > 1) {
+            mChannelPick.setText(getString(R.string.funk_channel_position, state.channelName,
+                    index + 1, count));
+            mChannelPick.setContentDescription(getString(R.string.funk_channel_pick_desc,
+                    state.channelName, index + 1, count));
+        } else {
+            mChannelPick.setText(state.channelName);
+            mChannelPick.setContentDescription(null);
+        }
+        mChannelPick.setEnabled(canStep);
+    }
+
+    /** The channel list as a dialog: one tap joins a channel, without leaving the screen. */
+    private void showChannelPicker() {
+        FunkState state = FunkState.current();
+        if (state.connection != FunkState.Connection.CONNECTED || state.channels.size() < 2) {
+            return;
+        }
+        final List<FunkState.Channel> channels = state.channels;
+        CharSequence[] names = new CharSequence[channels.size()];
+        for (int i = 0; i < names.length; i++) {
+            FunkState.Channel channel = channels.get(i);
+            StringBuilder name = new StringBuilder();
+            for (int d = 0; d < channel.depth; d++) {
+                name.append("\u2003"); // subchannels are indented
+            }
+            name.append(channel.users > 0
+                    ? getString(R.string.funk_channel_users, channel.name, channel.users)
+                    : channel.name);
+            names[i] = name;
+        }
+        mChannelDialog = new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.funk_channel_pick_title)
+                .setSingleChoiceItems(names, state.channelIndex(), (dialog, which) -> {
+                    joinChannel(channels.get(which).id);
+                    dialog.dismiss();
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private void joinChannel(int channelId) {
+        IMumlaService service = getService();
+        if (service == null || FunkState.current().connection != FunkState.Connection.CONNECTED
+                || FunkState.current().channelId == channelId) {
+            return;
+        }
+        try {
+            service.HumlaSession().joinChannel(channelId);
+        } catch (RuntimeException e) {
+            // Disconnected meanwhile.
         }
     }
 
-    /** Channel keys of the handheld radio design: join the previous or next channel. */
-    private void stepChannel(int direction) {
+    /** Channel keys of both designs: join the previous or next channel. */
+    private void stepChannel(View key, int direction) {
         FunkState state = FunkState.current();
         IMumlaService service = getService();
         int count = state.channelIds.size();
@@ -366,12 +459,8 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
             return;
         }
         int index = Math.max(0, state.channelIndex());
-        int next = state.channelIds.get(((index + direction) % count + count) % count);
-        try {
-            service.HumlaSession().joinChannel(next);
-        } catch (RuntimeException e) {
-            // Disconnected meanwhile.
-        }
+        key.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+        joinChannel(state.channelIds.get(((index + direction) % count + count) % count));
     }
 
     /** Display of the default design: server, ping, who is talking and who is online. */
@@ -386,9 +475,8 @@ public class FunkFragment extends HumlaServiceFragment implements FunkState.List
         switch (state.connection) {
             case CONNECTED:
                 int online = state.members.size();
-                mServerStatus.setText(state.channelName != null
-                        ? getString(R.string.funk_channel_online, state.channelName, online)
-                        : getString(R.string.funk_online_count, online));
+                // The channel is on the channel switch below the display.
+                mServerStatus.setText(getString(R.string.funk_online_count, online));
                 break;
             case CONNECTING:
                 mServerStatus.setText(R.string.funk_connecting);
