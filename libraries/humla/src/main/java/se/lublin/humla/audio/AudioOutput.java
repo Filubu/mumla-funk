@@ -160,7 +160,7 @@ public class AudioOutput implements Runnable, AudioOutputSpeech.TalkStateListene
             boolean fetched = fetchAudio(mix, 0, mBufferSize);
             if (fetched && idle) {
                 idle = false;
-                lead = mDucker != null && mDucker.acquire() ? leadBlocks : 0;
+                lead = mDucker != null && mDucker.acquire(MediaDucker.PLAYBACK) ? leadBlocks : 0;
                 for (int i = 0; i < lead; i++) {
                     Arrays.fill(line[i], (short) 0);
                 }
@@ -193,7 +193,7 @@ public class AudioOutput implements Runnable, AudioOutputSpeech.TalkStateListene
                 Log.v(TAG, "Pausing thread.");
                 idle = true;
                 if (mDucker != null) {
-                    mDucker.release();
+                    mDucker.release(MediaDucker.PLAYBACK);
                 }
                 synchronized (mInactiveLock) {
                     mAudioTrack.flush();

@@ -68,6 +68,8 @@ public class AudioHandler extends HumlaNetworkListener implements AudioInput.Aud
     private final AudioManager mAudioManager;
     private final AudioInput mInput;
     private final AudioOutput mOutput;
+    /** Mumla Funk: media gets quiet while voice is played and while we transmit. */
+    private final MediaDucker mDucker;
     private AudioOutput.AudioOutputListener mOutputListener;
     private AudioEncodeListener mEncodeListener;
 
@@ -134,7 +136,8 @@ public class AudioHandler extends HumlaNetworkListener implements AudioInput.Aud
         mAudioSource = actualSource;
 
         mInput = new AudioInput(this, mAudioSource, mSampleRate, mEchoCancellationMethod);
-        mOutput = new AudioOutput(mOutputListener, new MediaDucker(context));
+        mDucker = new MediaDucker(context);
+        mOutput = new AudioOutput(mOutputListener, mDucker);
     }
 
     /**
@@ -341,6 +344,7 @@ public class AudioHandler extends HumlaNetworkListener implements AudioInput.Aud
         synchronized (mOutput) {
             mOutput.stopPlaying();
         }
+        mDucker.abandonNow();
         synchronized (mEncoderLock) {
             if (mEncoder != null) {
                 mEncoder.destroy();
@@ -418,6 +422,12 @@ public class AudioHandler extends HumlaNetworkListener implements AudioInput.Aud
         final boolean stoppedTalking = mTalking && !talking;
 
         if (mTalking ^ talking) {
+            // Mumla Funk: music does not play into the own transmission.
+            if (talking) {
+                mDucker.acquire(MediaDucker.TRANSMIT);
+            } else {
+                mDucker.release(MediaDucker.TRANSMIT);
+            }
             mEncodeListener.onTalkingStateChanged(talking);
             if (mHalfDuplex) {
                 mAudioManager.setStreamMute(getAudioStream(), talking);

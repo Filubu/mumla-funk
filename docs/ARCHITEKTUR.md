@@ -577,9 +577,9 @@ Teil des Builds.
 - Die übrigen Sprachen der Store-Texte unter `fastlane/` stammen noch von Mumla. Angepasst
   sind nur `en-US` und `de`.
 
-## Medien leiser beim Empfang
+## Medien leiser beim Funken
 
-Läuft Musik oder ein Video, wird es leise, sobald jemand spricht, so wie bei der Ansage eines
+Läuft Musik oder ein Video, wird es leise, sobald jemand spricht oder man selbst sendet, so wie bei der Ansage eines
 Navis (Einstellungen › Funk › „Medien leiser, wenn jemand spricht“, Standard an).
 
 - **Audiofokus** (`libraries/humla/.../audio/MediaDucker.java`): Beginnt die Wiedergabe von
@@ -594,5 +594,8 @@ Navis (Einstellungen › Funk › „Medien leiser, wenn jemand spricht“, Stan
   leer, es geht nichts verloren. Ohne laufende Medien gibt es keine Verzögerung, ebenso wenn
   die Musik vom letzten Funkspruch noch unten ist.
 - Die Einstellung (`funk_duck_media`) setzt `MumlaService` über `MediaDucker.setEnabled()`,
-  sie gilt ab der nächsten Durchsage. Das eigene Senden senkt Medien nicht ab.
+  sie gilt ab der nächsten Durchsage.
+- **Eigenes Senden**: `AudioHandler` hält den Fokus ebenfalls, solange wir senden
+  (`MediaDucker.TRANSMIT`), damit die Musik nicht ins Mikrofon spielt. Verzögert wird dabei
+  nichts. Der Fokus geht erst zurück, wenn weder gesendet noch abgespielt wird.
 

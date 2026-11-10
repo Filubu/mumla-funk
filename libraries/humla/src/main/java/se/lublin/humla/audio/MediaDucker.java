@@ -27,9 +27,10 @@ import android.os.Looper;
 import android.util.Log;
 
 /**
- * Mumla Funk: turns music and other media down while somebody talks, the way a navigation app
- * does for its announcements. It asks Android for the transient "may duck" audio focus when
- * voice starts to play and gives it back shortly after the voice ended; players then lower
+ * Mumla Funk: turns music and other media down while somebody talks or we transmit, the way a
+ * navigation app does for its announcements. It asks Android for the transient "may duck"
+ * audio focus when voice starts to play (or the own transmission starts) and gives it back
+ * shortly after both ended; players then lower
  * their volume (or pause, for spoken content such as podcasts) and come back by themselves.
  *
  * <p>{@link AudioOutput} holds the voice back for {@link #LEAD_MS} when media was playing, so
@@ -37,6 +38,10 @@ import android.util.Log;
  */
 public final class MediaDucker {
     private static final String TAG = MediaDucker.class.getName();
+
+    /** Who needs the media down: the voice of the others that is played, the own transmission. */
+    public static final int PLAYBACK = 1;
+    public static final int TRANSMIT = 2;
 
     /** How long the voice is held back while the media fades down. */
     public static final int LEAD_MS = 300;
@@ -51,7 +56,7 @@ public final class MediaDucker {
     private final AudioManager mAudioManager;
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     private final Object mLock = new Object();
-    private final Runnable mAbandon = this::abandonNow;
+    private final Runnable mAbandon = this::abandonIfUnused;
     private final AudioManager.OnAudioFocusChangeListener mListener = change -> {
         if (change == AudioManager.AUDIOFOCUS_LOSS
                 || change == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT
@@ -65,6 +70,8 @@ public final class MediaDucker {
     /** API 26+: an AudioFocusRequest; kept as Object so the class loads on older versions. */
     private Object mRequest;
     private boolean mHeld;
+    /** {@link #PLAYBACK} and/or {@link #TRANSMIT}: who currently needs the media down. */
+    private int mHolders;
 
     public MediaDucker(Context context) {
         mAudioManager = (AudioManager) context.getApplicationContext()
@@ -77,14 +84,15 @@ public final class MediaDucker {
     }
 
     /**
-     * Voice is about to be played. Any thread.
+     * Voice is about to be played ({@link #PLAYBACK}) or sent ({@link #TRANSMIT}). Any thread.
      *
-     * @return true if media was playing and has just been asked to duck: the caller should
+     * @return true if media was playing and has just been asked to duck: playback should
      * hold the voice back for {@link #LEAD_MS}.
      */
-    public boolean acquire() {
+    public boolean acquire(int holder) {
         mHandler.removeCallbacks(mAbandon);
         synchronized (mLock) {
+            mHolders |= holder;
             if (mHeld || !sEnabled || mAudioManager == null) {
                 return false; // already ducked, or switched off
             }
@@ -115,8 +123,17 @@ public final class MediaDucker {
         }
     }
 
-    /** The voice ended. The media comes back after a short while, unless voice starts again. */
-    public void release() {
+    /**
+     * The voice or the own transmission ended. Once nobody needs it anymore, the media comes
+     * back after a short while, unless voice starts again.
+     */
+    public void release(int holder) {
+        synchronized (mLock) {
+            mHolders &= ~holder;
+            if (mHolders != 0) {
+                return;
+            }
+        }
         mHandler.removeCallbacks(mAbandon);
         mHandler.postDelayed(mAbandon, HOLD_MS);
     }
@@ -125,22 +142,36 @@ public final class MediaDucker {
     public void abandonNow() {
         mHandler.removeCallbacks(mAbandon);
         synchronized (mLock) {
-            if (mAudioManager == null) {
-                return;
+            mHolders = 0;
+            abandonLocked();
+        }
+    }
+
+    /** The hold time is over. */
+    private void abandonIfUnused() {
+        synchronized (mLock) {
+            if (mHolders == 0) { // else: needed again meanwhile
+                abandonLocked();
             }
-            try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    if (mRequest != null) {
-                        mAudioManager.abandonAudioFocusRequest((AudioFocusRequest) mRequest);
-                        mRequest = null;
-                    }
-                } else {
-                    mAudioManager.abandonAudioFocus(mListener);
+        }
+    }
+
+    private void abandonLocked() {
+        mHeld = false;
+        if (mAudioManager == null) {
+            return;
+        }
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                if (mRequest != null) {
+                    mAudioManager.abandonAudioFocusRequest((AudioFocusRequest) mRequest);
+                    mRequest = null;
                 }
-            } catch (RuntimeException e) {
-                Log.w(TAG, "abandonAudioFocus: " + e);
+            } else {
+                mAudioManager.abandonAudioFocus(mListener);
             }
-            mHeld = false;
+        } catch (RuntimeException e) {
+            Log.w(TAG, "abandonAudioFocus: " + e);
         }
     }
 }

@@ -60,7 +60,7 @@
     <string name="pref_funk_volume_ptt_title">Volume-down is the talk key in the popup</string>
     <string name="pref_funk_volume_ptt_summary">While the walkie-talkie popup is open: hold to talk, release to stop.</string>
     <string name="pref_funk_duck_media_title">Turn media down while somebody talks</string>
-    <string name="pref_funk_duck_media_summary">Music and videos get quiet during a transmission, like with a navigation app. The voice starts a moment later so the first words are not lost.</string>
+    <string name="pref_funk_duck_media_summary">Music and videos get quiet while somebody talks and while you transmit, like with a navigation app. Incoming voice starts a moment later so the first words are not lost.</string>
     <string name="pref_funk_settings_unavailable">Could not open the system settings on this device.</string>
 
     <string name="pref_funk_energy_category">Energy saving</string>

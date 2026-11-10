@@ -59,7 +59,7 @@
     <string name="pref_funk_volume_ptt_title">Leiser-Taste im Funk-Fenster = Sprechtaste</string>
     <string name="pref_funk_volume_ptt_summary">Solange das Funk-Fenster offen ist: halten zum Sprechen, loslassen beendet.</string>
     <string name="pref_funk_duck_media_title">Medien leiser, wenn jemand spricht</string>
-    <string name="pref_funk_duck_media_summary">Musik und Videos werden während einer Durchsage leise, wie beim Navi. Die Stimme setzt einen Moment später ein, damit die ersten Worte nicht untergehen.</string>
+    <string name="pref_funk_duck_media_summary">Musik und Videos werden leise, solange jemand spricht oder du sendest, wie beim Navi. Die Stimme der anderen setzt einen Moment später ein, damit die ersten Worte nicht untergehen.</string>
     <string name="pref_funk_settings_unavailable">Die Systemeinstellung konnte auf diesem Gerät nicht geöffnet werden.</string>
 
     <string name="pref_funk_energy_category">Energiesparen</string>
