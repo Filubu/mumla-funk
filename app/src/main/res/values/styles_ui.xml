@@ -126,6 +126,15 @@
         <item name="android:stateListAnimator">@animator/funk_press</item>
     </style>
 
+    <style name="Widget.Funk.Button.Text.Icon" parent="Widget.Material3.Button.TextButton.Icon">
+        <item name="android:stateListAnimator">@animator/funk_press</item>
+    </style>
+
+    <!-- Round button with just an icon: the channel keys of the Funk screen. -->
+    <style name="Widget.Funk.Button.IconOnly" parent="Widget.Material3.Button.IconButton.Filled.Tonal">
+        <item name="android:stateListAnimator">@animator/funk_press</item>
+    </style>
+
     <!-- Mumla's push-to-talk bar (channel screen): the colors of the Funk talk button, indigo
          when ready and red while transmitting. The pill is inset, the touch area stays the
          whole bar. No press scale: the bar is held, the color says what is happening. -->

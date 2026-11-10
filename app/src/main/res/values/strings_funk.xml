@@ -32,6 +32,10 @@
     <string name="funk_you">%1$s (you)</string>
     <string name="funk_choose_server">Choose server</string>
     <string name="funk_add_server">Add server</string>
+    <string name="funk_channel_position">%1$s · %2$d/%3$d</string>
+    <string name="funk_channel_pick_desc">%1$s, channel %2$d of %3$d. Tap to switch channel.</string>
+    <string name="funk_channel_pick_title">Switch channel</string>
+    <string name="funk_channel_users">%1$s (%2$d)</string>
     <string name="funk_channels_chat">Channels &amp; chat</string>
     <string name="funk_nobody_online">Nobody else is here yet</string>
     <string name="funk_online_header">Online · %1$d</string>
@@ -55,6 +59,8 @@
     <string name="pref_funk_assistant_off">Tap and choose Mumla Funk as default digital assistant app. Then make sure \"Press and hold power button\" is set to \"Digital assistant\" in the system gesture settings.</string>
     <string name="pref_funk_volume_ptt_title">Volume-down is the talk key in the popup</string>
     <string name="pref_funk_volume_ptt_summary">While the walkie-talkie popup is open: hold to talk, release to stop.</string>
+    <string name="pref_funk_duck_media_title">Turn media down while somebody talks</string>
+    <string name="pref_funk_duck_media_summary">Music and videos get quiet during a transmission, like with a navigation app. The voice starts a moment later so the first words are not lost.</string>
     <string name="pref_funk_settings_unavailable">Could not open the system settings on this device.</string>
 
     <string name="pref_funk_energy_category">Energy saving</string>

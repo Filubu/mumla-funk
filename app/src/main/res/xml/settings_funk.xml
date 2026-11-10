@@ -20,6 +20,13 @@
         app:key="funk_volume_ptt_in_popup"
         app:summary="@string/pref_funk_volume_ptt_summary"
         app:title="@string/pref_funk_volume_ptt_title" />
+    <!-- Audio focus like a navigation app, see Humla's MediaDucker. -->
+    <SwitchPreferenceCompat
+        app:defaultValue="true"
+        app:iconSpaceReserved="false"
+        app:key="funk_duck_media"
+        app:summary="@string/pref_funk_duck_media_summary"
+        app:title="@string/pref_funk_duck_media_title" />
     <!-- Android 16+ only, see FunkSettingsFragment. -->
     <Preference
         app:iconSpaceReserved="false"

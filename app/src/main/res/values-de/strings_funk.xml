@@ -31,6 +31,10 @@
     <string name="funk_you">%1$s (du)</string>
     <string name="funk_choose_server">Server wählen</string>
     <string name="funk_add_server">Server hinzufügen</string>
+    <string name="funk_channel_position">%1$s · %2$d/%3$d</string>
+    <string name="funk_channel_pick_desc">%1$s, Kanal %2$d von %3$d. Antippen zum Kanalwechsel.</string>
+    <string name="funk_channel_pick_title">Kanal wechseln</string>
+    <string name="funk_channel_users">%1$s (%2$d)</string>
     <string name="funk_channels_chat">Kanäle &amp; Chat</string>
     <string name="funk_nobody_online">Sonst ist noch niemand da</string>
     <string name="funk_online_header">Online · %1$d</string>
@@ -54,6 +58,8 @@
     <string name="pref_funk_assistant_off">Antippen und Mumla Funk als Standard-App für den digitalen Assistenten wählen. Danach in den System-Gesten bei „Ein/Aus-Taste gedrückt halten“ den digitalen Assistenten einstellen.</string>
     <string name="pref_funk_volume_ptt_title">Leiser-Taste im Funk-Fenster = Sprechtaste</string>
     <string name="pref_funk_volume_ptt_summary">Solange das Funk-Fenster offen ist: halten zum Sprechen, loslassen beendet.</string>
+    <string name="pref_funk_duck_media_title">Medien leiser, wenn jemand spricht</string>
+    <string name="pref_funk_duck_media_summary">Musik und Videos werden während einer Durchsage leise, wie beim Navi. Die Stimme setzt einen Moment später ein, damit die ersten Worte nicht untergehen.</string>
     <string name="pref_funk_settings_unavailable">Die Systemeinstellung konnte auf diesem Gerät nicht geöffnet werden.</string>
 
     <string name="pref_funk_energy_category">Energiesparen</string>

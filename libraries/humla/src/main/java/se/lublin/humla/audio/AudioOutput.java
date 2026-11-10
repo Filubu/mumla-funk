@@ -61,9 +61,16 @@ public class AudioOutput implements Runnable, AudioOutputSpeech.TalkStateListene
     private AudioOutputListener mListener;
     private final IAudioMixer<float[], short[]> mMixer;
     private ExecutorService mDecodeExecutorService;
+    /** Mumla Funk: turns media down while voice plays; null: never. */
+    private final MediaDucker mDucker;
 
     public AudioOutput(AudioOutputListener listener) {
+        this(listener, null);
+    }
+
+    public AudioOutput(AudioOutputListener listener, MediaDucker ducker) {
         mListener = listener;
+        mDucker = ducker;
         mMainHandler = new Handler(Looper.getMainLooper());
         mDecodeExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         mPacketLock = new ReentrantLock();
@@ -117,6 +124,9 @@ public class AudioOutput implements Runnable, AudioOutputSpeech.TalkStateListene
         mPacketLock.unlock();
 
         mAudioOutputs.clear();
+        if (mDucker != null) {
+            mDucker.abandonNow();
+        }
         mAudioTrack.release();
         mAudioTrack = null;
     }
@@ -134,13 +144,57 @@ public class AudioOutput implements Runnable, AudioOutputSpeech.TalkStateListene
 
         final short[] mix = new short[mBufferSize];
 
+        // Mumla Funk: while media is asked to duck, the voice runs through a short delay line,
+        // so the first words are not spoken over music that is still fading. Blocks are still
+        // fetched at the pace they are played, the jitter buffers notice nothing. "tail" counts
+        // the blocks that are still in the line after the last voice.
+        final int leadBlocks = Math.max(1, (int) Math.ceil(
+                MediaDucker.LEAD_MS * AudioHandler.SAMPLE_RATE / 1000.0 / mBufferSize));
+        final short[][] line = new short[leadBlocks][mBufferSize];
+        int linePos = 0;
+        int lead = 0; // length of the delay line in blocks for this stretch of voice; 0: none
+        int tail = 0;
+        boolean idle = true; // nothing playing: the next voice starts a new stretch
+
         while(mRunning) {
-            if(fetchAudio(mix, 0, mBufferSize)) {
+            boolean fetched = fetchAudio(mix, 0, mBufferSize);
+            if (fetched && idle) {
+                idle = false;
+                lead = mDucker != null && mDucker.acquire() ? leadBlocks : 0;
+                for (int i = 0; i < lead; i++) {
+                    Arrays.fill(line[i], (short) 0);
+                }
+                linePos = 0;
+            }
+            if (fetched) {
+                // One silent block more: the track is flushed when it pauses, and that must
+                // not cut off the end of the delayed voice.
+                tail = lead > 0 ? lead + 1 : 0;
+            }
+            if (fetched || tail > 0) {
+                if (!fetched) {
+                    tail--;
+                    Arrays.fill(mix, (short) 0);
+                }
+                if (lead > 0) {
+                    // Swap the new block with the one that went in "lead" blocks ago.
+                    short[] slot = line[linePos];
+                    for (int i = 0; i < mBufferSize; i++) {
+                        short delayed = slot[i];
+                        slot[i] = mix[i];
+                        mix[i] = delayed;
+                    }
+                    linePos = (linePos + 1) % lead;
+                }
                 // Mumla Funk: the spectrum of the walkie-talkie display looks at what is played.
                 AudioTap.feed(mix, 0, mBufferSize, AudioHandler.SAMPLE_RATE, false);
                 mAudioTrack.write(mix, 0, mBufferSize);
             } else {
                 Log.v(TAG, "Pausing thread.");
+                idle = true;
+                if (mDucker != null) {
+                    mDucker.release();
+                }
                 synchronized (mInactiveLock) {
                     mAudioTrack.flush();
                     mAudioTrack.pause();

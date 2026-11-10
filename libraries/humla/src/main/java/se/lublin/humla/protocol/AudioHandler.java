@@ -27,6 +27,7 @@ import android.util.Log;
 import se.lublin.humla.R;
 import se.lublin.humla.audio.AudioInput;
 import se.lublin.humla.audio.AudioOutput;
+import se.lublin.humla.audio.MediaDucker;
 import se.lublin.humla.audio.AudioTap;
 import se.lublin.humla.audio.encoder.CELT11Encoder;
 import se.lublin.humla.audio.encoder.CELT7Encoder;
@@ -133,7 +134,7 @@ public class AudioHandler extends HumlaNetworkListener implements AudioInput.Aud
         mAudioSource = actualSource;
 
         mInput = new AudioInput(this, mAudioSource, mSampleRate, mEchoCancellationMethod);
-        mOutput = new AudioOutput(mOutputListener);
+        mOutput = new AudioOutput(mOutputListener, new MediaDucker(context));
     }
 
     /**
